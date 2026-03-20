@@ -7,10 +7,7 @@ import { resetState } from './GameState.js';
 import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
-import { spawnObstacle, updateObstacles } from './obstacles.js';
-import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
-import { checkPlayerObstacles, checkPlayerBonusPickups } from './collision.js';
-import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
+import { gameUpdate, BONUS_SPAWN_INTERVAL } from './gameUpdate.js';
 import { render, renderStartScreen, renderPauseScreen, initRenderer } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
@@ -36,12 +33,8 @@ state.graceRemaining = gameConfig.gracePeriod;
 // Last delta for render (updated each update call)
 let lastDelta = 16;
 
-// Spawn timer accumulator
-let spawnAccumulator = 0;
-
-// Bonus spawn timer
-const BONUS_SPAWN_INTERVAL = 8000; // ms between bonus spawn attempts
-let bonusAccumulator = 0;
+// Spawn/bonus accumulators passed into gameUpdate
+const accumulators = { spawn: 0, bonus: 0 };
 
 // Initialize renderer star field
 initRenderer();
@@ -52,59 +45,8 @@ updatePlayer(state);
 
 function update(delta) {
   lastDelta = delta;
-  if (state.status === 'dead') return;
-  if (state.status === 'start') return;
-  if (state.status === 'paused') return;
-
-  // Update player position from mouse
-  updatePlayer(state);
-
-  // Grace period tick (Requirement 6.1, 6.3)
-  if (state.status === 'grace') {
-    state.graceRemaining -= delta;
-    state.elapsed += delta;
-    if (state.graceRemaining <= 0) {
-      state.status = 'active';
-      state.graceRemaining = 0;
-    }
-    // Bonus collection works during grace
-    checkPlayerBonusPickups(state, collectBonus);
-    updateEffects(delta, state);
-    return;
-  }
-
-  // Active play
-  state.elapsed += delta;
-
-  // Obstacle spawning via difficulty interval (Requirement 5.1, 5.2)
-  const speedMult = getCurrentSpeedMultiplier(state.elapsed);
-  const spawnInterval = getCurrentSpawnInterval(state.elapsed);
-
-  spawnAccumulator += delta;
-  while (spawnAccumulator >= spawnInterval) {
-    spawnObstacle(state, speedMult);
-    spawnAccumulator -= spawnInterval;
-  }
-
-  // Bonus spawn attempts
-  bonusAccumulator += delta;
-  if (bonusAccumulator >= BONUS_SPAWN_INTERVAL) {
-    trySpawnBonus(state);
-    bonusAccumulator = 0;
-  }
-
-  // Update obstacle positions and remove out-of-bounds
-  updateObstacles(delta, state);
-
-  // Update active bonus effects
-  updateEffects(delta, state);
-
-  // Collision checks
-  checkPlayerBonusPickups(state, collectBonus);
-  checkPlayerObstacles(state);
-
-  // Transition to dead
-  if (state.status === 'dead') {
+  const result = gameUpdate(delta, state, accumulators);
+  if (result === 'dead') {
     loop.stop();
     showGameOver(canvas, state, onRestart);
   }
@@ -126,8 +68,8 @@ function onRestart() {
   state = resetState();
   state.status = 'grace';
   state.graceRemaining = gameConfig.gracePeriod;
-  spawnAccumulator = 0;
-  bonusAccumulator = 0;
+  accumulators.spawn = 0;
+  accumulators.bonus = 0;
   initRenderer();
   recomputeZones();
   updatePlayer(state);

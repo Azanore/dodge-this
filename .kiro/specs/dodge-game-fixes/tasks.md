@@ -114,6 +114,7 @@
 
 
 
+
   - Verify Escape while Config Panel is open does not pause
   - Verify Escape during `'dead'` is ignored
   - _Requirements: 3.1, 3.4, 3.5_
