@@ -83,6 +83,7 @@
 
 
 
+
   - Add `'paused'` case to `main.js` update loop — no-op when paused
   - Add `renderPauseScreen(ctx)` to `renderer.js` — semi-transparent overlay with "PAUSED" label and "Press Esc to resume" prompt
   - Wire `Escape` keydown listener in `main.js`: if status is `'active'` or `'grace'` and Config Panel is not open, save `prevStatus`, set `state.status = 'paused'`, call `loop.stop()`; if status is `'paused'`, restore `state.status = state.prevStatus`, call `loop.start()`
@@ -110,6 +111,9 @@
 - [-] 5.3 Write unit tests for pause behavior
 
   - Verify Escape during `'active'` sets status to `'paused'`
+
+
+
   - Verify Escape while Config Panel is open does not pause
   - Verify Escape during `'dead'` is ignored
   - _Requirements: 3.1, 3.4, 3.5_
