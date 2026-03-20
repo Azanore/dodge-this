@@ -166,11 +166,14 @@
   - Ensure all tests pass, ask the user if questions arise.
 
 
-- [-] 9. Bonus system
+- [x] 9. Bonus system
 
 
 
-- [ ] 9.1 Implement `bonuses.js` — pickup spawning, activation, expiry
+
+
+- [x] 9.1 Implement `bonuses.js` — pickup spawning, activation, expiry
+
   - Implement `trySpawnBonus()`: weighted random selection of enabled bonus types, place in inner zone
   - Implement `collectBonus(type, state)`: activate effect in `activeEffects`, start countdown
   - Implement `updateEffects(delta, state)`: tick down all active effects, trigger expiry cleanup
@@ -195,9 +198,12 @@
   - **Validates: Requirements 7.5**
   - Run: `git add . ; git commit -m "task 9.4: property test - slow-mo speed" ; git push origin master`
 
-- [ ] 10. Config loader with fallback
 
-- [ ] 10.1 Implement config validation and fallback in `main.js`
+- [-] 10. Config loader with fallback
+
+
+- [-] 10.1 Implement config validation and fallback in `main.js`
+
   - On startup, validate all required config keys are present and of correct type
   - For any missing or invalid key, substitute hardcoded default and log a console warning with the key name
   - _Requirements: 10.7_
