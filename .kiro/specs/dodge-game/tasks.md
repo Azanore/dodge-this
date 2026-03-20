@@ -12,12 +12,15 @@
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
   - Run: `git add . ; git commit -m "task 1: project scaffold and config" ; git push origin master`
 
-- [-] 2. Zone geometry
+- [x] 2. Zone geometry
 
 
 
 
-- [ ] 2.1 Implement `zones.js` — Inner Zone and Outer Zone computation
+
+
+- [x] 2.1 Implement `zones.js` — Inner Zone and Outer Zone computation
+
   - Compute both zones as `{ x, y, width, height }` from viewport size and `outerZoneScale` config
   - Export `clampToInner(x, y)` that returns the nearest valid point inside the Inner Zone
   - Attach `window.resize` listener that recomputes zones and re-clamps player position
@@ -34,8 +37,13 @@
   - **Validates: Requirements 1.5, 2.2**
   - Run: `git add . ; git commit -m "task 2.3: property test - mouse clamping" ; git push origin master`
 
-- [ ] 3. Game state and game loop
-- [ ] 3.1 Implement `GameState.js` — central state object
+- [-] 3. Game state and game loop
+
+
+
+
+- [x] 3.1 Implement `GameState.js` — central state object
+
   - Define and export the initial state shape per the design data model
   - Export a `resetState()` function that returns a fresh initial state
   - _Requirements: 6.1, 6.3_
