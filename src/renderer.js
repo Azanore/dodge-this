@@ -52,11 +52,13 @@ function glowCircle(ctx, x, y, radius, color, blur) {
   ctx.restore();
 }
 
-// Renders the start screen overlay with title and prompt
+// Renders the start screen overlay with title, prompt, and personal best
 export function renderStartScreen(ctx) {
   const cw = ctx.canvas.width;
   const ch = ctx.canvas.height;
   const cx = cw / 2;
+
+  const pb = parseFloat(localStorage.getItem('dodge_pb')) || 0;
 
   ctx.save();
   ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
@@ -71,11 +73,18 @@ export function renderStartScreen(ctx) {
   ctx.shadowBlur = 30;
   ctx.fillText('DODGE', cx, ch * 0.38);
 
+  if (pb > 0) {
+    ctx.font = '16px monospace';
+    ctx.fillStyle = '#888888';
+    ctx.shadowBlur = 0;
+    ctx.fillText(`Best: ${(pb / 1000).toFixed(1)}s`, cx, ch * 0.48);
+  }
+
   ctx.font = '20px monospace';
   ctx.fillStyle = '#cccccc';
   ctx.shadowColor = '#cccccc';
   ctx.shadowBlur = 8;
-  ctx.fillText('Click or press any key to begin', cx, ch * 0.54);
+  ctx.fillText('Click or press any key to begin', cx, pb > 0 ? ch * 0.56 : ch * 0.54);
 
   ctx.restore();
 }

@@ -52,24 +52,9 @@ function hitBtn(btn, px, py) {
   return px >= btn.x && px <= btn.x + btn.w && py >= btn.y && py <= btn.y + btn.h;
 }
 
-// Copies share text to clipboard; falls back to a DOM textarea on failure
-function shareResult(elapsed) {
-  const seconds = (elapsed / 1000).toFixed(1);
-  const text = `I survived ${seconds}s in DODGE! Can you beat it?`;
-  try {
-    navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;padding:8px;font:14px monospace;width:320px;';
-    document.body.appendChild(ta);
-    ta.select();
-    ta.addEventListener('blur', () => ta.remove(), { once: true });
-  }
-}
-
-// Shows the Game Over overlay and wires restart/share buttons.
+// Shows the Game Over overlay and wires the restart button.
 // onRestart: callback to reset state and resume the game loop.
+// Returns a cleanup function to remove event listeners.
 export function showGameOver(canvas, state, onRestart) {
   const ctx = canvas.getContext('2d');
   const cw = canvas.width;
@@ -89,8 +74,8 @@ export function showGameOver(canvas, state, onRestart) {
   const titleY = ch * 0.28;
   const timeY = ch * 0.42;
   const pbY = ch * 0.50;
-  const restartY = ch * 0.63;
-  const shareY = ch * 0.63 + BTN_H + 14;
+  const restartY = ch * 0.62;
+  const hintY = ch * 0.62 + BTN_H + 14;
 
   // Draw overlay
   ctx.save();
@@ -124,28 +109,44 @@ export function showGameOver(canvas, state, onRestart) {
 
   ctx.shadowBlur = 0;
 
-  // Buttons
+  // Restart button
   const restartBtn = drawButton(ctx, 'Restart', cx, restartY, '#2255cc');
-  const shareBtn = drawButton(ctx, 'Share', cx, shareY, '#226644');
+
+  // Keyboard hint
+  ctx.font = SMALL_FONT;
+  ctx.fillStyle = '#666666';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('or press R', cx, hintY);
 
   ctx.restore();
 
-  // Click handler — one-shot, removed after first interaction
+  function cleanup() {
+    canvas.removeEventListener('click', onClick);
+    window.removeEventListener('keydown', onKey);
+  }
+
+  // Click handler
   function onClick(e) {
     const rect = canvas.getBoundingClientRect();
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
-
     if (hitBtn(restartBtn, px, py)) {
-      canvas.removeEventListener('click', onClick);
+      cleanup();
       onRestart();
-    } else if (hitBtn(shareBtn, px, py)) {
-      shareResult(state.elapsed);
+    }
+  }
+
+  // R key handler
+  function onKey(e) {
+    if (e.key === 'r' || e.key === 'R') {
+      cleanup();
+      onRestart();
     }
   }
 
   canvas.addEventListener('click', onClick);
+  window.addEventListener('keydown', onKey);
 
-  // Return cleanup so caller can remove listener if needed
-  return () => canvas.removeEventListener('click', onClick);
+  return cleanup;
 }
