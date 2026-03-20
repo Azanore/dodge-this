@@ -61,7 +61,7 @@ export function renderStartScreen(ctx) {
   const pb = parseFloat(localStorage.getItem('dodge_pb')) || 0;
 
   ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.92)';
   ctx.fillRect(0, 0, cw, ch);
 
   ctx.textAlign = 'center';
@@ -170,16 +170,18 @@ export function render(ctx, state, delta) {
     glowCircle(ctx, pickup.x, pickup.y, pickup.radius * 0.5, '#ffffff', 8);
   }
 
-  // 7. Player — pulsing glow; distinct shield glow when invincible
-  const { x: px, y: py, radius: pr } = state.player;
-  const pulse = 0.6 + 0.4 * Math.sin(pulseT);
-  const isInvincible = !!state.activeEffects.invincibility;
-  const playerColor = isInvincible ? '#ffe600' : '#00eeff';
-  const playerBlur = isInvincible ? 28 + 12 * pulse : 14 + 10 * pulse;
+  // 7. Player — pulsing glow; distinct shield glow when invincible (hidden on start screen)
+  if (state.status !== 'start') {
+    const { x: px, y: py, radius: pr } = state.player;
+    const pulse = 0.6 + 0.4 * Math.sin(pulseT);
+    const isInvincible = !!state.activeEffects.invincibility;
+    const playerColor = isInvincible ? '#ffe600' : '#00eeff';
+    const playerBlur = isInvincible ? 28 + 12 * pulse : 14 + 10 * pulse;
 
-  glowCircle(ctx, px, py, pr, playerColor, playerBlur);
-  // Bright core dot
-  glowCircle(ctx, px, py, pr * 0.4, '#ffffff', 6);
+    glowCircle(ctx, px, py, pr, playerColor, playerBlur);
+    // Bright core dot
+    glowCircle(ctx, px, py, pr * 0.4, '#ffffff', 6);
+  }
 
   // 8. HUD
   renderHUD(ctx, state);
