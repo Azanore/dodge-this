@@ -247,11 +247,14 @@
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
   - Run: `git add . ; git commit -m "task 12.1: gameOver.js" ; git push origin master`
 
-- [-] 13. Renderer
+- [x] 13. Renderer
 
 
 
-- [-] 13.1 Implement `renderer.js` — all canvas drawing
+
+
+- [x] 13.1 Implement `renderer.js` — all canvas drawing
+
 
   - Render in order: dark background → star field → outer zone (darker) → inner zone → obstacles (glowing) → bonus pickups (per-type color) → player (pulsing glow) → HUD
   - Star field: generate static point array at init, render as small glowing dots each frame
@@ -261,7 +264,9 @@
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
   - Run: `git add . ; git commit -m "task 13.1: renderer.js" ; git push origin master`
 
-- [ ] 14. Wire everything together in `main.js`
+- [-] 14. Wire everything together in `main.js`
+
+
 
   - Import all modules, initialize zones, player, game loop
   - Connect game loop update to: grace period tick, obstacle spawning (via difficulty interval), obstacle update, bonus update, collision checks, HUD update
