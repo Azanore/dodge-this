@@ -1,6 +1,9 @@
 # Implementation Plan — DODGE
 
-- [ ] 1. Project scaffold and config
+- [-] 1. Project scaffold and config
+
+
+
   - Create `index.html` with a single `<canvas>` element and script imports
   - Create `game.config.js` with all default values per the Config Shape in the design
   - Create `src/` directory with empty module files matching the architecture
