@@ -132,7 +132,9 @@
   - **Validates: Requirements 4.1**
   - Run: `git add . ; git commit -m "task 6.2: property test - collision geometry" ; git push origin master`
 
-- [-] 7. Difficulty scaling
+- [x] 7. Difficulty scaling
+
+
 
 
 
@@ -155,7 +157,9 @@
   - **Validates: Requirements 5.4, 5.5**
   - Run: `git add . ; git commit -m "task 7.3: property test - difficulty bounds" ; git push origin master`
 
-- [ ] 8. Checkpoint — ensure all tests pass
+
+- [-] 8. Checkpoint — ensure all tests pass
+
 
   - Ensure all tests pass, ask the user if questions arise.
 

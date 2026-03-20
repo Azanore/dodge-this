@@ -28,3 +28,5 @@ const gameConfig = {
     shrink: { enabled: true, duration: 6000, spawnWeight: 3 }
   }
 };
+
+export default gameConfig;
