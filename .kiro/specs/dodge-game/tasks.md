@@ -158,13 +158,18 @@
   - Run: `git add . ; git commit -m "task 7.3: property test - difficulty bounds" ; git push origin master`
 
 
-- [-] 8. Checkpoint — ensure all tests pass
+- [x] 8. Checkpoint — ensure all tests pass
+
+
 
 
   - Ensure all tests pass, ask the user if questions arise.
 
 
-- [ ] 9. Bonus system
+- [-] 9. Bonus system
+
+
+
 - [ ] 9.1 Implement `bonuses.js` — pickup spawning, activation, expiry
   - Implement `trySpawnBonus()`: weighted random selection of enabled bonus types, place in inner zone
   - Implement `collectBonus(type, state)`: activate effect in `activeEffects`, start countdown
