@@ -112,11 +112,14 @@
   - **Validates: Requirements 5.3**
   - Run: `git add . ; git commit -m "task 5.5: property test - obstacle count cap" ; git push origin master`
 
-- [-] 6. Collision detection
+- [x] 6. Collision detection
 
 
 
-- [-] 6.1 Implement `collision.js` — circle-circle intersection and game checks
+
+
+- [x] 6.1 Implement `collision.js` — circle-circle intersection and game checks
+
 
   - Implement `circlesOverlap(a, b)`: true iff distance between centers < sum of radii
   - Implement `checkPlayerObstacles(state)`: iterate obstacles, trigger death if overlap and invincibility not active
@@ -129,9 +132,13 @@
   - **Validates: Requirements 4.1**
   - Run: `git add . ; git commit -m "task 6.2: property test - collision geometry" ; git push origin master`
 
-- [ ] 7. Difficulty scaling
+- [-] 7. Difficulty scaling
 
-- [ ] 7.1 Implement `difficulty.js` — speed multiplier and spawn interval curves
+
+
+
+- [x] 7.1 Implement `difficulty.js` — speed multiplier and spawn interval curves
+
   - Implement `getCurrentSpeedMultiplier(elapsed)` using logarithmic formula, capped at `maxSpeedMultiplier`
   - Implement `getCurrentSpawnInterval(elapsed)` using exponential decay, floored at `spawnRateMin`
   - All formula constants sourced from config
