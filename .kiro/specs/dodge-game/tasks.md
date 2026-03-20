@@ -76,11 +76,14 @@
   - _Requirements: 2.1, 2.2, 2.3, 2.5_
   - Run: `git add . ; git commit -m "task 4.1: player.js" ; git push origin master`
 
-- [-] 5. Obstacles
+- [x] 5. Obstacles
 
 
 
-- [-] 5.1 Implement `obstacles.js` — spawning, movement, removal
+
+
+- [x] 5.1 Implement `obstacles.js` — spawning, movement, removal
+
 
   - Implement `spawnObstacle()`: pick weighted random enabled type, place in outer zone outside inner zone, assign velocity toward a random point in inner zone
   - Implement `updateObstacles(delta)`: move all obstacles by velocity * delta, remove those outside outer zone
@@ -109,8 +112,12 @@
   - **Validates: Requirements 5.3**
   - Run: `git add . ; git commit -m "task 5.5: property test - obstacle count cap" ; git push origin master`
 
-- [ ] 6. Collision detection
-- [ ] 6.1 Implement `collision.js` — circle-circle intersection and game checks
+- [-] 6. Collision detection
+
+
+
+- [-] 6.1 Implement `collision.js` — circle-circle intersection and game checks
+
   - Implement `circlesOverlap(a, b)`: true iff distance between centers < sum of radii
   - Implement `checkPlayerObstacles(state)`: iterate obstacles, trigger death if overlap and invincibility not active
   - Implement `checkPlayerBonusPickups(state)`: iterate field pickups, trigger collection on overlap
@@ -123,6 +130,7 @@
   - Run: `git add . ; git commit -m "task 6.2: property test - collision geometry" ; git push origin master`
 
 - [ ] 7. Difficulty scaling
+
 - [ ] 7.1 Implement `difficulty.js` — speed multiplier and spawn interval curves
   - Implement `getCurrentSpeedMultiplier(elapsed)` using logarithmic formula, capped at `maxSpeedMultiplier`
   - Implement `getCurrentSpawnInterval(elapsed)` using exponential decay, floored at `spawnRateMin`
@@ -141,7 +149,9 @@
   - Run: `git add . ; git commit -m "task 7.3: property test - difficulty bounds" ; git push origin master`
 
 - [ ] 8. Checkpoint — ensure all tests pass
+
   - Ensure all tests pass, ask the user if questions arise.
+
 
 - [ ] 9. Bonus system
 - [ ] 9.1 Implement `bonuses.js` — pickup spawning, activation, expiry
@@ -170,6 +180,7 @@
   - Run: `git add . ; git commit -m "task 9.4: property test - slow-mo speed" ; git push origin master`
 
 - [ ] 10. Config loader with fallback
+
 - [ ] 10.1 Implement config validation and fallback in `main.js`
   - On startup, validate all required config keys are present and of correct type
   - For any missing or invalid key, substitute hardcoded default and log a console warning with the key name
@@ -183,6 +194,7 @@
 
 - [ ] 11. HUD
 - [ ] 11.1 Implement `hud.js` — timer and active bonus display
+
   - Render live survival timer as seconds in a canvas corner, updated every frame
   - Render each active bonus as a colored label with remaining time in seconds
   - Remove bonus entry from HUD immediately on expiry
@@ -190,6 +202,7 @@
   - Run: `git add . ; git commit -m "task 11.1: hud.js" ; git push origin master`
 
 - [ ] 12. Game Over screen
+
 - [ ] 12.1 Implement `gameOver.js` — death screen, personal best, restart, share
   - On death: read localStorage `dodge_pb` in try/catch, compare with current time, write new best if higher
   - Render Game Over overlay on canvas with current time and personal best
@@ -200,6 +213,7 @@
   - Run: `git add . ; git commit -m "task 12.1: gameOver.js" ; git push origin master`
 
 - [ ] 13. Renderer
+
 - [ ] 13.1 Implement `renderer.js` — all canvas drawing
   - Render in order: dark background → star field → outer zone (darker) → inner zone → obstacles (glowing) → bonus pickups (per-type color) → player (pulsing glow) → HUD
   - Star field: generate static point array at init, render as small glowing dots each frame
@@ -210,6 +224,7 @@
   - Run: `git add . ; git commit -m "task 13.1: renderer.js" ; git push origin master`
 
 - [ ] 14. Wire everything together in `main.js`
+
   - Import all modules, initialize zones, player, game loop
   - Connect game loop update to: grace period tick, obstacle spawning (via difficulty interval), obstacle update, bonus update, collision checks, HUD update
   - Connect game loop render to renderer
@@ -217,6 +232,7 @@
   - On restart: reset state, restart game loop
   - _Requirements: 6.1, 6.2, 6.3_
   - Run: `git add . ; git commit -m "task 14: wire main.js" ; git push origin master`
+
 
 - [ ] 15. Dev Config Panel
 - [ ] 15.1 Implement `configPanel.js` — DOM overlay for runtime config tuning
@@ -230,5 +246,6 @@
   - Run: `git add . ; git commit -m "task 15.1: configPanel.js" ; git push origin master`
 
 - [ ] 16. Final Checkpoint — ensure all tests pass
+
   - Ensure all tests pass, ask the user if questions arise.
   - Run: `git add . ; git commit -m "final: all tests passing" ; git push origin master`
