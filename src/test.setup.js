@@ -1,5 +1,3 @@
 // Test setup: provides gameConfig global and browser stubs for all test files.
-import gameConfigModule from '../game.config.js';
-
-// Expose as global so source modules that reference gameConfig directly can find it
-globalThis.gameConfig = gameConfigModule;
+// game.config.js is a classic script (no export), so we replicate the global here.
+import '../game.config.js';
