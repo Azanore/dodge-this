@@ -11,7 +11,7 @@ import { spawnObstacle, updateObstacles } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups } from './collision.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
-import { render, renderStartScreen, initRenderer } from './renderer.js';
+import { render, renderStartScreen, renderPauseScreen, initRenderer } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
 
@@ -54,6 +54,7 @@ function update(delta) {
   lastDelta = delta;
   if (state.status === 'dead') return;
   if (state.status === 'start') return;
+  if (state.status === 'paused') return;
 
   // Update player position from mouse
   updatePlayer(state);
@@ -115,6 +116,7 @@ function renderFrame() {
     renderStartScreen(ctx);
     return;
   }
+  if (state.status === 'paused') return; // last frame stays visible; overlay drawn once on pause
   render(ctx, state, lastDelta);
 }
 
@@ -143,6 +145,26 @@ function onStartAction() {
 
 canvas.addEventListener('click', onStartAction);
 window.addEventListener('keydown', onStartAction);
+
+// Escape key: pause/unpause during active or grace; ignored in dead/start
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (state.status === 'dead' || state.status === 'start') return;
+  const panel = document.getElementById('config-panel');
+  if (panel && panel.style.display !== 'none') return;
+
+  if (state.status === 'active' || state.status === 'grace') {
+    state.prevStatus = state.status;
+    state.status = 'paused';
+    loop.stop();
+    render(ctx, state, lastDelta);
+    renderPauseScreen(ctx);
+  } else if (state.status === 'paused') {
+    state.status = state.prevStatus;
+    state.prevStatus = null;
+    loop.start();
+  }
+});
 
 // Render the start screen before the loop begins
 renderFrame();

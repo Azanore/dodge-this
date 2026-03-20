@@ -55,6 +55,7 @@
 
 
 
+
   - Add `'start'` case to `main.js` update loop — skip all game logic when `state.status === 'start'`
   - Add `renderStartScreen(ctx)` to `renderer.js` — dark overlay with "DODGE" title and "Click or press any key to begin" prompt
   - Wire a one-shot click and keydown listener in `main.js` that transitions `state.status` from `'start'` to `'grace'` and calls `loop.start()`
@@ -77,7 +78,10 @@
   - Verify restart after Game Over sets status to `'grace'`, not `'start'`
   - _Requirements: 2.1, 2.3, 2.5_
 
-- [ ] 5. Add Pause Screen (Fix 3)
+- [x] 5. Add Pause Screen (Fix 3)
+
+
+
 
   - Add `'paused'` case to `main.js` update loop — no-op when paused
   - Add `renderPauseScreen(ctx)` to `renderer.js` — semi-transparent overlay with "PAUSED" label and "Press Esc to resume" prompt
@@ -86,19 +90,25 @@
   - Render the pause overlay once (not in the loop) when pausing, so the last frame stays visible under the overlay
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 5.1 Write property test for pause/unpause round trip (Property 3)
+- [x] 5.1 Write property test for pause/unpause round trip (Property 3)
+
+
   - **Feature: dodge-game-fixes, Property 3: Pause/unpause is a round trip**
   - **Validates: Requirements 3.3**
   - For any state with status `'active'` or `'grace'`, pausing then unpausing must restore the original status
   - _Requirements: 3.3_
 
-- [ ] 5.2 Write property test for Escape ignored in terminal states (Property 4)
+
+- [-] 5.2 Write property test for Escape ignored in terminal states (Property 4)
+
   - **Feature: dodge-game-fixes, Property 4: Escape is ignored in terminal/pre-game states**
   - **Validates: Requirements 3.5**
   - For any state with status `'dead'` or `'start'`, the pause handler must not change status
   - _Requirements: 3.5_
 
-- [ ] 5.3 Write unit tests for pause behavior
+
+- [-] 5.3 Write unit tests for pause behavior
+
   - Verify Escape during `'active'` sets status to `'paused'`
   - Verify Escape while Config Panel is open does not pause
   - Verify Escape during `'dead'` is ignored

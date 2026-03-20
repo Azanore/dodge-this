@@ -80,6 +80,34 @@ export function renderStartScreen(ctx) {
   ctx.restore();
 }
 
+// Renders the pause screen overlay with label and resume prompt
+export function renderPauseScreen(ctx) {
+  const cw = ctx.canvas.width;
+  const ch = ctx.canvas.height;
+  const cx = cw / 2;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(0, 0, cw, ch);
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  ctx.font = 'bold 56px monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = '#ffffff';
+  ctx.shadowBlur = 20;
+  ctx.fillText('PAUSED', cx, ch * 0.42);
+
+  ctx.font = '20px monospace';
+  ctx.fillStyle = '#cccccc';
+  ctx.shadowColor = '#cccccc';
+  ctx.shadowBlur = 8;
+  ctx.fillText('Press Esc to resume', cx, ch * 0.54);
+
+  ctx.restore();
+}
+
 // Main render function — called every frame
 export function render(ctx, state, delta) {
   const cw = ctx.canvas.width;

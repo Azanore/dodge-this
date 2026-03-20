@@ -1,7 +1,7 @@
 // Property and unit tests for main.js game loop behavior.
 // Related: main.js, GameState.js
-// Tests the update guard logic and start screen state transitions.
-import { describe, it, beforeEach } from 'vitest';
+// Tests the update guard logic, start screen state transitions, and pause behavior.
+import { describe, it, beforeEach, expect } from 'vitest';
 import * as fc from 'fast-check';
 import { resetState } from './GameState.js';
 
@@ -24,6 +24,19 @@ function applyRestart(state) {
   fresh.status = 'grace';
   fresh.graceRemaining = gameConfig.gracePeriod;
   Object.assign(state, fresh);
+}
+
+// Simulates the Escape key handler from main.js (panel assumed closed)
+function applyEscape(state, panelOpen = false) {
+  if (state.status === 'dead' || state.status === 'start') return;
+  if (panelOpen) return;
+  if (state.status === 'active' || state.status === 'grace') {
+    state.prevStatus = state.status;
+    state.status = 'paused';
+  } else if (state.status === 'paused') {
+    state.status = state.prevStatus;
+    state.prevStatus = null;
+  }
 }
 
 describe('start state guard', () => {
@@ -56,6 +69,77 @@ describe('start state guard', () => {
       ),
       { numRuns: 100 }
     );
+  });
+});
+
+describe('pause/unpause behavior', () => {
+  /**
+   * Feature: dodge-game-fixes, Property 3: Pause/unpause is a round trip
+   * Validates: Requirements 3.3
+   *
+   * For any state with status 'active' or 'grace', pausing then unpausing
+   * must restore the original status.
+   */
+  it('Property 3: pause then unpause restores original status', () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom('active', 'grace'),
+        (initialStatus) => {
+          const state = resetState();
+          state.status = initialStatus;
+
+          applyEscape(state); // pause
+          applyEscape(state); // unpause
+
+          return state.status === initialStatus;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  /**
+   * Feature: dodge-game-fixes, Property 4: Escape is ignored in terminal/pre-game states
+   * Validates: Requirements 3.5
+   *
+   * For any state with status 'dead' or 'start', the pause handler must not change status.
+   */
+  it('Property 4: Escape ignored in dead or start states', () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom('dead', 'start'),
+        (terminalStatus) => {
+          const state = resetState();
+          state.status = terminalStatus;
+
+          applyEscape(state);
+
+          return state.status === terminalStatus;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('Escape during active sets status to paused', () => {
+    const state = resetState();
+    state.status = 'active';
+    applyEscape(state);
+    expect(state.status).toBe('paused');
+  });
+
+  it('Escape while Config Panel is open does not pause', () => {
+    const state = resetState();
+    state.status = 'active';
+    applyEscape(state, true); // panelOpen = true
+    expect(state.status).toBe('active');
+  });
+
+  it('Escape during dead is ignored', () => {
+    const state = resetState();
+    state.status = 'dead';
+    applyEscape(state);
+    expect(state.status).toBe('dead');
   });
 });
 
