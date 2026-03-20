@@ -7,7 +7,7 @@ import { resetState } from './GameState.js';
 import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
-import { gameUpdate, BONUS_SPAWN_INTERVAL } from './gameUpdate.js';
+import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, renderPauseScreen, initRenderer } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
@@ -53,6 +53,7 @@ function update(delta) {
 }
 
 function renderFrame() {
+  if (state.status === 'dead') return; // game over screen drawn by showGameOver; don't overwrite
   if (state.status === 'start') {
     render(ctx, state, lastDelta);
     renderStartScreen(ctx);
@@ -76,9 +77,10 @@ function onRestart() {
   loop.start();
 }
 
-// One-shot start action: click or keydown transitions from 'start' → 'grace'
-function onStartAction() {
+// One-shot start action: click or keydown (except Escape) transitions from 'start' → 'grace'
+function onStartAction(e) {
   if (state.status !== 'start') return;
+  if (e.type === 'keydown' && e.key === 'Escape') return;
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   state.status = 'grace';
