@@ -49,7 +49,9 @@
   - _Requirements: 6.1, 6.3_
   - Run: `git add . ; git commit -m "task 3.1: GameState.js" ; git push origin master`
 
-- [ ] 3.2 Implement `GameLoop.js` — requestAnimationFrame loop
+- [x] 3.2 Implement `GameLoop.js` — requestAnimationFrame loop
+
+
   - Drive `update(delta)` → `render()` each frame
   - Cap delta at 100ms to handle tab-switch resume
   - Expose `start()` and `stop()` methods
