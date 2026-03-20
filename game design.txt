@@ -1,0 +1,59 @@
+🌌 DODGE — Game Design Document
+Overview
+A browser-based, mouse-driven survival game set in a cosmic/space aesthetic. The player controls a glowing abstract shape with their cursor and must survive as long as possible against an endless wave of incoming obstacles. No levels, no story — just endurance, reflexes, and a clean score.
+
+Player
+As a player, my character is a glowing abstract shape (e.g. a pulsing orb or geometric form) that follows my mouse cursor exactly. The shape has a precise circular hitbox that reflects its visible size accurately — what you see is what gets hit.
+As a player, I instantly die on any contact with an obstacle. No health bar, no second chances. Death is immediate and unambiguous.
+
+Obstacles
+As a player, I see obstacles spawning from the edges of the screen (left, right, top, bottom) and traveling toward the play area. Obstacle types (balls, bullets, shapes) are defined in a config file — each type has its own hitbox definition to ensure collision precision matches the visual.
+As a developer, I can toggle obstacle types on/off in a config file to test performance and hitbox accuracy independently. Each obstacle type has a property: enabled: true/false.
+As a player, obstacles vary in size, speed, and spawn direction so no two runs feel identical. Randomness is seeded per-session for variety.
+
+Difficulty Scaling
+As a player, the game gets harder the longer I survive — both the number of obstacles on screen and their individual speed increase over time using a mathematical curve (e.g. exponential or logarithmic ramp). The formula lives in the config file so it can be tuned without touching game logic.
+As a developer, I can adjust the scaling curve (e.g. rate of speed increase, max obstacle cap, spawn interval reduction) via config values to find the sweet spot between fair and brutal.
+
+Bonus System
+As a player, bonus pickups randomly appear inside the play zone as glowing collectibles. I collect them by moving my character over them (same hitbox logic as obstacles, but beneficial).
+As a player, active bonuses are shown as a small icon + countdown timer on the HUD so I always know what's active and for how long.
+The following bonuses are implemented and each is togglable in the config file:
+
+Slow-mo — all obstacles reduce speed by ~60% for a set duration
+Invincibility Shield — player cannot die for a set duration; visually distinct glow indicates it's active
+Screen Clear — all current obstacles on screen are instantly destroyed upon pickup
+Shrink — player hitbox (and visual size) temporarily reduces, making dodging easier
+
+As a developer, each bonus has its own config block: enabled, duration, spawnWeight (how likely it is to appear vs others).
+
+HUD (Heads-Up Display)
+As a player, I see a live timer counting seconds survived, displayed cleanly in a corner of the screen. That's the only metric during play — no clutter, no distraction.
+
+Game Over Screen
+As a player, when I die I see a Game Over screen that shows:
+
+My survival time for this run
+My personal best (stored locally in the browser)
+A Restart button to immediately jump back in
+A Share button that generates a simple shareable text (e.g. "I survived 47 seconds in DODGE — can you beat me?") copyable to clipboard or native share sheet on mobile
+
+
+Start / Onboarding
+As a player, I land on the game and it starts immediately — no tutorial, no intro screen. The game zone is active, and the player shape follows my cursor from the first frame. Obstacles begin spawning after a very brief grace period (e.g. 2 seconds) so the player can orient themselves naturally.
+
+Visual / Aesthetic
+As a player, the game feels like deep space — dark background, glowing neon particles, star-field or subtle cosmic texture. Obstacles glow with contrast colors (e.g. hot white, red, orange). Bonus pickups glow in distinct, recognizable colors (one color per bonus type). The player shape pulses softly to feel alive.
+
+Audio
+None. Intentionally silent. No music, no SFX.
+
+Config File — Summary of Tunables
+A single game.config.js (or JSON) file controls:
+
+Obstacle types: enabled, hitboxRadius, baseSpeed, spawnWeight
+Bonus types: enabled, duration, spawnWeight
+Difficulty curve: speedScaleFactor, spawnRateMin, spawnRateDecayRate, maxObstaclesOnScreen
+Grace period before first obstacle spawns
+Player hitbox size
+
