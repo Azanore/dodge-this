@@ -1,6 +1,8 @@
 # Implementation Plan — DODGE Bug Fixes & Missing Features
 
-- [-] 1. Fix game.config.js loading (Fix 4)
+- [x] 1. Fix game.config.js loading (Fix 4)
+
+
 
 
 
@@ -8,13 +10,16 @@
   - Update `index.html` to load `game.config.js` as a classic `<script>` (no `type="module"`)
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 2. Fix GameState initialization (Fix 5)
+- [-] 2. Fix GameState initialization (Fix 5)
+
+
 
   - Add `slowmoMultiplier: 1` and `prevStatus: null` to `resetState()` in `GameState.js`
   - Add `status: 'start'` as the initial status (was `'grace'`)
   - _Requirements: 5.1, 5.2_
 
-- [ ] 2.1 Write unit tests for resetState completeness
+- [-] 2.1 Write unit tests for resetState completeness
+
   - Verify `resetState()` includes `slowmoMultiplier: 1`
   - Verify `resetState()` sets `player.radius` to `gameConfig.playerHitboxRadius`
   - Verify initial `status` is `'start'`

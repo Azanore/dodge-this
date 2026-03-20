@@ -5,12 +5,14 @@
 // Returns a fresh initial game state
 export function resetState() {
   return {
-    status: 'grace',          // 'grace' | 'active' | 'dead'
+    status: 'start',          // 'start' | 'grace' | 'active' | 'paused' | 'dead'
+    prevStatus: null,         // used to restore status after unpause
     elapsed: 0,               // ms survived (starts counting from run begin)
     graceRemaining: gameConfig.gracePeriod,
     obstacles: [],
     bonuses: [],              // bonus pickups currently on the field
     activeEffects: {},        // { slowmo: {remaining}, shrink: {remaining}, invincibility: {remaining} }
+    slowmoMultiplier: 1,      // speed reduction factor during slow-mo bonus
     player: {
       x: 0,
       y: 0,
