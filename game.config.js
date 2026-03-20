@@ -1,5 +1,6 @@
 // Central config — all tunable game parameters live here.
 // Edit this file to adjust game feel without touching game logic.
+// Loaded as a classic script — window.gameConfig is set synchronously before any module runs.
 window.gameConfig = {
   gracePeriod: 500,            // ms before first obstacle spawns
   playerHitboxRadius: 14,      // base player hitbox radius in pixels
