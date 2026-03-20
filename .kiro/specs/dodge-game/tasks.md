@@ -235,6 +235,7 @@
 
 
 
+
 - [x] 12.1 Implement `gameOver.js` — death screen, personal best, restart, share
 
 
@@ -246,9 +247,12 @@
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
   - Run: `git add . ; git commit -m "task 12.1: gameOver.js" ; git push origin master`
 
-- [ ] 13. Renderer
+- [-] 13. Renderer
 
-- [ ] 13.1 Implement `renderer.js` — all canvas drawing
+
+
+- [-] 13.1 Implement `renderer.js` — all canvas drawing
+
   - Render in order: dark background → star field → outer zone (darker) → inner zone → obstacles (glowing) → bonus pickups (per-type color) → player (pulsing glow) → HUD
   - Star field: generate static point array at init, render as small glowing dots each frame
   - Use Canvas `shadowBlur` + `shadowColor` for glow effects on player, obstacles, and pickups
