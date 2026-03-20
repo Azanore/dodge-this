@@ -37,7 +37,9 @@
   - **Validates: Requirements 1.5, 2.2**
   - Run: `git add . ; git commit -m "task 2.3: property test - mouse clamping" ; git push origin master`
 
-- [-] 3. Game state and game loop
+- [x] 3. Game state and game loop
+
+
 
 
 
@@ -58,7 +60,11 @@
   - _Requirements: 4.3_
   - Run: `git add . ; git commit -m "task 3.2: GameLoop.js" ; git push origin master`
 
-- [ ] 4. Player
+- [-] 4. Player
+
+
+
+
 - [ ] 4.1 Implement `player.js` — mouse tracking, clamping, hitbox
   - Track raw mouse position via `mousemove` listener
   - On each update, clamp position using `clampToInner`
