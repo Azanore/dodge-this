@@ -199,10 +199,13 @@
   - Run: `git add . ; git commit -m "task 9.4: property test - slow-mo speed" ; git push origin master`
 
 
-- [-] 10. Config loader with fallback
+- [x] 10. Config loader with fallback
 
 
-- [-] 10.1 Implement config validation and fallback in `main.js`
+
+
+- [x] 10.1 Implement config validation and fallback in `main.js`
+
 
   - On startup, validate all required config keys are present and of correct type
   - For any missing or invalid key, substitute hardcoded default and log a console warning with the key name
@@ -214,8 +217,11 @@
   - **Validates: Requirements 10.7**
   - Run: `git add . ; git commit -m "task 10.2: property test - config fallback" ; git push origin master`
 
-- [ ] 11. HUD
-- [ ] 11.1 Implement `hud.js` — timer and active bonus display
+- [-] 11. HUD
+
+- [x] 11.1 Implement `hud.js` — timer and active bonus display
+
+
 
   - Render live survival timer as seconds in a canvas corner, updated every frame
   - Render each active bonus as a colored label with remaining time in seconds
