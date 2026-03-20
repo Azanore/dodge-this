@@ -60,7 +60,10 @@
   - _Requirements: 4.3_
   - Run: `git add . ; git commit -m "task 3.2: GameLoop.js" ; git push origin master`
 
-- [-] 4. Player
+- [x] 4. Player
+
+
+
 
 
 
@@ -73,8 +76,12 @@
   - _Requirements: 2.1, 2.2, 2.3, 2.5_
   - Run: `git add . ; git commit -m "task 4.1: player.js" ; git push origin master`
 
-- [ ] 5. Obstacles
-- [ ] 5.1 Implement `obstacles.js` — spawning, movement, removal
+- [-] 5. Obstacles
+
+
+
+- [-] 5.1 Implement `obstacles.js` — spawning, movement, removal
+
   - Implement `spawnObstacle()`: pick weighted random enabled type, place in outer zone outside inner zone, assign velocity toward a random point in inner zone
   - Implement `updateObstacles(delta)`: move all obstacles by velocity * delta, remove those outside outer zone
   - Implement `clearAll()` for Screen Clear bonus

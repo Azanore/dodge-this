@@ -1,2 +1,107 @@
 // Obstacle pool: spawning, movement, and removal.
-// Related: zones.js, difficulty.js, collision.js, renderer.js
+// Related: zones.js, difficulty.js, game.config.js, GameState.js
+// Does not handle rendering or collision detection.
+
+import { innerZone, outerZone } from './zones.js';
+
+// Obstacle visual radii per type (pixels)
+const TYPE_RADIUS = { ball: 14, bullet: 7, shard: 10 };
+
+// Builds a weighted list of enabled obstacle type keys from config
+function getEnabledTypes() {
+  const types = [];
+  for (const [key, cfg] of Object.entries(gameConfig.obstacleTypes)) {
+    if (cfg.enabled) {
+      for (let i = 0; i < cfg.spawnWeight; i++) types.push(key);
+    }
+  }
+  return types;
+}
+
+// Returns a random spawn point in the outer zone but outside the inner zone
+function pickSpawnPoint() {
+  const oz = outerZone;
+  const iz = innerZone;
+
+  // Pick a random edge of the outer zone (0=top, 1=right, 2=bottom, 3=left)
+  const edge = Math.floor(Math.random() * 4);
+  let x, y;
+
+  if (edge === 0) {
+    x = oz.x + Math.random() * oz.width;
+    y = oz.y + Math.random() * (iz.y - oz.y);
+  } else if (edge === 1) {
+    x = iz.x + iz.width + Math.random() * (oz.x + oz.width - iz.x - iz.width);
+    y = oz.y + Math.random() * oz.height;
+  } else if (edge === 2) {
+    x = oz.x + Math.random() * oz.width;
+    y = iz.y + iz.height + Math.random() * (oz.y + oz.height - iz.y - iz.height);
+  } else {
+    x = oz.x + Math.random() * (iz.x - oz.x);
+    y = oz.y + Math.random() * oz.height;
+  }
+
+  return { x, y };
+}
+
+// Returns a velocity vector aimed at a random point inside the inner zone
+function velocityTowardInner(fromX, fromY, speed) {
+  const targetX = innerZone.x + Math.random() * innerZone.width;
+  const targetY = innerZone.y + Math.random() * innerZone.height;
+  const dx = targetX - fromX;
+  const dy = targetY - fromY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  return { vx: (dx / dist) * speed, vy: (dy / dist) * speed };
+}
+
+// Spawns one obstacle into the state obstacles array if under the cap
+// speedMultiplier comes from difficulty.js getCurrentSpeedMultiplier(elapsed)
+export function spawnObstacle(state, speedMultiplier = 1) {
+  if (state.obstacles.length >= gameConfig.difficulty.maxObstaclesOnScreen) return;
+
+  const pool = getEnabledTypes();
+  if (pool.length === 0) return;
+
+  const type = pool[Math.floor(Math.random() * pool.length)];
+  const cfg = gameConfig.obstacleTypes[type];
+
+  // Per-spawn variance: random float in [0.85, 1.15]
+  const variance = 0.85 + Math.random() * 0.3;
+  const speed = cfg.baseSpeed * speedMultiplier * variance;
+
+  const { x, y } = pickSpawnPoint();
+  const { vx, vy } = velocityTowardInner(x, y, speed);
+
+  state.obstacles.push({
+    type,
+    x,
+    y,
+    vx,
+    vy,
+    radius: TYPE_RADIUS[type] ?? 10
+  });
+}
+
+// Moves all obstacles and removes those outside the outer zone
+// state.slowmoMultiplier is set by the slow-mo bonus (default 1.0)
+export function updateObstacles(delta, state) {
+  const oz = outerZone;
+  const slowmo = state.slowmoMultiplier ?? 1;
+
+  state.obstacles = state.obstacles.filter(obs => {
+    obs.x += obs.vx * delta * slowmo;
+    obs.y += obs.vy * delta * slowmo;
+
+    return (
+      obs.x + obs.radius > oz.x &&
+      obs.x - obs.radius < oz.x + oz.width &&
+      obs.y + obs.radius > oz.y &&
+      obs.y - obs.radius < oz.y + oz.height
+    );
+  });
+}
+
+// Removes all active obstacles — used by Screen Clear bonus
+export function clearAll(state) {
+  state.obstacles = [];
+}
