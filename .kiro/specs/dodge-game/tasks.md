@@ -264,7 +264,9 @@
   - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
   - Run: `git add . ; git commit -m "task 13.1: renderer.js" ; git push origin master`
 
-- [-] 14. Wire everything together in `main.js`
+- [x] 14. Wire everything together in `main.js`
+
+
 
 
 
@@ -277,8 +279,11 @@
   - Run: `git add . ; git commit -m "task 14: wire main.js" ; git push origin master`
 
 
-- [ ] 15. Dev Config Panel
-- [ ] 15.1 Implement `configPanel.js` — DOM overlay for runtime config tuning
+
+- [-] 15. Dev Config Panel
+
+- [-] 15.1 Implement `configPanel.js` — DOM overlay for runtime config tuning
+
   - Create a hidden `<div>` overlay toggled by the `P` key
   - Render checkboxes for each obstacle type `enabled` and each bonus type `enabled`
   - Render sliders for `gracePeriod`, `maxObstaclesOnScreen`, and `maxSpeedMultiplier` with min/max bounds and clamping

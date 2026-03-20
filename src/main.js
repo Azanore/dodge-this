@@ -13,6 +13,7 @@ import { checkPlayerObstacles, checkPlayerBonusPickups } from './collision.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { render, initRenderer } from './renderer.js';
 import { showGameOver } from './gameOver.js';
+import { initConfigPanel } from './configPanel.js';
 
 // Apply config validation with fallbacks (Requirement 10.7)
 validateConfig(gameConfig);
@@ -125,3 +126,6 @@ function onRestart() {
 }
 
 loop.start();
+
+// Init dev config panel — passes loop control and restart callback (Requirement 12.1–12.7)
+initConfigPanel(loop, onRestart, () => state.status);
