@@ -223,15 +223,21 @@
 
 
 
+
   - Render live survival timer as seconds in a canvas corner, updated every frame
   - Render each active bonus as a colored label with remaining time in seconds
   - Remove bonus entry from HUD immediately on expiry
   - _Requirements: 8.1, 8.2, 8.3_
   - Run: `git add . ; git commit -m "task 11.1: hud.js" ; git push origin master`
 
-- [ ] 12. Game Over screen
+- [x] 12. Game Over screen
 
-- [ ] 12.1 Implement `gameOver.js` — death screen, personal best, restart, share
+
+
+
+- [x] 12.1 Implement `gameOver.js` — death screen, personal best, restart, share
+
+
   - On death: read localStorage `dodge_pb` in try/catch, compare with current time, write new best if higher
   - Render Game Over overlay on canvas with current time and personal best
   - If localStorage unavailable, render without personal best, no exception thrown
