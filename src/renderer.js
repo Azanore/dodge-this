@@ -52,6 +52,34 @@ function glowCircle(ctx, x, y, radius, color, blur) {
   ctx.restore();
 }
 
+// Renders the start screen overlay with title and prompt
+export function renderStartScreen(ctx) {
+  const cw = ctx.canvas.width;
+  const ch = ctx.canvas.height;
+  const cx = cw / 2;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  ctx.fillRect(0, 0, cw, ch);
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  ctx.font = 'bold 72px monospace';
+  ctx.fillStyle = '#00eeff';
+  ctx.shadowColor = '#00eeff';
+  ctx.shadowBlur = 30;
+  ctx.fillText('DODGE', cx, ch * 0.38);
+
+  ctx.font = '20px monospace';
+  ctx.fillStyle = '#cccccc';
+  ctx.shadowColor = '#cccccc';
+  ctx.shadowBlur = 8;
+  ctx.fillText('Click or press any key to begin', cx, ch * 0.54);
+
+  ctx.restore();
+}
+
 // Main render function — called every frame
 export function render(ctx, state, delta) {
   const cw = ctx.canvas.width;

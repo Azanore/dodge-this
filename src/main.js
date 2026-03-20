@@ -11,7 +11,7 @@ import { spawnObstacle, updateObstacles } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups } from './collision.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
-import { render, initRenderer } from './renderer.js';
+import { render, renderStartScreen, initRenderer } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
 
@@ -53,6 +53,7 @@ updatePlayer(state);
 function update(delta) {
   lastDelta = delta;
   if (state.status === 'dead') return;
+  if (state.status === 'start') return;
 
   // Update player position from mouse
   updatePlayer(state);
@@ -109,6 +110,11 @@ function update(delta) {
 }
 
 function renderFrame() {
+  if (state.status === 'start') {
+    render(ctx, state, lastDelta);
+    renderStartScreen(ctx);
+    return;
+  }
   render(ctx, state, lastDelta);
 }
 
@@ -116,6 +122,7 @@ const loop = createGameLoop(update, renderFrame);
 
 function onRestart() {
   state = resetState();
+  state.status = 'grace';
   state.graceRemaining = gameConfig.gracePeriod;
   spawnAccumulator = 0;
   bonusAccumulator = 0;
@@ -125,7 +132,20 @@ function onRestart() {
   loop.start();
 }
 
-loop.start();
+// One-shot start action: click or keydown transitions from 'start' → 'grace'
+function onStartAction() {
+  if (state.status !== 'start') return;
+  canvas.removeEventListener('click', onStartAction);
+  window.removeEventListener('keydown', onStartAction);
+  state.status = 'grace';
+  loop.start();
+}
+
+canvas.addEventListener('click', onStartAction);
+window.addEventListener('keydown', onStartAction);
+
+// Render the start screen before the loop begins
+renderFrame();
 
 // Init dev config panel — passes loop control and restart callback (Requirement 12.1–12.7)
 initConfigPanel(loop, onRestart, () => state.status);

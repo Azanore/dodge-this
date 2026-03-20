@@ -33,6 +33,7 @@
 
 
 
+
   - Update `player.update()` to accept `state` as a parameter and write to `state.player.x` and `state.player.y` each frame
   - Remove internal `posX`, `posY`, `radius`, `setRadius`, `resetRadius` from `player.js` — read `state.player.radius` directly where needed
   - Remove `getHitbox()` export from `player.js`
@@ -49,7 +50,10 @@
   - For any mouse (x, y), after `player.update(state)`, `state.player.x/y` must equal `clampToInner(x, y)`
   - _Requirements: 1.1_
 
-- [ ] 4. Add Start Screen (Fix 2)
+- [x] 4. Add Start Screen (Fix 2)
+
+
+
 
   - Add `'start'` case to `main.js` update loop — skip all game logic when `state.status === 'start'`
   - Add `renderStartScreen(ctx)` to `renderer.js` — dark overlay with "DODGE" title and "Click or press any key to begin" prompt
@@ -58,13 +62,16 @@
   - Do NOT start the game loop on page load — start it only when the player triggers the start action
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 4.1 Write property test for no updates in start state (Property 2)
+- [x] 4.1 Write property test for no updates in start state (Property 2)
+
+
   - **Feature: dodge-game-fixes, Property 2: No game updates occur in start state**
   - **Validates: Requirements 2.4**
   - For any number of `update(delta)` calls with `state.status === 'start'`, obstacles and elapsed must remain unchanged
   - _Requirements: 2.4_
 
-- [ ] 4.2 Write unit tests for start screen transitions
+- [x] 4.2 Write unit tests for start screen transitions
+
   - Verify initial `state.status` is `'start'` before start action
   - Verify start action transitions status to `'grace'`
   - Verify restart after Game Over sets status to `'grace'`, not `'start'`
