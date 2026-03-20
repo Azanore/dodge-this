@@ -184,3 +184,19 @@ DODGE is a browser-based, mouse-driven survival game with a cosmic/space aesthet
 3. THE System SHALL render each Bonus Pickup type in a distinct, consistent color that differs from obstacle colors.
 4. THE System SHALL render the Player Shape with a soft continuous pulse animation.
 5. WHEN the Invincibility Shield is active, THE System SHALL render a visually distinct glow effect on the Player Shape that differs from the default pulse.
+
+---
+
+### Requirement 12 — Dev Config Panel
+
+**User Story:** As a developer, I want an in-browser config panel I can open at any time to toggle and tune game parameters, so that I can playtest different configurations without editing files or reloading the page.
+
+#### Acceptance Criteria
+
+1. WHEN the developer presses the `P` key, THE System SHALL toggle the visibility of the Config Panel overlay without interrupting the current game state.
+2. THE Config Panel SHALL display controls for all togglable parameters: each obstacle type (`enabled`), each bonus type (`enabled`), `gracePeriod`, `maxObstaclesOnScreen`, and `maxSpeedMultiplier`.
+3. WHEN the Config Panel is open and the game is in the active play state, THE System SHALL pause the game loop so the player is not penalized while adjusting settings.
+4. WHEN the developer clicks the "Restart with changes" button in the Config Panel, THE System SHALL write all current panel values to the runtime config object and begin a new run immediately.
+5. THE System SHALL NOT apply Config Panel changes to an in-progress run — changes take effect only on the next restart triggered from the panel.
+6. WHEN the Config Panel is closed without clicking "Restart with changes", THE System SHALL discard any unsaved panel changes and resume the game from its paused state.
+7. IF a slider value is set outside the valid range for its parameter, THEN THE System SHALL clamp the value to the nearest valid bound and display the clamped value in the panel.

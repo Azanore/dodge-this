@@ -186,6 +186,17 @@
   - _Requirements: 6.1, 6.2, 6.3_
   - Run: `git add . ; git commit -m "task 14: wire main.js" ; git push origin master`
 
-- [ ] 15. Final Checkpoint — ensure all tests pass
+- [ ] 15. Dev Config Panel
+- [ ] 15.1 Implement `configPanel.js` — DOM overlay for runtime config tuning
+  - Create a hidden `<div>` overlay toggled by the `P` key
+  - Render checkboxes for each obstacle type `enabled` and each bonus type `enabled`
+  - Render sliders for `gracePeriod`, `maxObstaclesOnScreen`, and `maxSpeedMultiplier` with min/max bounds and clamping
+  - Pause the game loop when the panel opens during active play; resume on close without restart
+  - "Restart with changes" button: write panel values to the runtime config object, call `resetState()`, close panel, begin new run
+  - Discard unsaved changes on close without restart
+  - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7_
+  - Run: `git add . ; git commit -m "task 15.1: configPanel.js" ; git push origin master`
+
+- [ ] 16. Final Checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
   - Run: `git add . ; git commit -m "final: all tests passing" ; git push origin master`
