@@ -3,7 +3,6 @@
 // Does not contain game logic — pure visual output from state.
 
 import { innerZone, outerZone } from './zones.js';
-import { getHitbox } from './player.js';
 import { renderHUD } from './hud.js';
 
 // Star field — generated once at init, rendered every frame
@@ -107,15 +106,15 @@ export function render(ctx, state, delta) {
   }
 
   // 7. Player — pulsing glow; distinct shield glow when invincible
-  const hitbox = getHitbox();
+  const { x: px, y: py, radius: pr } = state.player;
   const pulse = 0.6 + 0.4 * Math.sin(pulseT);
   const isInvincible = !!state.activeEffects.invincibility;
   const playerColor = isInvincible ? '#ffe600' : '#00eeff';
   const playerBlur = isInvincible ? 28 + 12 * pulse : 14 + 10 * pulse;
 
-  glowCircle(ctx, hitbox.x, hitbox.y, hitbox.radius, playerColor, playerBlur);
+  glowCircle(ctx, px, py, pr, playerColor, playerBlur);
   // Bright core dot
-  glowCircle(ctx, hitbox.x, hitbox.y, hitbox.radius * 0.4, '#ffffff', 6);
+  glowCircle(ctx, px, py, pr * 0.4, '#ffffff', 6);
 
   // 8. HUD
   renderHUD(ctx, state);

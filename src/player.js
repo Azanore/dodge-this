@@ -1,6 +1,6 @@
-// Player position tracking, mouse clamping, and hitbox.
-// Related: zones.js (clampToInner), collision.js (getHitbox), renderer.js
-// Does not handle rendering or game state directly.
+// Player position tracking and mouse clamping.
+// Related: zones.js (clampToInner, innerZone), GameState.js (state.player)
+// Does not handle rendering or maintain internal position/radius state.
 
 import { clampToInner, innerZone } from './zones.js';
 
@@ -8,43 +8,20 @@ import { clampToInner, innerZone } from './zones.js';
 let rawX = null;
 let rawY = null;
 
-// Clamped player position — updated each frame via update()
-let posX = 0;
-let posY = 0;
-
-// Current hitbox radius — may be modified by Shrink bonus
-let radius = gameConfig.playerHitboxRadius;
-
 // Track mouse position as raw values; clamping happens in update()
 window.addEventListener('mousemove', e => {
   rawX = e.clientX;
   rawY = e.clientY;
 });
 
-// Called each frame — clamps latest mouse position into inner zone
-export function update() {
+// Called each frame — clamps latest mouse position into inner zone and writes to state.player
+export function update(state) {
   if (rawX === null) {
-    // No mouse movement yet — stay at inner zone center
-    posX = innerZone.x + innerZone.width / 2;
-    posY = innerZone.y + innerZone.height / 2;
+    state.player.x = innerZone.x + innerZone.width / 2;
+    state.player.y = innerZone.y + innerZone.height / 2;
   } else {
     const clamped = clampToInner(rawX, rawY);
-    posX = clamped.x;
-    posY = clamped.y;
+    state.player.x = clamped.x;
+    state.player.y = clamped.y;
   }
-}
-
-// Returns circular hitbox used for collision detection
-export function getHitbox() {
-  return { x: posX, y: posY, radius };
-}
-
-// Sets hitbox radius — used by Shrink bonus
-export function setRadius(r) {
-  radius = r;
-}
-
-// Resets radius to config default — called on bonus expiry or game reset
-export function resetRadius() {
-  radius = gameConfig.playerHitboxRadius;
 }

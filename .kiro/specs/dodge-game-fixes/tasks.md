@@ -10,7 +10,9 @@
   - Update `index.html` to load `game.config.js` as a classic `<script>` (no `type="module"`)
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [-] 2. Fix GameState initialization (Fix 5)
+- [x] 2. Fix GameState initialization (Fix 5)
+
+
 
 
 
@@ -18,14 +20,19 @@
   - Add `status: 'start'` as the initial status (was `'grace'`)
   - _Requirements: 5.1, 5.2_
 
-- [-] 2.1 Write unit tests for resetState completeness
+- [x] 2.1 Write unit tests for resetState completeness
+
 
   - Verify `resetState()` includes `slowmoMultiplier: 1`
   - Verify `resetState()` sets `player.radius` to `gameConfig.playerHitboxRadius`
   - Verify initial `status` is `'start'`
   - _Requirements: 5.1, 5.2_
 
-- [ ] 3. Fix player hitbox sync (Fix 1)
+- [x] 3. Fix player hitbox sync (Fix 1)
+
+
+
+
   - Update `player.update()` to accept `state` as a parameter and write to `state.player.x` and `state.player.y` each frame
   - Remove internal `posX`, `posY`, `radius`, `setRadius`, `resetRadius` from `player.js` — read `state.player.radius` directly where needed
   - Remove `getHitbox()` export from `player.js`
@@ -34,13 +41,16 @@
   - Update all `updatePlayer()` call sites in `main.js` to pass `state`
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 3.1 Write property test for player position sync (Property 1)
+- [x] 3.1 Write property test for player position sync (Property 1)
+
+
   - **Feature: dodge-game-fixes, Property 1: Player position always synced to state**
   - **Validates: Requirements 1.1**
   - For any mouse (x, y), after `player.update(state)`, `state.player.x/y` must equal `clampToInner(x, y)`
   - _Requirements: 1.1_
 
 - [ ] 4. Add Start Screen (Fix 2)
+
   - Add `'start'` case to `main.js` update loop — skip all game logic when `state.status === 'start'`
   - Add `renderStartScreen(ctx)` to `renderer.js` — dark overlay with "DODGE" title and "Click or press any key to begin" prompt
   - Wire a one-shot click and keydown listener in `main.js` that transitions `state.status` from `'start'` to `'grace'` and calls `loop.start()`
@@ -61,6 +71,7 @@
   - _Requirements: 2.1, 2.3, 2.5_
 
 - [ ] 5. Add Pause Screen (Fix 3)
+
   - Add `'paused'` case to `main.js` update loop — no-op when paused
   - Add `renderPauseScreen(ctx)` to `renderer.js` — semi-transparent overlay with "PAUSED" label and "Press Esc to resume" prompt
   - Wire `Escape` keydown listener in `main.js`: if status is `'active'` or `'grace'` and Config Panel is not open, save `prevStatus`, set `state.status = 'paused'`, call `loop.stop()`; if status is `'paused'`, restore `state.status = state.prevStatus`, call `loop.start()`
@@ -87,4 +98,5 @@
   - _Requirements: 3.1, 3.4, 3.5_
 
 - [ ] 6. Final Checkpoint — ensure all tests pass
+
   - Ensure all tests pass, ask the user if questions arise.

@@ -48,14 +48,14 @@ initRenderer();
 recomputeZones();
 
 // Center player at inner zone on first frame
-updatePlayer();
+updatePlayer(state);
 
 function update(delta) {
   lastDelta = delta;
   if (state.status === 'dead') return;
 
   // Update player position from mouse
-  updatePlayer();
+  updatePlayer(state);
 
   // Grace period tick (Requirement 6.1, 6.3)
   if (state.status === 'grace') {
@@ -121,7 +121,7 @@ function onRestart() {
   bonusAccumulator = 0;
   initRenderer();
   recomputeZones();
-  updatePlayer();
+  updatePlayer(state);
   loop.start();
 }
 

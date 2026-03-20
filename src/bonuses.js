@@ -4,7 +4,6 @@
 
 import { innerZone } from './zones.js';
 import { clearAll } from './obstacles.js';
-import { setRadius, resetRadius } from './player.js';
 
 // Fixed hitbox radius for all bonus pickups
 const PICKUP_RADIUS = 12;
@@ -70,9 +69,7 @@ export function collectBonus(type, state) {
   } else if (type === 'shrink') {
     const prevRadius = state.player.radius;
     state.activeEffects.shrink = { remaining: cfg.duration, prevRadius };
-    const shrunkRadius = Math.round(gameConfig.playerHitboxRadius * 0.45);
-    state.player.radius = shrunkRadius;
-    setRadius(shrunkRadius);
+    state.player.radius = Math.round(gameConfig.playerHitboxRadius * 0.45);
   }
 }
 
@@ -87,7 +84,6 @@ export function updateEffects(delta, state) {
         state.slowmoMultiplier = effect.prevMultiplier;
       } else if (type === 'shrink') {
         state.player.radius = effect.prevRadius;
-        resetRadius();
       }
       delete state.activeEffects[type];
     }
