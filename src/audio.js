@@ -10,7 +10,7 @@ const SOUNDS = {
   gameStart: 'sounds/game-start.ogg',
   nearMiss: 'sounds/near-miss.wav',
   zoneAppear: 'sounds/zone-appear.wav',
-  music: 'sounds/music.wav',
+  music: 'sounds/music.mp3',
 };
 
 const buffers = {};
