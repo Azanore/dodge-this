@@ -73,6 +73,7 @@
 
 
 
+
   - Replace `state.elapsed` with `state.score` in PB read/write logic
   - Display final score in points (rounded integer) and PB in points
   - _Requirements: 3.1, 3.2_
@@ -82,10 +83,18 @@
     - **Property 4: PB write always stores the higher of score and existing PB**
     - **Validates: Requirements 3.1**
 
-- [ ] 7. Update renderer.js renderStartScreen to show PB as points
+- [x] 7. Update renderer.js renderStartScreen to show PB as points
+
+
+
+
 
   - Read `dodge_pb` and display as integer points (was seconds)
   - _Requirements: 3.3_
 
-- [ ] 8. Checkpoint — ensure all tests pass, ask the user if questions arise.
+
+- [x] 8. Checkpoint — ensure all tests pass, ask the user if questions arise.
+
+
+
 

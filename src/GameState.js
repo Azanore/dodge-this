@@ -20,7 +20,8 @@ export function resetState() {
     },
     personalBest: 0,
     score: 0,
-    comboMultiplier: 1.0
+    comboMultiplier: 1.0,
+    scoreZone: { active: false }
   };
 }
 

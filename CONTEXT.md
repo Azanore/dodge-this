@@ -68,11 +68,12 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 See the Backlog section below.
 
 ### Planned (next sessions, in order)
-1. **Near-miss feedback** — ring + "CLOSE!" text when an obstacle passes within threshold. Per-obstacle cooldown stamp prevents spam. Prereq for combo multiplier.
-2. **Combo multiplier** — score = elapsed × multiplier. Multiplier builds when near obstacles, decays when safe. Score replaces PB as primary metric. Timer becomes context.
-3. **Difficulty presets** — easy/normal/hard, only after gameplay is stable.
-4. **Sound effects** — death sting, bonus chime, ambient hum.
-5. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
+1. ~~Near-miss feedback~~ — done session 5
+2. ~~Combo multiplier + Score Zone~~ — done session 6
+3. **Value tuning** — play-test score zone values, adjust based on feel (tracker interaction especially)
+4. **Difficulty presets** — easy/normal/hard, only after gameplay is stable.
+5. **Sound effects** — death sting, bonus chime, ambient hum.
+6. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
 
 ---
 
@@ -85,9 +86,7 @@ Grouped by effort. All of these fit the current architecture without major rewri
 
 ### Medium effort (worth a dedicated session)
 - **Sound effects** — death sting, bonus collect chime, background ambient hum. Needs a decision on asset format (Web Audio API synth vs. audio files).
-- **Difficulty presets** — easy/normal/hard. Defer until gameplay is stable — tuning 3 presets while mechanics are still changing is wasted effort. Per-difficulty PB keys: `dodge_pb_easy`, `dodge_pb_normal`, `dodge_pb_hard`. Migrate existing `dodge_pb` to normal on first load.
-- **Near-miss feedback** — ring + "CLOSE!" text when obstacle passes within threshold. Per-obstacle `lastNearMissAt` cooldown (~600ms) prevents spam. Prereq for combo multiplier.
-- **Combo multiplier** — score = elapsed × multiplier, accumulated continuously. Multiplier builds in near-miss zone, decays when safe. Score is primary PB metric; timer is context. HUD shows score prominently, multiplier in existing indicator slot.
+- **Difficulty presets** — easy/normal/hard. Defer until gameplay is stable. Per-difficulty PB keys: `dodge_pb_easy`, `dodge_pb_normal`, `dodge_pb_hard`. Migrate existing `dodge_pb` to normal on first load.
 - **Achievements** — near-miss count, combo streaks, survival milestones. Implement last when all metrics are stable.
 
 ### Larger scope (plan carefully before starting)
@@ -117,6 +116,8 @@ Run: `npm test`
 | `main.test.js` | State guards using local helper functions (not real update()) |
 | `integration.test.js` | Real `gameUpdate()` end-to-end: start→grace→active→death, pause/resume, restart |
 
+| `combo.test.js` | Score zone spawn/expiry/wander bounds, multiplier build/decay (6 property tests) |
+
 **Known gap:** `main.test.js` uses local helper functions that simulate the logic rather than importing the real `update()`. DOM event wiring (click handlers, keydown listeners) is not tested.
 
 ---
@@ -129,6 +130,19 @@ Run: `npm test`
 - Extracted `gameUpdate.js` for testability
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
+
+### Session 6
+- Added combo multiplier system: `state.score` (delta × comboMultiplier), `state.comboMultiplier` in `[1.0, 5.0]`
+- Score replaces elapsed time as PB metric — `dodge_pb` now stores score points, not ms
+- Added Score Zone: circular wandering zone inside inner zone, appears every 8s for 5s
+- Zone drives multiplier: build inside (1.5/s), fast decay outside active zone (2.4/s), normal decay inactive (0.8/s)
+- `combo.js` created with `updateScoreZone(delta, state, accumulators)`
+- `accumulators.scoreZone` added to `main.js`, reset on restart
+- HUD updated: score primary (top-left large), elapsed secondary (small below), multiplier top-right hidden at 1.0
+- Game over and start screen updated to show score in points
+- `nearMissThreshold` reduced from 40px to 20px for tighter near-miss detection
+- 6 property-based tests in `combo.test.js`, 4 in `collision.test.js`
+- Values to watch: `scoreZoneInterval`, `scoreZoneDuration`, `comboFastDecayRate` — may need tuning after play-testing with tracker
 
 ### Session 5
 - Added near-miss feedback: white expanding ring + "CLOSE!" fading text when an obstacle passes within 40px of the player edge

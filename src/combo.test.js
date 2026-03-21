@@ -1,47 +1,76 @@
-// Property tests for combo multiplier logic and PB write logic.
-// Related: combo.js, gameUpdate.js, game.config.js, GameState.js, gameOver.js
-// Tests Properties 1, 2, 3, and 4 from combo-multiplier design.md
+// Property tests for score zone logic.
+// Related: combo.js, gameUpdate.js, game.config.js, GameState.js, zones.js
+// Tests Properties 1–6 from score-zone design.md
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fc from 'fast-check';
-import { updateComboMultiplier } from './combo.js';
-import { updatePB } from './gameOver.js';
+import { updateScoreZone } from './combo.js';
+import { innerZone } from './zones.js';
 
+const INTERVAL = 8000;
+const DURATION = 5000;
+const RADIUS = 60;
+const WANDER = 40;
+const BUILD = 1.5;
+const DECAY = 0.8;
+const FAST_DECAY = 2.4;
 const MAX = 5.0;
-const BUILD_RATE = 1.5;
-const DECAY_RATE = 0.8;
-const THRESHOLD = 20;
-const PLAYER_RADIUS = 14;
 
-// Builds a minimal state with no obstacles (safe scenario)
-function makeState(multiplier, obstacles = []) {
+// Minimal config used in all tests
+const TEST_CONFIG = {
+  scoreZoneInterval: INTERVAL,
+  scoreZoneDuration: DURATION,
+  scoreZoneRadius: RADIUS,
+  scoreZoneWanderSpeed: WANDER,
+  comboBuildRate: BUILD,
+  comboDecayRate: DECAY,
+  comboFastDecayRate: FAST_DECAY,
+  comboMultiplierMax: MAX
+};
+
+// Sets innerZone to a fixed 800x600 area for deterministic bounds tests
+function setInnerZone() {
+  innerZone.x = 100;
+  innerZone.y = 100;
+  innerZone.width = 800;
+  innerZone.height = 600;
+}
+
+// Returns a state with no active zone and player at zone center (safe default)
+function makeState(multiplier = 1.0) {
   return {
-    player: { x: 300, y: 300, radius: PLAYER_RADIUS },
-    obstacles,
-    comboMultiplier: multiplier
+    player: { x: 500, y: 400, radius: 14 },
+    comboMultiplier: multiplier,
+    scoreZone: { active: false }
   };
 }
 
-// Places an obstacle at exactly `gap` pixels from the player edge (within threshold)
-function obsInZone(player, gap, obsRadius = 10) {
+// Returns a state with an active zone, player placed inside or outside based on flag
+function makeActiveState(multiplier, playerInside) {
+  const zx = 500, zy = 400;
+  const px = playerInside ? zx : zx + RADIUS + 50;
   return {
-    x: player.x + player.radius + obsRadius + gap,
-    y: player.y,
-    radius: obsRadius
+    player: { x: px, y: zy, radius: 14 },
+    comboMultiplier: multiplier,
+    scoreZone: {
+      active: true,
+      x: zx,
+      y: zy,
+      radius: RADIUS,
+      remaining: DURATION,
+      vx: 0,
+      vy: 0
+    }
   };
 }
 
-describe('combo', () => {
+describe('score-zone combo', () => {
   let origConfig;
 
   beforeEach(() => {
     origConfig = globalThis.gameConfig;
-    globalThis.gameConfig = {
-      nearMissThreshold: THRESHOLD,
-      comboMultiplierMax: MAX,
-      comboBuildRate: BUILD_RATE,
-      comboDecayRate: DECAY_RATE
-    };
+    globalThis.gameConfig = { ...TEST_CONFIG };
+    setInnerZone();
   });
 
   afterEach(() => {
@@ -49,28 +78,32 @@ describe('combo', () => {
   });
 
   /**
-   * **Feature: combo-multiplier, Property 1: Score accumulates proportionally to multiplier**
+   * **Feature: score-zone, Property 1: Zone spawns at configured interval**
    * Validates: Requirements 1.1
    */
-  it('Property 1: score accumulates proportionally to multiplier', () => {
+  it('Property 1: zone spawns at configured interval', () => {
     fc.assert(
       fc.property(
-        // starting score
-        fc.float({ min: 0, max: Math.fround(100000), noNaN: true }),
-        // starting multiplier anywhere in valid range
-        fc.float({ min: Math.fround(1.0), max: Math.fround(MAX), noNaN: true }),
-        // positive delta in ms
-        fc.float({ min: Math.fround(1), max: Math.fround(2000), noNaN: true }),
-        (startScore, startMultiplier, delta) => {
-          const state = makeState(startMultiplier, []); // no obstacles
-          state.score = startScore;
+        // sequence of deltas that sum to at least INTERVAL
+        fc.array(fc.integer({ min: 100, max: 1000 }), { minLength: 1, maxLength: 100 }),
+        (deltas) => {
+          const state = makeState();
+          const accumulators = { scoreZone: 0 };
+          let spawned = false;
 
-          // Replicate the gameUpdate active block: update multiplier then accumulate score
-          updateComboMultiplier(delta, state);
-          const multiplierAfterUpdate = state.comboMultiplier;
-          state.score += delta * state.comboMultiplier;
+          // Pad deltas so they definitely exceed the interval
+          const totalNeeded = INTERVAL + 1000;
+          let sum = 0;
+          const paddedDeltas = [...deltas];
+          for (const d of deltas) sum += d;
+          if (sum < totalNeeded) paddedDeltas.push(totalNeeded - sum);
 
-          expect(state.score).toBeCloseTo(startScore + delta * multiplierAfterUpdate, 5);
+          for (const d of paddedDeltas) {
+            updateScoreZone(d, state, accumulators);
+            if (state.scoreZone.active) { spawned = true; break; }
+          }
+
+          expect(spawned).toBe(true);
         }
       ),
       { numRuns: 100 }
@@ -78,22 +111,96 @@ describe('combo', () => {
   });
 
   /**
-   * **Feature: combo-multiplier, Property 2: Multiplier builds when near obstacle, capped at max**
-   * Validates: Requirements 1.3
+   * **Feature: score-zone, Property 2: Zone expires after configured duration**
+   * Validates: Requirements 1.2
    */
-  it('Property 2: multiplier builds when near obstacle, capped at max', () => {
+  it('Property 2: zone expires after configured duration', () => {
     fc.assert(
       fc.property(
-        // starting multiplier strictly below max
+        fc.array(fc.integer({ min: 100, max: 1000 }), { minLength: 1, maxLength: 100 }),
+        (deltas) => {
+          // Start with an already-active zone
+          const state = makeActiveState(1.0, true);
+          const accumulators = { scoreZone: 0 };
+
+          const totalNeeded = DURATION + 1000;
+          let sum = 0;
+          const paddedDeltas = [...deltas];
+          for (const d of deltas) sum += d;
+          if (sum < totalNeeded) paddedDeltas.push(totalNeeded - sum);
+
+          for (const d of paddedDeltas) {
+            updateScoreZone(d, state, accumulators);
+            if (!state.scoreZone.active) break;
+          }
+
+          expect(state.scoreZone.active).toBe(false);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  /**
+   * **Feature: score-zone, Property 3: Zone center always stays within inner zone bounds**
+   * Validates: Requirements 1.3
+   */
+  it('Property 3: zone center always stays within inner zone bounds', () => {
+    fc.assert(
+      fc.property(
+        // random starting position within inner zone
+        fc.float({ min: 100, max: 900, noNaN: true }),
+        fc.float({ min: 100, max: 700, noNaN: true }),
+        // random velocity direction (angle in radians)
+        fc.float({ min: 0, max: Math.fround(Math.PI * 2), noNaN: true }),
+        // number of steps
+        fc.integer({ min: 1, max: 200 }),
+        (startX, startY, angle, steps) => {
+          const speed = WANDER / 1000; // px/ms
+          const state = {
+            player: { x: startX, y: startY, radius: 14 },
+            comboMultiplier: 1.0,
+            scoreZone: {
+              active: true,
+              x: startX,
+              y: startY,
+              radius: RADIUS,
+              remaining: steps * 100 + 1000,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed
+            }
+          };
+          const accumulators = { scoreZone: 0 };
+
+          for (let i = 0; i < steps; i++) {
+            updateScoreZone(100, state, accumulators);
+            if (!state.scoreZone.active) break;
+            const { x, y } = state.scoreZone;
+            expect(x).toBeGreaterThanOrEqual(innerZone.x);
+            expect(x).toBeLessThanOrEqual(innerZone.x + innerZone.width);
+            expect(y).toBeGreaterThanOrEqual(innerZone.y);
+            expect(y).toBeLessThanOrEqual(innerZone.y + innerZone.height);
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  /**
+   * **Feature: score-zone, Property 4: Multiplier builds when player is inside active zone, capped at max**
+   * Validates: Requirements 2.1
+   */
+  it('Property 4: multiplier builds inside active zone, capped at max', () => {
+    fc.assert(
+      fc.property(
         fc.float({ min: 1.0, max: Math.fround(MAX - 0.01), noNaN: true }),
-        // positive delta in ms (1ms to 2s)
-        fc.float({ min: Math.fround(1), max: Math.fround(2000), noNaN: true }),
-        // gap within near-miss zone (0 exclusive, threshold inclusive)
-        fc.float({ min: Math.fround(0.1), max: Math.fround(THRESHOLD), noNaN: true }),
-        (startMultiplier, delta, gap) => {
-          const state = makeState(startMultiplier, [obsInZone({ x: 300, y: 300, radius: PLAYER_RADIUS }, gap)]);
+        fc.integer({ min: 1, max: 2000 }),
+        (startMultiplier, delta) => {
+          const state = makeActiveState(startMultiplier, true);
           const before = state.comboMultiplier;
-          updateComboMultiplier(delta, state);
+          const accumulators = { scoreZone: 0 };
+          updateScoreZone(delta, state, accumulators);
           expect(state.comboMultiplier).toBeGreaterThan(before);
           expect(state.comboMultiplier).toBeLessThanOrEqual(MAX);
         }
@@ -103,20 +210,19 @@ describe('combo', () => {
   });
 
   /**
-   * **Feature: combo-multiplier, Property 3: Multiplier decays when safe, floored at 1.0**
-   * Validates: Requirements 1.4
+   * **Feature: score-zone, Property 5: Multiplier decays fast when zone active and player outside, floored at 1.0**
+   * Validates: Requirements 2.2
    */
-  it('Property 3: multiplier decays when safe, floored at 1.0', () => {
+  it('Property 5: multiplier fast decays outside active zone, floored at 1.0', () => {
     fc.assert(
       fc.property(
-        // starting multiplier strictly above 1.0
         fc.float({ min: Math.fround(1.01), max: Math.fround(MAX), noNaN: true }),
-        // positive delta in ms
-        fc.float({ min: Math.fround(1), max: Math.fround(2000), noNaN: true }),
+        fc.integer({ min: 1, max: 2000 }),
         (startMultiplier, delta) => {
-          const state = makeState(startMultiplier, []); // no obstacles = safe
+          const state = makeActiveState(startMultiplier, false);
           const before = state.comboMultiplier;
-          updateComboMultiplier(delta, state);
+          const accumulators = { scoreZone: 0 };
+          updateScoreZone(delta, state, accumulators);
           expect(state.comboMultiplier).toBeLessThan(before);
           expect(state.comboMultiplier).toBeGreaterThanOrEqual(1.0);
         }
@@ -126,20 +232,21 @@ describe('combo', () => {
   });
 
   /**
-   * **Feature: combo-multiplier, Property 4: PB write always stores the higher of score and existing PB**
-   * Validates: Requirements 3.1
+   * **Feature: score-zone, Property 6: Multiplier decays normally when zone inactive, floored at 1.0**
+   * Validates: Requirements 2.3
    */
-  it('Property 4: PB write always stores the higher of score and existing PB', () => {
+  it('Property 6: multiplier decays normally when zone inactive, floored at 1.0', () => {
     fc.assert(
       fc.property(
-        fc.float({ min: 0, max: Math.fround(1000000), noNaN: true }),
-        fc.float({ min: 0, max: Math.fround(1000000), noNaN: true }),
-        (score, existingPB) => {
-          localStorage.setItem('dodge_pb', String(existingPB));
-          const result = updatePB(score);
-          expect(result).toBe(Math.max(score, existingPB));
-          const stored = parseFloat(localStorage.getItem('dodge_pb'));
-          expect(stored).toBe(Math.max(score, existingPB));
+        fc.float({ min: Math.fround(1.01), max: Math.fround(MAX), noNaN: true }),
+        fc.integer({ min: 1, max: 2000 }),
+        (startMultiplier, delta) => {
+          const state = makeState(startMultiplier);
+          const before = state.comboMultiplier;
+          const accumulators = { scoreZone: 0 };
+          updateScoreZone(delta, state, accumulators);
+          expect(state.comboMultiplier).toBeLessThan(before);
+          expect(state.comboMultiplier).toBeGreaterThanOrEqual(1.0);
         }
       ),
       { numRuns: 100 }

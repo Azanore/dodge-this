@@ -10,8 +10,14 @@ window.gameConfig = {
   nearMissThreshold: 20,       // px gap between edges that counts as a near-miss
 
   comboMultiplierMax: 5.0,     // hard cap on combo multiplier
-  comboBuildRate: 1.5,         // multiplier units gained per second while near obstacle
-  comboDecayRate: 0.8,         // multiplier units lost per second while safe
+  comboBuildRate: 1.5,         // multiplier units gained per second while inside score zone
+  comboDecayRate: 0.8,         // multiplier units lost per second when zone inactive
+  comboFastDecayRate: 2.4,     // multiplier units lost per second when zone active, player outside
+
+  scoreZoneInterval: 8000,     // ms between zone appearances
+  scoreZoneDuration: 5000,     // ms zone stays active
+  scoreZoneRadius: 60,         // px radius of the score zone
+  scoreZoneWanderSpeed: 40,    // px per second wander speed
 
   difficulty: {
     speedScaleFactor: 0.6,     // controls how fast speed ramps up (logarithmic)

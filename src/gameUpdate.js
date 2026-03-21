@@ -8,7 +8,7 @@ import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
 import { triggerNearMiss } from './renderer.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
-import { updateComboMultiplier } from './combo.js';
+import { updateScoreZone } from './combo.js';
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
@@ -35,7 +35,7 @@ export function gameUpdate(delta, state, accumulators) {
 
   // active
   state.elapsed += delta;
-  updateComboMultiplier(delta, state);
+  updateScoreZone(delta, state, accumulators);
   state.score += delta * state.comboMultiplier;
 
   const speedMult = getCurrentSpeedMultiplier(state.elapsed);

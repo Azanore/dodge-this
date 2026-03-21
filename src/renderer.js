@@ -206,7 +206,7 @@ export function renderStartScreen(ctx) {
     ctx.font = '16px monospace';
     ctx.fillStyle = '#888888';
     ctx.shadowBlur = 0;
-    ctx.fillText(`Best: ${(pb / 1000).toFixed(1)}s`, cx, ch * 0.48);
+    ctx.fillText(`Best: ${Math.round(pb)} pts`, cx, ch * 0.48);
   }
 
   ctx.font = '20px monospace';
@@ -312,7 +312,22 @@ export function render(ctx, state, delta) {
     if (showHitboxes) drawHitbox(ctx, pickup.x, pickup.y, pickup.radius);
   }
 
-  // 6b. Bonus collection flashes — expanding fading rings
+  // 6b. Score zone — pulsing circle outline with green glow
+  if (state.scoreZone?.active) {
+    const pulse = 0.5 + 0.5 * Math.sin(pulseT * 3);
+    ctx.save();
+    ctx.strokeStyle = '#00ff88';
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 10 + 10 * pulse;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.6 + 0.4 * pulse;
+    ctx.beginPath();
+    ctx.arc(state.scoreZone.x, state.scoreZone.y, state.scoreZone.radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 6c. Bonus collection flashes — expanding fading rings
   for (let i = flashes.length - 1; i >= 0; i--) {
     const f = flashes[i];
     f.remaining -= delta;

@@ -34,7 +34,7 @@ state.graceRemaining = gameConfig.gracePeriod;
 let lastDelta = 16;
 
 // Spawn/bonus accumulators passed into gameUpdate
-const accumulators = { spawn: 0, bonus: 0 };
+const accumulators = { spawn: 0, bonus: 0, scoreZone: 0 };
 
 // Initialize renderer star field
 initRenderer();
@@ -75,6 +75,7 @@ function onRestart() {
   state.graceRemaining = gameConfig.gracePeriod;
   accumulators.spawn = 0;
   accumulators.bonus = 0;
+  accumulators.scoreZone = 0;
   initRenderer();
   recomputeZones();
   updatePlayer(state);
