@@ -72,7 +72,7 @@ export function gameUpdate(delta, state, accumulators) {
   checkPlayerObstacles(state);
   if (state.status !== 'dead') {
     checkNearMisses(state, triggerNearMiss);
-    playMultiplierMax(state.comboMultiplier); // AUDIO
+    playMultiplierMax(state.comboMultiplier, delta); // AUDIO
   } else {
     playDeath(); // AUDIO
   }

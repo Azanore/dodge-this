@@ -20,9 +20,6 @@ let musicPaused = false;
 let musicOffset = 0;
 let musicStartedAt = 0;
 
-// Tracks whether multiplier-max sound already fired at current 5x streak
-let multiplierMaxFired = false;
-
 // Initializes AudioContext and loads all buffers — call on first user gesture
 export async function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -95,11 +92,20 @@ export function playGameStart() { play('gameStart'); }
 export function playNearMiss() { play('nearMiss'); }
 export function playZoneAppear() { play('zoneAppear'); }
 
-// Guards against re-firing while multiplier stays at max
-export function playMultiplierMax(currentMultiplier) {
+// Guards against re-firing while multiplier stays at max or briefly dips below
+let multiplierMaxFired = false;
+let multiplierMaxCooldown = 0;
+const MULTIPLIER_MAX_COOLDOWN = 2000; // ms before it can fire again after dropping below max
+
+export function playMultiplierMax(currentMultiplier, delta) {
+  if (multiplierMaxCooldown > 0) multiplierMaxCooldown -= delta;
   if (currentMultiplier >= gameConfig.comboMultiplierMax) {
-    if (!multiplierMaxFired) { play('multiplierMax'); multiplierMaxFired = true; }
+    if (!multiplierMaxFired && multiplierMaxCooldown <= 0) {
+      play('multiplierMax');
+      multiplierMaxFired = true;
+    }
   } else {
+    if (multiplierMaxFired) multiplierMaxCooldown = MULTIPLIER_MAX_COOLDOWN;
     multiplierMaxFired = false;
   }
 }
