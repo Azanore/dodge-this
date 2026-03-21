@@ -11,7 +11,7 @@ const PICKUP_RADIUS = 12;
 
 // Per-type colors for rendering
 const BONUS_COLORS = {
-  slowmo: '#00cfff',
+  slowmo: '#0088ff',
   invincibility: '#ffe600',
   screenclear: '#ff4dff',
   shrink: '#00ff99'

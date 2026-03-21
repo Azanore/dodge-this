@@ -19,7 +19,7 @@ const OBSTACLE_COLORS = {
 
 // Per-type bonus pickup colors (matches bonuses.js)
 const BONUS_COLORS = {
-  slowmo: '#00cfff',
+  slowmo: '#0088ff',
   invincibility: '#ffe600',
   screenclear: '#ff4dff',
   shrink: '#00ff99'
