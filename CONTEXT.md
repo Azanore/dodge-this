@@ -73,7 +73,6 @@ See the Backlog section below.
 Grouped by effort. All of these fit the current architecture without major rewrites.
 
 ### Quick wins (low effort, high impact)
-- **Hide dev panel in production** — gate `configPanel.js` behind a URL param or env flag so it doesn't ship to players.
 - **Obstacle visual distinction** — obstacles are all glowing circles; bullet could be a thin fast line, shard a triangle, ball stays as circle. ~30-40 lines in `renderer.js`, meaningful readability improvement.
 
 ### Medium effort (worth a dedicated session)
