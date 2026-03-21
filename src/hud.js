@@ -13,55 +13,49 @@ const BONUS_COLORS = {
 const FONT = '14px monospace';
 const SCORE_FONT = '22px monospace';
 const TIMER_FONT = '14px monospace';
-const MULTIPLIER_FONT = '14px monospace';
 const ZONE_COLOR = '#00ff88';
 const PAD = 12;
 const LINE_HEIGHT = 20;
 
-// Renders score (primary), elapsed time (secondary), pending score + multiplier (third row), and bonus countdowns
+// Renders score (primary), compact info row (time · multiplier · pending), and bonus countdowns
 export function renderHUD(ctx, state) {
   ctx.save();
   ctx.textBaseline = 'top';
 
-  // Score — top-left, large
+  // Score — top-left, large white
   ctx.font = SCORE_FONT;
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = '#ffffff';
   ctx.shadowBlur = 6;
   ctx.fillText(`${Math.floor(state.score)}`, PAD, PAD);
 
-  // Elapsed time — below score, small
-  const seconds = (state.elapsed / 1000).toFixed(1);
+  // Info row — below score, compact single line
   ctx.font = TIMER_FONT;
-  ctx.fillStyle = '#aaaaaa';
-  ctx.shadowColor = '#aaaaaa';
-  ctx.shadowBlur = 4;
-  ctx.fillText(`${seconds}s`, PAD, PAD + 26);
+  const seconds = (state.elapsed / 1000).toFixed(1);
+  const isCombo = state.comboMultiplier > 1.0;
 
-  // Pending score + multiplier — third row, green, only when multiplier active
-  const multY = PAD + 46;
-  if (state.comboMultiplier > 1.0) {
-    ctx.font = MULTIPLIER_FONT;
-    ctx.fillStyle = ZONE_COLOR;
-    ctx.shadowColor = ZONE_COLOR;
-    ctx.shadowBlur = 10;
-    ctx.fillText(`+${Math.floor(state.pendingScore)}`, PAD, multY);
-    ctx.textAlign = 'right';
-    ctx.fillText(`x${state.comboMultiplier.toFixed(1)}`, PAD + 90, multY);
-    ctx.textAlign = 'left';
-  } else {
-    // Dimmed x1.0 when inactive
-    ctx.font = MULTIPLIER_FONT;
-    ctx.fillStyle = ZONE_COLOR;
-    ctx.shadowColor = ZONE_COLOR;
+  if (isCombo) {
+    // Time in grey
+    ctx.fillStyle = '#aaaaaa';
+    ctx.shadowColor = '#aaaaaa';
     ctx.shadowBlur = 0;
-    ctx.globalAlpha = 0.3;
-    ctx.fillText('x1.0', PAD, multY);
-    ctx.globalAlpha = 1.0;
+    ctx.fillText(`${seconds}s`, PAD, PAD + 26);
+
+    // Multiplier + pending in green, right after time
+    const timeWidth = ctx.measureText(`${seconds}s`).width;
+    ctx.fillStyle = ZONE_COLOR;
+    ctx.shadowColor = ZONE_COLOR;
+    ctx.shadowBlur = 8;
+    ctx.fillText(` · x${state.comboMultiplier.toFixed(1)} +${Math.floor(state.pendingScore)}`, PAD + timeWidth, PAD + 26);
+  } else {
+    ctx.fillStyle = '#aaaaaa';
+    ctx.shadowColor = '#aaaaaa';
+    ctx.shadowBlur = 0;
+    ctx.fillText(`${seconds}s`, PAD, PAD + 26);
   }
 
-  // Active bonus countdowns — below the multiplier row
-  let offsetY = multY + LINE_HEIGHT + 4;
+  // Active bonus countdowns — below info row
+  let offsetY = PAD + 26 + LINE_HEIGHT + 4;
   for (const [type, effect] of Object.entries(state.activeEffects)) {
     const remaining = (effect.remaining / 1000).toFixed(1);
     const color = BONUS_COLORS[type] ?? '#ffffff';

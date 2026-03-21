@@ -38,16 +38,14 @@ export function gameUpdate(delta, state, accumulators) {
   updateScoreZone(delta, state, accumulators);
 
   const baseTick = (delta / 1000) * 10;
+  state.score += baseTick; // always ticks
+
   if (state.comboMultiplier > 1.0) {
-    // Bonus ticks accumulate as pending — lost on death, banked when multiplier returns to 1x
-    state.pendingScore += baseTick * state.comboMultiplier;
-  } else {
-    // Bank any pending score when multiplier hits 1x
-    if (state.pendingScore > 0) {
-      state.score += state.pendingScore;
-      state.pendingScore = 0;
-    }
-    state.score += baseTick;
+    // Only the bonus delta accumulates as pending — lost on death, banked when multiplier returns to 1x
+    state.pendingScore += baseTick * (state.comboMultiplier - 1);
+  } else if (state.pendingScore > 0) {
+    state.score += state.pendingScore;
+    state.pendingScore = 0;
   }
 
   const speedMult = getCurrentSpeedMultiplier(state.elapsed);
