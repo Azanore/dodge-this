@@ -9,6 +9,7 @@ import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from '
 import { triggerNearMiss } from './renderer.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { updateScoreZone } from './combo.js';
+import { triggerScoreBump } from './hud.js';
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
@@ -46,6 +47,7 @@ export function gameUpdate(delta, state, accumulators) {
   } else if (state.pendingScore > 0) {
     state.score += state.pendingScore;
     state.pendingScore = 0;
+    triggerScoreBump();
   }
 
   const speedMult = getCurrentSpeedMultiplier(state.elapsed);

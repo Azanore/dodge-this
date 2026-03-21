@@ -379,7 +379,7 @@ export function render(ctx, state, delta) {
   }
 
   // 9. HUD
-  renderHUD(ctx, state);
+  renderHUD(ctx, state, delta);
 
   ctx.restore();
 }
