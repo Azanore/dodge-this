@@ -20,6 +20,7 @@ export function resetState() {
     },
     personalBest: 0,
     score: 0,
+    pendingScore: 0,          // score accumulated during active multiplier — lost on death, banked at x1
     comboMultiplier: 1.0,
     scoreZone: { active: false }
   };

@@ -13,11 +13,12 @@ const BONUS_COLORS = {
 const FONT = '14px monospace';
 const SCORE_FONT = '22px monospace';
 const TIMER_FONT = '14px monospace';
-const MULTIPLIER_FONT = '18px monospace';
+const MULTIPLIER_FONT = '14px monospace';
+const ZONE_COLOR = '#00ff88';
 const PAD = 12;
 const LINE_HEIGHT = 20;
 
-// Renders score (primary), elapsed time (secondary), combo multiplier (top-right), and bonus countdowns
+// Renders score (primary), elapsed time (secondary), pending score + multiplier (third row), and bonus countdowns
 export function renderHUD(ctx, state) {
   ctx.save();
   ctx.textBaseline = 'top';
@@ -37,19 +38,30 @@ export function renderHUD(ctx, state) {
   ctx.shadowBlur = 4;
   ctx.fillText(`${seconds}s`, PAD, PAD + 26);
 
-  // Combo multiplier — top-right, only when > 1.0
+  // Pending score + multiplier — third row, green, only when multiplier active
+  const multY = PAD + 46;
   if (state.comboMultiplier > 1.0) {
     ctx.font = MULTIPLIER_FONT;
+    ctx.fillStyle = ZONE_COLOR;
+    ctx.shadowColor = ZONE_COLOR;
+    ctx.shadowBlur = 10;
+    ctx.fillText(`+${Math.floor(state.pendingScore)}`, PAD, multY);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#ffcc00';
-    ctx.shadowColor = '#ffcc00';
-    ctx.shadowBlur = 8;
-    ctx.fillText(`${state.comboMultiplier.toFixed(1)}x`, ctx.canvas.width - PAD, PAD + 2);
+    ctx.fillText(`x${state.comboMultiplier.toFixed(1)}`, PAD + 90, multY);
     ctx.textAlign = 'left';
+  } else {
+    // Dimmed x1.0 when inactive
+    ctx.font = MULTIPLIER_FONT;
+    ctx.fillStyle = ZONE_COLOR;
+    ctx.shadowColor = ZONE_COLOR;
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 0.3;
+    ctx.fillText('x1.0', PAD, multY);
+    ctx.globalAlpha = 1.0;
   }
 
-  // Active bonus countdowns — below the timer
-  let offsetY = PAD + 26 + LINE_HEIGHT + 4;
+  // Active bonus countdowns — below the multiplier row
+  let offsetY = multY + LINE_HEIGHT + 4;
   for (const [type, effect] of Object.entries(state.activeEffects)) {
     const remaining = (effect.remaining / 1000).toFixed(1);
     const color = BONUS_COLORS[type] ?? '#ffffff';

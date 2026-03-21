@@ -16,7 +16,7 @@ window.gameConfig = {
 
   scoreZoneInterval: 10000,    // ms between zone appearances
   scoreZoneDuration: 7000,     // ms zone stays active
-  scoreZoneRadius: 60,         // px radius of the score zone
+  scoreZoneRadius: 90,         // px radius of the score zone
   scoreZoneWanderSpeed: 40,    // px per second wander speed
 
   difficulty: {
