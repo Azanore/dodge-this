@@ -29,15 +29,19 @@ export function renderHUD(ctx, state) {
   ctx.shadowBlur = 6;
   ctx.fillText(`${Math.floor(state.score)}`, PAD, PAD);
 
-  // Pending + multiplier — same line as score, green, only when active
-  if (state.comboMultiplier > 1.0) {
-    const scoreWidth = ctx.measureText(`${Math.floor(state.score)}`).width;
-    ctx.font = TIMER_FONT;
-    ctx.fillStyle = ZONE_COLOR;
-    ctx.shadowColor = ZONE_COLOR;
-    ctx.shadowBlur = 8;
-    ctx.fillText(` +${Math.floor(state.pendingScore)} x${state.comboMultiplier.toFixed(1)}`, PAD + scoreWidth, PAD + 4);
-  }
+  // Multiplier + pending — same line as score, always visible
+  const scoreWidth = ctx.measureText(`${Math.floor(state.score)}`).width;
+  const isCombo = state.comboMultiplier > 1.0;
+  const multText = isCombo
+    ? ` x${state.comboMultiplier.toFixed(1)} +${Math.floor(state.pendingScore)}`
+    : ` x1.0`;
+  ctx.font = TIMER_FONT;
+  ctx.fillStyle = ZONE_COLOR;
+  ctx.shadowColor = ZONE_COLOR;
+  ctx.shadowBlur = isCombo ? 8 : 0;
+  ctx.globalAlpha = isCombo ? 1.0 : 0.35;
+  ctx.fillText(multText, PAD + scoreWidth, PAD + 4);
+  ctx.globalAlpha = 1.0;
 
   // Timer — below score, always grey
   ctx.font = TIMER_FONT;
