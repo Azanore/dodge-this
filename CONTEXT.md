@@ -73,11 +73,8 @@ See the Backlog section below.
 Grouped by effort. All of these fit the current architecture without major rewrites.
 
 ### Quick wins (low effort, high impact)
-- **Favicon** — stops the 404 on every page load. Any small icon works.
-- **Screen shake on death** — brief canvas `translate` jitter when `status` transitions to `'dead'`. Pure renderer change, no logic.
-- **Bonus collection flash** — brief glow burst or ring expand at the pickup location when collected. Currently there's zero visual feedback.
-- **Speed indicator on HUD** — show current speed multiplier so players feel the ramp-up. One line in `hud.js`.
 - **Hide dev panel in production** — gate `configPanel.js` behind a URL param or env flag so it doesn't ship to players.
+- **Obstacle visual distinction** — obstacles are all glowing circles; bullet could be a thin fast line, shard a triangle, ball stays as circle. ~30-40 lines in `renderer.js`, meaningful readability improvement.
 
 ### Medium effort (worth a dedicated session)
 - **Sound effects** — death sting, bonus collect chime, background ambient hum. Needs a decision on asset format (Web Audio API synth vs. audio files).
@@ -125,6 +122,13 @@ Run: `npm test`
 - Extracted `gameUpdate.js` for testability
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
+
+### Session 3
+- Added SVG favicon (inline data URI, cyan glowing dot)
+- Added screen shake on death (400ms decaying jitter, `triggerShake()` in renderer.js)
+- Added bonus collection flash (expanding ring at pickup location, `triggerBonusFlash()` in renderer.js)
+- Added speed multiplier indicator to HUD (top-right, subtle grey, live from `getCurrentSpeedMultiplier`)
+- Updated backlog: removed completed quick wins, added obstacle visual distinction item
 
 ### Session 2
 - Removed Share button

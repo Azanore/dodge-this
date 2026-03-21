@@ -1,6 +1,8 @@
-// HUD rendering: survival timer and active bonus countdowns.
-// Related: GameState.js, renderer.js
+// HUD rendering: survival timer, speed indicator, and active bonus countdowns.
+// Related: GameState.js, renderer.js, difficulty.js
 // Does not handle game logic — pure canvas drawing from state.
+
+import { getCurrentSpeedMultiplier } from './difficulty.js';
 
 // Per-type colors matching bonuses.js
 const BONUS_COLORS = {
@@ -15,7 +17,7 @@ const TIMER_FONT = '18px monospace';
 const PAD = 12;
 const LINE_HEIGHT = 20;
 
-// Renders the survival timer and active bonus labels onto the canvas
+// Renders the survival timer, speed indicator, and active bonus labels onto the canvas
 export function renderHUD(ctx, state) {
   ctx.save();
   ctx.textBaseline = 'top';
@@ -27,6 +29,16 @@ export function renderHUD(ctx, state) {
   ctx.shadowColor = '#ffffff';
   ctx.shadowBlur = 6;
   ctx.fillText(`${seconds}s`, PAD, PAD);
+
+  // Speed indicator — top-right corner
+  const speed = getCurrentSpeedMultiplier(state.elapsed).toFixed(2);
+  ctx.font = FONT;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#aaaaaa';
+  ctx.shadowColor = '#aaaaaa';
+  ctx.shadowBlur = 4;
+  ctx.fillText(`${speed}x`, ctx.canvas.width - PAD, PAD + 2);
+  ctx.textAlign = 'left';
 
   // Active bonus countdowns — below the timer
   let offsetY = PAD + LINE_HEIGHT + 6;
