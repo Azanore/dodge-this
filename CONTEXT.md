@@ -64,17 +64,39 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 - **Sound** — not ruled out, but adds asset management complexity. Worth a dedicated session if added.
 
 ### Pending / ideas for later
-- Favicon (currently 404s on every load, harmless)
-- Visual feedback on bonus collection (flash, particle, sound)
-- Hide dev config panel in production (currently always accessible via P)
-- Difficulty selector on start screen (easy/normal/hard presets)
-- Obstacle that tracks the player instead of aiming at a fixed point
-- Clean up: `GameState.js` exports an unused singleton `state` — only `resetState()` is used
-- Clean up: `BONUS_COLORS` duplicated in `bonuses.js` and `renderer.js`
+See the Backlog section below.
 
 ---
 
-## Testing
+## Backlog
+
+Grouped by effort. All of these fit the current architecture without major rewrites.
+
+### Quick wins (low effort, high impact)
+- **Favicon** — stops the 404 on every page load. Any small icon works.
+- **Screen shake on death** — brief canvas `translate` jitter when `status` transitions to `'dead'`. Pure renderer change, no logic.
+- **Bonus collection flash** — brief glow burst or ring expand at the pickup location when collected. Currently there's zero visual feedback.
+- **Speed indicator on HUD** — show current speed multiplier so players feel the ramp-up. One line in `hud.js`.
+- **Hide dev panel in production** — gate `configPanel.js` behind a URL param or env flag so it doesn't ship to players.
+
+### Medium effort (worth a dedicated session)
+- **Sound effects** — death sting, bonus collect chime, background ambient hum. Needs a decision on asset format (Web Audio API synth vs. audio files).
+- **Difficulty presets** — easy/normal/hard buttons on the start screen. Just applies different `gameConfig` values before starting. No new logic.
+- **Tracking obstacle** — a new obstacle type that adjusts velocity toward the current `state.player` position each frame instead of aiming at a fixed point on spawn. High skill ceiling impact.
+- **Near-miss feedback** — brief flash or ring when an obstacle passes very close without hitting. Rewards skilled play visually.
+- **Combo multiplier** — time survived without getting within X pixels of an obstacle multiplies the displayed score. Pure state addition.
+
+### Larger scope (plan carefully before starting)
+- **Touch/mobile** — the game is mouse-only by design. Adding touch requires rethinking input, zone sizing for small screens, and the entire feel. Not a small change.
+- **Global leaderboard** — requires a backend, auth, and anti-cheat. Changes the game's social nature entirely. Only worth it if the game gets real traffic.
+- **Obstacle patterns / waves** — scripted formations instead of pure random spawning. High design effort, risk of breaking the emergent feel of the current system.
+
+### Deliberately out of scope (don't revisit without a strong reason)
+- **Multiplayer** — different architecture entirely.
+- **Level system** — endless survival is the identity of the game. Levels would break the format.
+- **Share button** — removed in session 2. `navigator.clipboard` requires HTTPS + user gesture; no real value for a solo game.
+
+---
 
 Run: `npm test`
 
