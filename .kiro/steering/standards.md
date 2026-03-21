@@ -38,6 +38,7 @@ inclusion: always
 - Do not create documentation or summary files
 - Share notes, change summaries, and analysis directly in chat
 - Only create/update docs when explicitly requested
+- Update `CONTEXT.md` after any session that fixes a bug, adds a feature, or makes an architectural decision — add a changelog entry and update the relevant section
 
 ## Architecture & Patterns
 
@@ -58,6 +59,7 @@ inclusion: always
 **Component Changes**:
 - Target only the affected element, not shared/dependent components
 - Prefer changing one over changing all
+- Never touch code outside the targeted area, even if it looks wrong — flag it as a separate observation instead
 
 ## Development Workflow
 
@@ -65,17 +67,24 @@ inclusion: always
 - Read related files to understand context, dependencies, and patterns
 - Analyze everything related to the problem
 - Confirm issues exist and clarify them before implementing solutions
+- State the blast radius: explicitly identify which files will change and which will not
 
 **During Coding**:
 - Make minimal, well-thought-out changes
 - Don't break existing functionality
 - Reuse what's reusable when adding features
 - Maintain feature independence
+- One task at a time — never combine a bug fix with a feature addition in the same response
 
 **After Coding**:
 - Provide clear before/after differentiation for validation
+- State what could break and what should be tested as a result of the change
 - Mention what can be refactored
 - After completing each task, run: `git add . ; git commit -m "<task description>" ; git push origin master`
+
+**On Ambiguity**:
+- If something is unclear or context is missing, ask one focused question before proceeding
+- Never assume and silently fill gaps — state the assumption explicitly and confirm it first
 
 ## Critical Thinking & Challenge
 
