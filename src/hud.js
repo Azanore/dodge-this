@@ -18,15 +18,10 @@ const PENDING_COLOR = '#88ffcc'; // pending bonus — lighter mint, same family
 const PAD = 12;
 const LINE_HEIGHT = 20;
 
-import { playScoreBank } from './audio.js'; // AUDIO
-
 // Score bump animation state — triggered when pending banks into real score
 const BUMP_DURATION = 220;
 let bumpRemaining = 0;
-export function triggerScoreBump() {
-  bumpRemaining = BUMP_DURATION;
-  playScoreBank(); // AUDIO
-}
+export function triggerScoreBump() { bumpRemaining = BUMP_DURATION; }
 
 // Renders score (primary), multiplier + pending inline, timer below, bonus countdowns
 export function renderHUD(ctx, state, delta) {

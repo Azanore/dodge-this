@@ -4,7 +4,6 @@
 
 import { innerZone, outerZone } from './zones.js';
 import { renderHUD } from './hud.js';
-import { playNearMiss } from './audio.js'; // AUDIO
 
 // Star field — generated once at init, rendered every frame
 const STAR_COUNT = 120;
@@ -73,7 +72,6 @@ export function triggerBonusFlash(x, y, color) {
 export function triggerNearMiss(x, y) {
   flashes.push({ x, y, color: '#ffffff', remaining: NEAR_MISS_FLASH_DURATION });
   nearMissText.remaining = 600;
-  playNearMiss(); // AUDIO
 }
 
 // Generates the static star field array using viewport dimensions

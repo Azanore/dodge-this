@@ -11,7 +11,6 @@ import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
-import { initAudio } from './audio.js'; // AUDIO
 
 // Apply config validation with fallbacks (Requirement 10.7)
 validateConfig(gameConfig);
@@ -89,7 +88,6 @@ function onStartAction(e) {
   if (e.type === 'keydown' && e.key === 'Escape') return;
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
-  initAudio(); // AUDIO
   state.status = 'grace';
   loop.start();
 }

@@ -5,7 +5,6 @@
 import { innerZone } from './zones.js';
 import { clearAll } from './obstacles.js';
 import { triggerBonusFlash } from './renderer.js';
-import { playBonus } from './audio.js'; // AUDIO
 
 // Fixed hitbox radius for all bonus pickups
 const PICKUP_RADIUS = 12;
@@ -56,7 +55,6 @@ export function trySpawnBonus(state) {
 export function collectBonus(type, state, x = 0, y = 0) {
   const cfg = gameConfig.bonusTypes[type];
   triggerBonusFlash(x, y, BONUS_COLORS[type] ?? '#ffffff');
-  playBonus(type); // AUDIO
 
   if (type === 'slowmo') {
     const prev = state.slowmoMultiplier ?? 1;
