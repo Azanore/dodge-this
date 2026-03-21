@@ -72,6 +72,58 @@ function glowCircle(ctx, x, y, radius, color, blur) {
   ctx.restore();
 }
 
+// Draws a ball obstacle — filled glowing circle
+function drawBall(ctx, obs, color) {
+  glowCircle(ctx, obs.x, obs.y, obs.radius, color, 18);
+}
+
+// Draws a bullet obstacle — elongated capsule oriented along velocity
+function drawBullet(ctx, obs, color) {
+  const angle = Math.atan2(obs.vy, obs.vx);
+  const len = obs.radius * 3.5;
+  const hw = obs.radius * 0.7; // half-width of capsule
+  ctx.save();
+  ctx.translate(obs.x, obs.y);
+  ctx.rotate(angle);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = color;
+  // Rounded rectangle: rect body + two semicircles
+  ctx.beginPath();
+  ctx.arc(len / 2, 0, hw, -Math.PI / 2, Math.PI / 2);
+  ctx.arc(-len / 2, 0, hw, Math.PI / 2, -Math.PI / 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// Draws a shard obstacle — sharp triangle oriented along velocity
+function drawShard(ctx, obs, color) {
+  const angle = Math.atan2(obs.vy, obs.vx);
+  const r = obs.radius;
+  ctx.save();
+  ctx.translate(obs.x, obs.y);
+  ctx.rotate(angle);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(r * 1.6, 0);          // sharp tip pointing forward
+  ctx.lineTo(-r * 0.9, r * 0.85);  // back-left
+  ctx.lineTo(-r * 0.9, -r * 0.85); // back-right
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// Dispatches to the correct draw function per obstacle type
+function drawObstacle(ctx, obs) {
+  const color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
+  if (obs.type === 'bullet') drawBullet(ctx, obs, color);
+  else if (obs.type === 'shard') drawShard(ctx, obs, color);
+  else drawBall(ctx, obs, color);
+}
+
 // Renders the start screen overlay with title, prompt, and personal best
 export function renderStartScreen(ctx) {
   const cw = ctx.canvas.width;
@@ -188,10 +240,9 @@ export function render(ctx, state, delta) {
   ctx.fillRect(innerZone.x, innerZone.y, innerZone.width, innerZone.height);
   ctx.restore();
 
-  // 5. Obstacles — glowing circles
+  // 5. Obstacles — per-type shapes with glow
   for (const obs of state.obstacles) {
-    const color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
-    glowCircle(ctx, obs.x, obs.y, obs.radius, color, 18);
+    drawObstacle(ctx, obs);
   }
 
   // 6. Bonus pickups — per-type color with glow
