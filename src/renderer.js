@@ -13,7 +13,8 @@ const stars = [];
 const OBSTACLE_COLORS = {
   ball: '#ff4444',
   bullet: '#ffffff',
-  shard: '#ff9900'
+  shard: '#ff9900',
+  tracker: '#cc44ff'
 };
 
 // Per-type bonus pickup colors (matches bonuses.js)
@@ -132,11 +133,43 @@ function drawShard(ctx, obs, color) {
   ctx.restore();
 }
 
+// Draws a tracker obstacle — pulsing diamond that rotates toward player
+function drawTracker(ctx, obs, color) {
+  const angle = Math.atan2(obs.vy, obs.vx) + Math.PI / 4; // diamond orientation
+  const r = obs.radius * 1.3;
+  ctx.save();
+  ctx.translate(obs.x, obs.y);
+  ctx.rotate(angle + pulseT * 1.5); // slow spin adds menace
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -r);
+  ctx.lineTo(r, 0);
+  ctx.lineTo(0, r);
+  ctx.lineTo(-r, 0);
+  ctx.closePath();
+  ctx.fill();
+  // Bright inner core
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(0, -r * 0.45);
+  ctx.lineTo(r * 0.45, 0);
+  ctx.lineTo(0, r * 0.45);
+  ctx.lineTo(-r * 0.45, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
 // Dispatches to the correct draw function per obstacle type
 function drawObstacle(ctx, obs) {
   const color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
   if (obs.type === 'bullet') drawBullet(ctx, obs, color);
   else if (obs.type === 'shard') drawShard(ctx, obs, color);
+  else if (obs.type === 'tracker') drawTracker(ctx, obs, color);
   else drawBall(ctx, obs, color);
 }
 

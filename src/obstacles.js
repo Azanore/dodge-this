@@ -5,7 +5,7 @@
 import { innerZone, outerZone } from './zones.js';
 
 // Obstacle visual radii per type (pixels)
-const TYPE_RADIUS = { ball: 14, bullet: 7, shard: 10 };
+const TYPE_RADIUS = { ball: 14, bullet: 7, shard: 10, tracker: 11 };
 
 // Builds a weighted list of enabled obstacle type keys from config
 function getEnabledTypes() {
@@ -89,6 +89,26 @@ export function updateObstacles(delta, state) {
   const slowmo = state.slowmoMultiplier ?? 1;
 
   state.obstacles = state.obstacles.filter(obs => {
+    // Tracker: steer velocity toward current player position each frame
+    if (obs.type === 'tracker') {
+      const dx = state.player.x - obs.x;
+      const dy = state.player.y - obs.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 0) {
+        const turnRate = gameConfig.obstacleTypes.tracker.turnRate;
+        const speed = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
+        // Blend current direction toward player direction by turnRate
+        const tx = (dx / dist) * speed;
+        const ty = (dy / dist) * speed;
+        obs.vx += (tx - obs.vx) * turnRate;
+        obs.vy += (ty - obs.vy) * turnRate;
+        // Renormalize to preserve speed
+        const newSpeed = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
+        obs.vx = (obs.vx / newSpeed) * speed;
+        obs.vy = (obs.vy / newSpeed) * speed;
+      }
+    }
+
     obs.x += obs.vx * delta * slowmo;
     obs.y += obs.vy * delta * slowmo;
 

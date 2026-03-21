@@ -19,7 +19,8 @@ window.gameConfig = {
   obstacleTypes: {
     ball: { enabled: true, baseSpeed: 0.18, spawnWeight: 5 },
     bullet: { enabled: true, baseSpeed: 0.32, spawnWeight: 3 },
-    shard: { enabled: true, baseSpeed: 0.22, spawnWeight: 2 }
+    shard: { enabled: true, baseSpeed: 0.22, spawnWeight: 2 },
+    tracker: { enabled: true, baseSpeed: 0.14, spawnWeight: 2, turnRate: 0.04 }
   },
 
   bonusTypes: {
