@@ -12,10 +12,10 @@ window.gameConfig = {
   comboMultiplierMax: 5.0,     // hard cap on combo multiplier
   comboBuildRate: 1.5,         // multiplier units gained per second while inside score zone
   comboDecayRate: 0.8,         // multiplier units lost per second when zone inactive
-  comboFastDecayRate: 2.4,     // multiplier units lost per second when zone active, player outside
+  comboFastDecayRate: 1.6,     // multiplier units lost per second when zone active, player outside
 
-  scoreZoneInterval: 8000,     // ms between zone appearances
-  scoreZoneDuration: 5000,     // ms zone stays active
+  scoreZoneInterval: 10000,    // ms between zone appearances
+  scoreZoneDuration: 7000,     // ms zone stays active
   scoreZoneRadius: 60,         // px radius of the score zone
   scoreZoneWanderSpeed: 40,    // px per second wander speed
 
@@ -29,9 +29,9 @@ window.gameConfig = {
 
   obstacleTypes: {
     ball: { enabled: true, baseSpeed: 0.18, spawnWeight: 5 },
-    bullet: { enabled: true, baseSpeed: 0.32, spawnWeight: 3 },
+    bullet: { enabled: true, baseSpeed: 0.26, spawnWeight: 3 },
     shard: { enabled: true, baseSpeed: 0.22, spawnWeight: 2 },
-    tracker: { enabled: true, baseSpeed: 0.13, spawnWeight: 2, turnRate: 0.08 }
+    tracker: { enabled: true, baseSpeed: 0.13, spawnWeight: 1, turnRate: 0.04 }
   },
 
   bonusTypes: {
