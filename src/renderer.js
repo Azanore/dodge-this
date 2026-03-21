@@ -27,13 +27,15 @@ const BONUS_COLORS = {
 // Pulse animation state
 let pulseT = 0;
 
-// Screen shake state — triggered on death, decays over shakeDuration ms
+// Screen shake state — triggered externally via triggerShake(), decays over SHAKE_DURATION ms
 const SHAKE_DURATION = 400;
 const SHAKE_MAGNITUDE = 10;
 let shakeRemaining = 0;
-let lastStatus = null;
 
-// Returns true while a death shake is still playing
+// Starts a screen shake — call this when death is detected
+export function triggerShake() { shakeRemaining = SHAKE_DURATION; }
+
+// Returns true while a shake is still playing
 export function isShaking() { return shakeRemaining > 0; }
 
 // Generates the static star field array using viewport dimensions
@@ -133,10 +135,6 @@ export function render(ctx, state, delta) {
 
   // Advance pulse timer
   pulseT += delta * 0.002;
-
-  // Trigger shake on death transition
-  if (state.status === 'dead' && lastStatus !== 'dead') shakeRemaining = SHAKE_DURATION;
-  lastStatus = state.status;
 
   // Compute shake offset — decays linearly to zero
   let shakeX = 0, shakeY = 0;
