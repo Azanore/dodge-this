@@ -26,7 +26,7 @@ export function checkPlayerBonusPickups(state, collectBonus) {
   const player = state.player;
   state.bonuses = state.bonuses.filter(pickup => {
     if (circlesOverlap(player, pickup)) {
-      collectBonus(pickup.type, state);
+      collectBonus(pickup.type, state, pickup.x, pickup.y);
       return false;
     }
     return true;

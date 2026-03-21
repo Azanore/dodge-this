@@ -38,6 +38,15 @@ export function triggerShake() { shakeRemaining = SHAKE_DURATION; }
 // Returns true while a shake is still playing
 export function isShaking() { return shakeRemaining > 0; }
 
+// Active bonus collection flashes — expanding rings that fade out
+const flashes = [];
+const FLASH_DURATION = 350;
+
+// Spawns a flash ring at (x, y) with the bonus color
+export function triggerBonusFlash(x, y, color) {
+  flashes.push({ x, y, color, remaining: FLASH_DURATION });
+}
+
 // Generates the static star field array using viewport dimensions
 export function initRenderer() {
   stars.length = 0;
@@ -191,6 +200,26 @@ export function render(ctx, state, delta) {
     glowCircle(ctx, pickup.x, pickup.y, pickup.radius, color, 20);
     // Inner bright core
     glowCircle(ctx, pickup.x, pickup.y, pickup.radius * 0.5, '#ffffff', 8);
+  }
+
+  // 6b. Bonus collection flashes — expanding fading rings
+  for (let i = flashes.length - 1; i >= 0; i--) {
+    const f = flashes[i];
+    f.remaining -= delta;
+    if (f.remaining <= 0) { flashes.splice(i, 1); continue; }
+    const t = 1 - f.remaining / FLASH_DURATION; // 0→1 as flash ages
+    const radius = 12 + t * 40;
+    const alpha = (1 - t) * 0.8;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = f.color;
+    ctx.shadowColor = f.color;
+    ctx.shadowBlur = 16;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   }
 
   // 7. Player — pulsing glow; distinct shield glow when invincible (hidden on start screen)
