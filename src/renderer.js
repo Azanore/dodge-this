@@ -27,6 +27,22 @@ const BONUS_COLORS = {
 // Pulse animation state
 let pulseT = 0;
 
+// Debug flag — draws hitbox circles over all entities when enabled
+let showHitboxes = false;
+export function toggleHitboxes() { showHitboxes = !showHitboxes; }
+
+// Draws a wireframe hitbox circle (debug only)
+function drawHitbox(ctx, x, y, radius) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 0, 0.75)';
+  ctx.lineWidth = 1;
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 // Screen shake state — triggered externally via triggerShake(), decays over SHAKE_DURATION ms
 const SHAKE_DURATION = 400;
 const SHAKE_MAGNITUDE = 10;
@@ -243,6 +259,7 @@ export function render(ctx, state, delta) {
   // 5. Obstacles — per-type shapes with glow
   for (const obs of state.obstacles) {
     drawObstacle(ctx, obs);
+    if (showHitboxes) drawHitbox(ctx, obs.x, obs.y, obs.radius);
   }
 
   // 6. Bonus pickups — per-type color with glow
@@ -251,6 +268,7 @@ export function render(ctx, state, delta) {
     glowCircle(ctx, pickup.x, pickup.y, pickup.radius, color, 20);
     // Inner bright core
     glowCircle(ctx, pickup.x, pickup.y, pickup.radius * 0.5, '#ffffff', 8);
+    if (showHitboxes) drawHitbox(ctx, pickup.x, pickup.y, pickup.radius);
   }
 
   // 6b. Bonus collection flashes — expanding fading rings
@@ -284,6 +302,7 @@ export function render(ctx, state, delta) {
     glowCircle(ctx, px, py, pr, playerColor, playerBlur);
     // Bright core dot
     glowCircle(ctx, px, py, pr * 0.4, '#ffffff', 6);
+    if (showHitboxes) drawHitbox(ctx, px, py, pr);
   }
 
   // 8. HUD

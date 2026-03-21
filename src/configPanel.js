@@ -1,6 +1,8 @@
 // Dev config panel: DOM overlay for runtime config tuning, toggled by P key.
-// Related: main.js, game.config.js, GameLoop.js
+// Related: main.js, game.config.js, GameLoop.js, renderer.js
 // Does not contain game logic — only reads/writes gameConfig and delegates restart.
+
+import { toggleHitboxes } from './renderer.js';
 
 // Slider definitions: [key path, min, max, step]
 const SLIDERS = [
@@ -68,6 +70,14 @@ function buildPanel() {
     sliderSection.appendChild(makeSlider(def));
   }
   box.appendChild(sliderSection);
+
+  // --- Debug ---
+  const debugSection = document.createElement('div');
+  debugSection.innerHTML = '<div style="color:#aaa;margin-bottom:6px">DEBUG</div>';
+  const hitboxRow = makeCheckbox('debug-hitboxes', 'Show hitboxes', false);
+  hitboxRow.querySelector('input').addEventListener('change', toggleHitboxes);
+  debugSection.appendChild(hitboxRow);
+  box.appendChild(debugSection);
 
   // --- Buttons ---
   const btnRow = document.createElement('div');
