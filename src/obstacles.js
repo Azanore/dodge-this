@@ -78,8 +78,7 @@ export function spawnObstacle(state, speedMultiplier = 1) {
     y,
     vx,
     vy,
-    radius: TYPE_RADIUS[type] ?? 10,
-    ...(type === 'tracker' && { lifetime: gameConfig.obstacleTypes.tracker.lifetime })
+    radius: TYPE_RADIUS[type] ?? 10
   });
 }
 
@@ -113,11 +112,8 @@ export function updateObstacles(delta, state) {
     obs.x += obs.vx * delta * slowmo;
     obs.y += obs.vy * delta * slowmo;
 
-    // Tick tracker lifetime — despawn when expired
-    if (obs.lifetime !== undefined) {
-      obs.lifetime -= delta;
-      if (obs.lifetime <= 0) return false;
-    }
+    // Trackers ignore out-of-bounds — only removed by screenclear bonus
+    if (obs.type === 'tracker') return true;
 
     return (
       obs.x + obs.radius > oz.x &&

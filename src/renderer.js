@@ -133,18 +133,12 @@ function drawShard(ctx, obs, color) {
   ctx.restore();
 }
 
-// Draws a tracker obstacle — pulsing diamond that rotates toward player, fades when expiring
+// Draws a tracker obstacle — pulsing spinning diamond that hunts the player
 function drawTracker(ctx, obs, color) {
-  const angle = Math.atan2(obs.vy, obs.vx) + Math.PI / 4;
   const r = obs.radius * 1.3;
-  // Fade out in last 1500ms of lifetime
-  const alpha = obs.lifetime !== undefined
-    ? Math.min(1, obs.lifetime / 1500)
-    : 1;
   ctx.save();
-  ctx.globalAlpha = alpha;
   ctx.translate(obs.x, obs.y);
-  ctx.rotate(angle + pulseT * 1.5);
+  ctx.rotate(pulseT * 1.5);
   ctx.shadowColor = color;
   ctx.shadowBlur = 20;
   ctx.fillStyle = color;
@@ -155,10 +149,9 @@ function drawTracker(ctx, obs, color) {
   ctx.lineTo(-r, 0);
   ctx.closePath();
   ctx.fill();
-  // Bright inner core
   ctx.shadowBlur = 8;
   ctx.fillStyle = '#ffffff';
-  ctx.globalAlpha = alpha * 0.4;
+  ctx.globalAlpha = 0.4;
   ctx.beginPath();
   ctx.moveTo(0, -r * 0.45);
   ctx.lineTo(r * 0.45, 0);
