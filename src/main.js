@@ -8,7 +8,7 @@ import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
-import { render, renderStartScreen, renderPauseScreen, initRenderer } from './renderer.js';
+import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
 
@@ -47,13 +47,16 @@ function update(delta) {
   lastDelta = delta;
   const result = gameUpdate(delta, state, accumulators);
   if (result === 'dead') {
-    loop.stop();
-    showGameOver(canvas, state, onRestart);
+    // Keep loop running for shake duration, then stop and show game over
+    setTimeout(() => {
+      loop.stop();
+      showGameOver(canvas, state, onRestart);
+    }, 450);
   }
 }
 
 function renderFrame() {
-  if (state.status === 'dead') return; // game over screen drawn by showGameOver; don't overwrite
+  if (state.status === 'dead' && !isShaking()) return; // game over screen drawn by showGameOver; don't overwrite
   if (state.status === 'start') {
     render(ctx, state, lastDelta);
     renderStartScreen(ctx);

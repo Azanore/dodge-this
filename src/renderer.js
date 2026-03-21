@@ -27,6 +27,15 @@ const BONUS_COLORS = {
 // Pulse animation state
 let pulseT = 0;
 
+// Screen shake state — triggered on death, decays over shakeDuration ms
+const SHAKE_DURATION = 400;
+const SHAKE_MAGNITUDE = 10;
+let shakeRemaining = 0;
+let lastStatus = null;
+
+// Returns true while a death shake is still playing
+export function isShaking() { return shakeRemaining > 0; }
+
 // Generates the static star field array using viewport dimensions
 export function initRenderer() {
   stars.length = 0;
@@ -125,6 +134,22 @@ export function render(ctx, state, delta) {
   // Advance pulse timer
   pulseT += delta * 0.002;
 
+  // Trigger shake on death transition
+  if (state.status === 'dead' && lastStatus !== 'dead') shakeRemaining = SHAKE_DURATION;
+  lastStatus = state.status;
+
+  // Compute shake offset — decays linearly to zero
+  let shakeX = 0, shakeY = 0;
+  if (shakeRemaining > 0) {
+    shakeRemaining = Math.max(0, shakeRemaining - delta);
+    const intensity = (shakeRemaining / SHAKE_DURATION) * SHAKE_MAGNITUDE;
+    shakeX = (Math.random() * 2 - 1) * intensity;
+    shakeY = (Math.random() * 2 - 1) * intensity;
+  }
+
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
   // 1. Dark background
   ctx.fillStyle = '#05050f';
   ctx.fillRect(0, 0, cw, ch);
@@ -185,4 +210,6 @@ export function render(ctx, state, delta) {
 
   // 8. HUD
   renderHUD(ctx, state);
+
+  ctx.restore();
 }
