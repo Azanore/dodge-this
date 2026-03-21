@@ -70,7 +70,7 @@ See the Backlog section below.
 ### Planned (next sessions, in order)
 1. ~~Near-miss feedback~~ — done session 5
 2. ~~Combo multiplier + Score Zone~~ — done session 6
-3. **Value tuning** — play-test score zone values, adjust based on feel (tracker interaction especially)
+3. ~~Value tuning~~ — done session 7
 4. **Difficulty presets** — easy/normal/hard, only after gameplay is stable.
 5. **Sound effects** — death sting, bonus chime, ambient hum.
 6. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
@@ -130,6 +130,16 @@ Run: `npm test`
 - Extracted `gameUpdate.js` for testability
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
+
+### Session 7
+- Score math fixed: `state.score` always ticks at base rate; `state.pendingScore` accumulates only the bonus delta `baseTick * (multiplier - 1)` while multiplier > 1x
+- Pending score lost on death, banked into real score when multiplier returns to 1x
+- `triggerScoreBump()` fires on bank — score number scales up 18% with brighter glow for 220ms
+- HUD redesigned: score large white, `x2.3` green inline, `+47` mint inline — all on one line; timer below
+- Multiplier always visible: dimmed at x1.0, full glow when active
+- Score zone radius bumped from 60px to 90px
+- Score formula changed from `delta * multiplier` to `(delta/1000) * 10` — numbers now in hundreds not hundreds-of-thousands
+- `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
 
 ### Session 6
 - Added combo multiplier system: `state.score` (delta × comboMultiplier), `state.comboMultiplier` in `[1.0, 5.0]`
