@@ -119,6 +119,7 @@
   - Verify Escape during `'dead'` is ignored
   - _Requirements: 3.1, 3.4, 3.5_
 
-- [ ] 6. Final Checkpoint — ensure all tests pass
+- [x] 6. Final Checkpoint — ensure all tests pass
+
 
   - Ensure all tests pass, ask the user if questions arise.
