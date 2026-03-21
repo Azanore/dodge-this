@@ -78,7 +78,8 @@ export function spawnObstacle(state, speedMultiplier = 1) {
     y,
     vx,
     vy,
-    radius: TYPE_RADIUS[type] ?? 10
+    radius: TYPE_RADIUS[type] ?? 10,
+    lastNearMissAt: 0
   });
 }
 

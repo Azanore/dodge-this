@@ -18,7 +18,9 @@ export function resetState() {
       y: 0,
       radius: gameConfig.playerHitboxRadius
     },
-    personalBest: 0
+    personalBest: 0,
+    score: 0,
+    comboMultiplier: 1.0
   };
 }
 

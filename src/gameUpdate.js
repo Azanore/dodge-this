@@ -5,8 +5,10 @@
 import { update as updatePlayer } from './player.js';
 import { spawnObstacle, updateObstacles } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
-import { checkPlayerObstacles, checkPlayerBonusPickups } from './collision.js';
+import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
+import { triggerNearMiss } from './renderer.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
+import { updateComboMultiplier } from './combo.js';
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
@@ -33,6 +35,8 @@ export function gameUpdate(delta, state, accumulators) {
 
   // active
   state.elapsed += delta;
+  updateComboMultiplier(delta, state);
+  state.score += delta * state.comboMultiplier;
 
   const speedMult = getCurrentSpeedMultiplier(state.elapsed);
   const spawnInterval = getCurrentSpawnInterval(state.elapsed);
@@ -53,6 +57,7 @@ export function gameUpdate(delta, state, accumulators) {
   updateEffects(delta, state);
   checkPlayerBonusPickups(state, collectBonus);
   checkPlayerObstacles(state);
+  if (state.status !== 'dead') checkNearMisses(state, triggerNearMiss);
 
   return state.status === 'dead' ? 'dead' : null;
 }

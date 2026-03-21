@@ -7,6 +7,11 @@ window.gameConfig = {
   outerZoneScale: 1.3,         // outer zone is this multiple of inner zone on each axis
 
   maxSpeedMultiplier: 4.0,     // hard cap on obstacle speed multiplier
+  nearMissThreshold: 20,       // px gap between edges that counts as a near-miss
+
+  comboMultiplierMax: 5.0,     // hard cap on combo multiplier
+  comboBuildRate: 1.5,         // multiplier units gained per second while near obstacle
+  comboDecayRate: 0.8,         // multiplier units lost per second while safe
 
   difficulty: {
     speedScaleFactor: 0.6,     // controls how fast speed ramps up (logarithmic)

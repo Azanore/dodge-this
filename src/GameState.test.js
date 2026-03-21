@@ -14,4 +14,12 @@ describe('resetState', () => {
   it('sets initial status to "start"', () => {
     expect(resetState().status).toBe('start');
   });
+
+  it('initialises score to 0', () => {
+    expect(resetState().score).toBe(0);
+  });
+
+  it('initialises comboMultiplier to 1.0', () => {
+    expect(resetState().comboMultiplier).toBe(1.0);
+  });
 });

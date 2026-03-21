@@ -58,10 +58,20 @@ export function isShaking() { return shakeRemaining > 0; }
 // Active bonus collection flashes — expanding rings that fade out
 const flashes = [];
 const FLASH_DURATION = 350;
+const NEAR_MISS_FLASH_DURATION = 220;
+
+// Near-miss text state — single label, reset on each trigger, never stacked
+export let nearMissText = { remaining: 0 };
 
 // Spawns a flash ring at (x, y) with the bonus color
 export function triggerBonusFlash(x, y, color) {
   flashes.push({ x, y, color, remaining: FLASH_DURATION });
+}
+
+// Spawns a near-miss white ring and resets the "CLOSE!" text timer
+export function triggerNearMiss(x, y) {
+  flashes.push({ x, y, color: '#ffffff', remaining: NEAR_MISS_FLASH_DURATION });
+  nearMissText.remaining = 600;
 }
 
 // Generates the static star field array using viewport dimensions
@@ -336,7 +346,24 @@ export function render(ctx, state, delta) {
     if (showHitboxes) drawHitbox(ctx, px, py, pr);
   }
 
-  // 8. HUD
+  // 8. Near-miss "CLOSE!" text — fades out over 600ms above player
+  if (nearMissText.remaining > 0 && state.status !== 'start') {
+    const alpha = nearMissText.remaining / 600;
+    const { x: px, y: py } = state.player;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold 18px monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#ffffff';
+    ctx.shadowBlur = 10;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('CLOSE!', px, py - 24);
+    ctx.restore();
+    nearMissText.remaining = Math.max(0, nearMissText.remaining - delta);
+  }
+
+  // 9. HUD
   renderHUD(ctx, state);
 
   ctx.restore();

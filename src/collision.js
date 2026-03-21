@@ -21,6 +21,25 @@ export function checkPlayerObstacles(state) {
   }
 }
 
+const NEAR_MISS_COOLDOWN = 600; // ms — matches nearMissText duration
+
+// Detects near-misses: obstacles within threshold gap but not overlapping the player.
+// Fires onNearMiss(x, y) and stamps obs.lastNearMissAt to enforce per-obstacle cooldown.
+export function checkNearMisses(state, onNearMiss) {
+  const player = state.player;
+  const threshold = gameConfig.nearMissThreshold;
+  const now = Date.now();
+  for (const obs of state.obstacles) {
+    const dx = obs.x - player.x;
+    const dy = obs.y - player.y;
+    const gap = Math.sqrt(dx * dx + dy * dy) - obs.radius - player.radius;
+    if (gap > 0 && gap <= threshold && now - obs.lastNearMissAt > NEAR_MISS_COOLDOWN) {
+      onNearMiss(player.x, player.y);
+      obs.lastNearMissAt = now;
+    }
+  }
+}
+
 // Checks player vs all field bonus pickups; collects any that overlap
 export function checkPlayerBonusPickups(state, collectBonus) {
   const player = state.player;

@@ -67,6 +67,13 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 ### Pending / ideas for later
 See the Backlog section below.
 
+### Planned (next sessions, in order)
+1. **Near-miss feedback** — ring + "CLOSE!" text when an obstacle passes within threshold. Per-obstacle cooldown stamp prevents spam. Prereq for combo multiplier.
+2. **Combo multiplier** — score = elapsed × multiplier. Multiplier builds when near obstacles, decays when safe. Score replaces PB as primary metric. Timer becomes context.
+3. **Difficulty presets** — easy/normal/hard, only after gameplay is stable.
+4. **Sound effects** — death sting, bonus chime, ambient hum.
+5. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
+
 ---
 
 ## Backlog
@@ -78,9 +85,10 @@ Grouped by effort. All of these fit the current architecture without major rewri
 
 ### Medium effort (worth a dedicated session)
 - **Sound effects** — death sting, bonus collect chime, background ambient hum. Needs a decision on asset format (Web Audio API synth vs. audio files).
-- **Difficulty presets** — easy/normal/hard buttons on the start screen. Just applies different `gameConfig` values before starting. No new logic.
-- **Near-miss feedback** — brief flash or ring when an obstacle passes very close without hitting. Rewards skilled play visually.
-- **Combo multiplier** — time survived without getting within X pixels of an obstacle multiplies the displayed score. Pure state addition.
+- **Difficulty presets** — easy/normal/hard. Defer until gameplay is stable — tuning 3 presets while mechanics are still changing is wasted effort. Per-difficulty PB keys: `dodge_pb_easy`, `dodge_pb_normal`, `dodge_pb_hard`. Migrate existing `dodge_pb` to normal on first load.
+- **Near-miss feedback** — ring + "CLOSE!" text when obstacle passes within threshold. Per-obstacle `lastNearMissAt` cooldown (~600ms) prevents spam. Prereq for combo multiplier.
+- **Combo multiplier** — score = elapsed × multiplier, accumulated continuously. Multiplier builds in near-miss zone, decays when safe. Score is primary PB metric; timer is context. HUD shows score prominently, multiplier in existing indicator slot.
+- **Achievements** — near-miss count, combo streaks, survival milestones. Implement last when all metrics are stable.
 
 ### Larger scope (plan carefully before starting)
 - **Touch/mobile** — the game is mouse-only by design. Adding touch requires rethinking input, zone sizing for small screens, and the entire feel. Not a small change.
@@ -121,6 +129,15 @@ Run: `npm test`
 - Extracted `gameUpdate.js` for testability
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
+
+### Session 5
+- Added near-miss feedback: white expanding ring + "CLOSE!" fading text when an obstacle passes within 40px of the player edge
+- Per-obstacle `lastNearMissAt` cooldown (600ms) prevents spam when an obstacle lingers in the zone
+- `checkNearMisses(state, onNearMiss)` added to `collision.js`, wired in `gameUpdate.js` after death check
+- `triggerNearMiss(x, y)` added to `renderer.js`, reuses existing `flashes[]` system
+- `nearMissThreshold: 40` added to `game.config.js`
+- `lastNearMissAt: 0` added to each spawned obstacle in `obstacles.js`
+- 4 property-based tests added covering: threshold detection, cooldown suppression, multi-obstacle rings, text reset
 
 ### Session 4
 - Distinct obstacle shapes: bullet = capsule, shard = triangle, ball = circle, tracker = spinning diamond

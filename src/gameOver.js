@@ -26,8 +26,15 @@ function writePB(value) {
   try {
     localStorage.setItem(PB_KEY, String(value));
   } catch {
-    // localStorage unavailable — no-op per Requirement 9.4
+    // localStorage unavailable — no-op per Requirement 3.4
   }
+}
+
+// Reads current PB, updates it if score is higher, returns the new display PB
+export function updatePB(score) {
+  const pb = readPB();
+  if (score > pb) writePB(score);
+  return Math.max(pb, score);
 }
 
 // Draws a rounded rectangle button and returns its bounding box
@@ -61,13 +68,13 @@ export function showGameOver(canvas, state, onRestart) {
   const ch = canvas.height;
   const cx = cw / 2;
 
-  // Personal best logic (Requirements 9.2, 9.3, 9.4)
-  const pb = readPB();
-  if (state.elapsed > pb) writePB(state.elapsed);
-  const displayPB = Math.max(pb, state.elapsed);
+  // Personal best logic (Requirements 3.1, 3.2)
+  const prevPB = readPB();
+  const displayPB = updatePB(state.score);
+  const isNewBest = state.score >= prevPB;
 
-  const seconds = (state.elapsed / 1000).toFixed(1);
-  const pbSeconds = (displayPB / 1000).toFixed(1);
+  const points = Math.round(state.score);
+  const pbPoints = Math.round(displayPB);
   const hasPB = displayPB > 0;
 
   // Layout anchors
@@ -91,20 +98,20 @@ export function showGameOver(canvas, state, onRestart) {
   ctx.shadowBlur = 20;
   ctx.fillText('GAME OVER', cx, titleY);
 
-  // Survival time
+  // Final score
   ctx.font = LABEL_FONT;
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = '#ffffff';
   ctx.shadowBlur = 8;
-  ctx.fillText(`Time: ${seconds}s`, cx, timeY);
+  ctx.fillText(`Score: ${points}`, cx, timeY);
 
   // Personal best (omit if localStorage was unavailable and pb is 0)
   if (hasPB) {
     ctx.font = SMALL_FONT;
     ctx.fillStyle = '#aaaaaa';
     ctx.shadowBlur = 0;
-    const pbLabel = state.elapsed >= pb ? 'New Best: ' : 'Best: ';
-    ctx.fillText(`${pbLabel}${pbSeconds}s`, cx, pbY);
+    const pbLabel = isNewBest ? 'New Best: ' : 'Best: ';
+    ctx.fillText(`${pbLabel}${pbPoints} pts`, cx, pbY);
   }
 
   ctx.shadowBlur = 0;
