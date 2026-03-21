@@ -131,6 +131,14 @@ Run: `npm test`
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
 
+### Session 8
+- Added `src/audio.js` — self-contained audio module, removable via `// AUDIO` markers in callers
+- 7 sound files in `/sounds`: `death`, `pickup`, `score-bank`, `multiplier-max`, `game-start`, `near-miss`, `zone-appear`, `music`
+- Music loops continuously — survives death and restart, only pauses on Escape, resumes from exact position
+- Sound triggers: death SFX on death, pickup on bonus collect, score-bank on pending score bank, multiplier-max on hitting 5x, near-miss on close call, zone-appear on score zone spawn, game-start on first play
+- `playMultiplierMax` has 2s cooldown to prevent double-fire when briefly dipping below 5x and returning
+- All other sounds are event-driven one-shots with no double-fire risk
+
 ### Session 7
 - Score math fixed: `state.score` always ticks at base rate; `state.pendingScore` accumulates only the bonus delta `baseTick * (multiplier - 1)` while multiplier > 1x
 - Pending score lost on death, banked into real score when multiplier returns to 1x
