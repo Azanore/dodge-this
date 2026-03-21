@@ -52,9 +52,10 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 - Pause screen (Escape to pause/resume), ignored in dead/start states
 - Game over screen with time, PB, Restart button, R key shortcut
 - Personal best stored in localStorage (`dodge_pb` key, value in ms)
-- Dev config panel (P key) — toggle obstacle/bonus types, tune parameters at runtime
+- Dev config panel (P key) — toggle obstacle/bonus types, tune parameters at runtime; includes hitbox debug toggle
 - 4 bonus types: slowmo, invincibility, screenclear, shrink
-- 3 obstacle types: ball, bullet, shard — weighted spawn, difficulty ramp over time
+- 4 obstacle types: ball, bullet, shard, tracker — distinct shapes, weighted spawn, difficulty ramp over time
+- Tracker obstacle — homing diamond that permanently hunts the player, only removed by screenclear bonus
 - Vercel deployment (static, no build step, `vercel.json` rewrites to index.html)
 
 ### Deliberately not added
@@ -73,12 +74,11 @@ See the Backlog section below.
 Grouped by effort. All of these fit the current architecture without major rewrites.
 
 ### Quick wins (low effort, high impact)
-- **Obstacle visual distinction** — obstacles are all glowing circles; bullet could be a thin fast line, shard a triangle, ball stays as circle. ~30-40 lines in `renderer.js`, meaningful readability improvement.
+- (none remaining)
 
 ### Medium effort (worth a dedicated session)
 - **Sound effects** — death sting, bonus collect chime, background ambient hum. Needs a decision on asset format (Web Audio API synth vs. audio files).
 - **Difficulty presets** — easy/normal/hard buttons on the start screen. Just applies different `gameConfig` values before starting. No new logic.
-- **Tracking obstacle** — a new obstacle type that adjusts velocity toward the current `state.player` position each frame instead of aiming at a fixed point on spawn. High skill ceiling impact.
 - **Near-miss feedback** — brief flash or ring when an obstacle passes very close without hitting. Rewards skilled play visually.
 - **Combo multiplier** — time survived without getting within X pixels of an obstacle multiplies the displayed score. Pure state addition.
 
@@ -121,6 +121,12 @@ Run: `npm test`
 - Extracted `gameUpdate.js` for testability
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
+
+### Session 4
+- Distinct obstacle shapes: bullet = capsule, shard = triangle, ball = circle, tracker = spinning diamond
+- Added hitbox debug toggle to config panel (DEBUG section, yellow wireframe circles)
+- Added tracker obstacle: homing diamond, `turnRate: 0.08`, `baseSpeed: 0.13`, permanent until screenclear
+- Updated backlog: removed completed items, tracker and visual distinction marked done
 
 ### Session 3
 - Added SVG favicon (inline data URI, cyan glowing dot)
