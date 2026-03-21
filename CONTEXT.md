@@ -1,158 +1,113 @@
 # DODGE — Project Context
 
-This file is a living log for AI-assisted development sessions. Read it at the start of every session to avoid re-covering ground already discussed.
+Read this at the start of every session. Update the changelog at the bottom when work is done.
+
+Live: https://dodge-this.vercel.app | Repo: https://github.com/Azanore/dodge-this (master)
 
 ---
 
-## What this game is
+## Architecture decisions (the non-obvious ones)
 
-A browser-based survival game. The player controls a glowing dot with the mouse, confined to an inner zone. Obstacles spawn from the outer zone and move toward the inner zone. The goal is to survive as long as possible. Bonuses spawn periodically and grant temporary effects.
+**game.config.js is a classic script, never a module.**
+It sets `window.gameConfig` synchronously before the ES module graph runs. Never add `export default`. Autofixers have broken this before. The `<script src="game.config.js">` in index.html has no `type="module"` — that's intentional.
 
-Deployed at: https://dodge-this.vercel.app
-Repo: https://github.com/Azanore/dodge-this (branch: master)
+**gameUpdate.js exists so logic is testable.**
+`main.js` has DOM side effects and can't be imported in tests. Pure frame logic lives in `gameUpdate(delta, state, accumulators)` which returns `'dead'` or `null`. Integration tests call this directly.
+
+**state.player is the only source of truth for position and radius.**
+`player.js` writes to `state.player.x/y` every frame. `collision.js` reads `state.player` directly. There is no separate hitbox object. Bonus effects write to `state.player.radius` directly.
+
+**Render order matters for overlays.**
+`GameLoop.tick()` calls `update()` then `render()` in sequence. Death is detected in `update()` — `renderFrame()` must return early when `state.status === 'dead'` or the game over screen gets overwritten on the same tick.
+
+**State machine:**
+```
+'start' → (click/key except Escape) → 'grace' → (grace expires) → 'active' → (collision) → 'dead'
+                                                                                                ↓
+                                                                              (R or Restart) → 'grace'
+'active'/'grace' → (Escape) → 'paused' → (Escape) → restores prevStatus
+```
+Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'` and `'start'`.
 
 ---
 
-## Architecture
+## Bugs fixed
 
-### Key constraint: game.config.js is a classic script, not a module
-
-`game.config.js` sets `window.gameConfig` and is loaded as a plain `<script>` in `index.html` — NOT `type="module"`. This is intentional. It must execute synchronously before the ES module graph runs so that `gameConfig` is available globally when modules like `GameState.js` and `obstacles.js` initialize. Never add `export default` to this file. Autofixers (like Kiro's autofix) have broken this before by adding an export.
-
-### Module structure
-
-```
-index.html              — loads game.config.js (classic), then src/main.js (module)
-game.config.js          — global config, window.gameConfig, classic script
-src/main.js             — entry point, wires everything, handles DOM/events
-src/gameUpdate.js       — pure game logic per frame, no DOM, fully testable
-src/GameState.js        — resetState() returns fresh state object
-src/GameLoop.js         — requestAnimationFrame loop, calls update() then render()
-src/player.js           — tracks mouse, writes clamped position to state.player each frame
-src/zones.js            — innerZone / outerZone geometry, recomputed on resize
-src/obstacles.js        — spawn, move, remove obstacles
-src/bonuses.js          — spawn, collect, expire bonus effects
-src/collision.js        — circle-circle overlap, player vs obstacles/bonuses
-src/difficulty.js       — speed multiplier and spawn interval curves (pure functions)
-src/renderer.js         — all canvas drawing, reads state, no logic
-src/hud.js              — timer and active bonus countdowns on canvas
-src/gameOver.js         — game over overlay, PB logic, restart/R-key wiring
-src/configPanel.js      — dev panel toggled by P key, runtime config tuning
-```
-
-### State machine
-
-```
-'start' → (click or any key except Escape) → 'grace' → (grace expires) → 'active' → (collision) → 'dead'
-                                                                                                        ↓
-                                                                                          (R or Restart button) → 'grace'
-'active' or 'grace' → (Escape) → 'paused' → (Escape) → restores prior status
-```
-
-- `prevStatus` on state stores the pre-pause status so resume is exact.
-- Restart after game over goes directly to `'grace'`, never back to `'start'`.
-- Escape is ignored in `'dead'` and `'start'` states.
-- The P key opens the dev config panel. While the panel is open, Escape does not pause.
-
-### Why gameUpdate.js exists
-
-`main.js` has DOM side effects (canvas, event listeners) so it can't be imported in tests. The pure frame logic was extracted into `gameUpdate.js` which takes `(delta, state, accumulators)` and returns `'dead'` or `null`. This is what integration tests call directly.
-
-### Player position
-
-`player.js` listens to `mousemove` and stores raw coordinates. Each frame, `update(state)` clamps them to `innerZone` and writes to `state.player.x/y`. This is the single source of truth for position. `collision.js` reads `state.player` directly — there is no separate hitbox object.
-
-### Render order (important)
-
-`GameLoop.tick()` calls `update(delta)` then `render()` in sequence. When death is detected in `update`, `loop.stop()` and `showGameOver()` are called — but `render()` still runs on the same tick. To prevent the game over screen from being overwritten, `renderFrame()` returns early when `state.status === 'dead'`.
-
-### Overlay opacity logic
-
-- Start screen: `rgba(0,0,0,0.92)` — nearly opaque, player dot is hidden (not rendered in `'start'` status)
-- Pause screen: `rgba(0,0,0,0.6)` — semi-transparent, frozen game frame intentionally visible underneath
-- Game over: `rgba(0,0,0,0.78)` — drawn once by `showGameOver()`, loop is stopped, nothing overwrites it
-
-### Personal best
-
-Stored in `localStorage` under key `dodge_pb` as a float (ms). Read and displayed on both the start screen and game over screen. Written on death if current run beats the stored value.
+| # | Bug | Root cause | Fix |
+|---|-----|-----------|-----|
+| 1 | Collision never triggered | `player.js` stored position internally; `state.player` was always `{0,0}` | `player.update(state)` now writes to `state.player.x/y` each frame |
+| 2 | Game over screen immediately overwritten | `GameLoop` calls `render()` after `update()` on the same tick | `renderFrame()` returns early when `status === 'dead'` |
+| 3 | Escape key starting the game | `onStartAction` fired on any keydown including Escape, then pause handler also fired | `onStartAction` now ignores Escape key |
+| 4 | `game.config.js` broke on Vercel | Autofix added `export default`; classic script can't have exports | Removed export, added comment warning, `window.gameConfig` only |
+| 5 | Player dot visible on start screen | Player rendered before overlay; glow bled through semi-transparent overlay | Player skipped in `render()` when `status === 'start'` |
+| 6 | `slowmoMultiplier` undefined | Missing from `resetState()` | Added `slowmoMultiplier: 1` to `resetState()` |
+| 7 | `getHitbox()` dual-state problem | `collision.js` called `getHitbox()` from `player.js` instead of reading `state.player` | Removed `getHitbox()`, `collision.js` reads `state.player` directly |
 
 ---
 
-## Bugs fixed (do not re-investigate)
+## Features: added, rejected, and pending
 
-### 1. Collision never triggered (player always at 0,0)
-`player.js` was storing position in module-local variables. `collision.js` was reading `state.player` which was never updated. Fixed by making `player.update(state)` write directly to `state.player.x/y` each frame.
+### Added
+- Start screen with title, PB display, click/key to begin
+- Pause screen (Escape to pause/resume), ignored in dead/start states
+- Game over screen with time, PB, Restart button, R key shortcut
+- Personal best stored in localStorage (`dodge_pb` key, value in ms)
+- Dev config panel (P key) — toggle obstacle/bonus types, tune parameters at runtime
+- 4 bonus types: slowmo, invincibility, screenclear, shrink
+- 3 obstacle types: ball, bullet, shard — weighted spawn, difficulty ramp over time
+- Vercel deployment (static, no build step, `vercel.json` rewrites to index.html)
 
-### 2. Game over screen immediately overwritten
-`GameLoop.tick()` calls `update()` then `render()`. Death was detected in `update()`, game over screen drawn, then `render()` ran on the same tick and painted over it. Fixed by guarding `renderFrame()` with `if (state.status === 'dead') return`.
+### Deliberately not added
+- **Share button** — removed. `navigator.clipboard` requires HTTPS + user gesture; the textarea fallback was janky. No real value for a solo survival game.
+- **Backend leaderboard** — would require a server, auth, and moderation. Changes the game's nature. Local PB is enough.
+- **Touch/mobile support** — the game is mouse-only by design. Adding touch would require rethinking the entire input model and zone layout.
+- **Sound** — not ruled out, but adds asset management complexity. Worth a dedicated session if added.
 
-### 3. Escape key starting the game
-`onStartAction` listened on `window keydown` for any key including Escape. Pressing Escape would start the game and immediately trigger the pause handler in the same event. Fixed by skipping Escape in `onStartAction`.
-
-### 4. game.config.js export breaking on Vercel
-Kiro's autofix added `export default` to `game.config.js`. Since it's loaded as a classic script, the browser threw `Unexpected token 'export'`. The file must never have an export. The comment at the top of the file now explicitly states this.
-
-### 5. Player dot visible on start screen
-The player was rendered before the start screen overlay was drawn. Since the overlay is semi-transparent, the glowing dot bled through. Fixed by skipping player rendering when `state.status === 'start'`.
-
-### 6. resetState() missing slowmoMultiplier
-Modules were using `state.slowmoMultiplier ?? 1` as a fallback. Fixed by adding `slowmoMultiplier: 1` to `resetState()`.
-
-### 7. getHitbox() dual-state problem
-`player.js` had a separate `getHitbox()` export that returned internal `posX/posY`. `collision.js` was calling it instead of reading `state.player`. Removed entirely — `state.player` is the only source of truth.
+### Pending / ideas for later
+- Favicon (currently 404s on every load, harmless)
+- Visual feedback on bonus collection (flash, particle, sound)
+- Hide dev config panel in production (currently always accessible via P)
+- Difficulty selector on start screen (easy/normal/hard presets)
+- Obstacle that tracks the player instead of aiming at a fixed point
+- Clean up: `GameState.js` exports an unused singleton `state` — only `resetState()` is used
+- Clean up: `BONUS_COLORS` duplicated in `bonuses.js` and `renderer.js`
 
 ---
 
 ## Testing
 
-- Framework: Vitest + fast-check (property-based testing)
-- Run: `npm test` (runs `vitest --run`)
-- Test files mirror source files: `src/foo.test.js` tests `src/foo.js`
-- `src/integration.test.js` tests the full game flow using the real `gameUpdate()` with real state
-- `src/test.setup.js` loads `game.config.js` to provide `window.gameConfig` in the test environment
+Run: `npm test`
 
-### What is tested
-- `collision.js` — circle overlap math
-- `player.js` — position sync to state (property: for any mouse x/y, state.player matches clampToInner)
-- `GameState.js` — resetState completeness
-- `obstacles.js` — spawn and movement
-- `bonuses.js` — collect and expire effects
-- `difficulty.js` — speed and spawn interval curves
-- `zones.js` — zone geometry
-- `config.js` — validation and fallbacks
-- `main.test.js` — start/pause/dead state guards (uses local helper functions, not real update())
-- `integration.test.js` — real gameUpdate() end-to-end: start → grace → active → death, pause/resume, restart
+| File | What it covers |
+|------|---------------|
+| `collision.test.js` | Circle overlap math |
+| `player.test.js` | Position sync property (for any x/y, state.player matches clampToInner) |
+| `GameState.test.js` | resetState completeness |
+| `obstacles.test.js` | Spawn and movement |
+| `bonuses.test.js` | Collect and expire effects |
+| `difficulty.test.js` | Speed and spawn interval curves |
+| `zones.test.js` | Zone geometry |
+| `config.test.js` | Validation and fallbacks |
+| `main.test.js` | State guards using local helper functions (not real update()) |
+| `integration.test.js` | Real `gameUpdate()` end-to-end: start→grace→active→death, pause/resume, restart |
 
-### Known test gap
-`main.test.js` simulates the logic with local helper functions (`applyEscape`, `updateGuard`) rather than importing the real `update()`. These helpers can drift from the real implementation. The integration tests cover the real logic, but `main.js` event wiring (click handlers, keydown listeners) is not tested.
+**Known gap:** `main.test.js` uses local helper functions that simulate the logic rather than importing the real `update()`. DOM event wiring (click handlers, keydown listeners) is not tested.
 
 ---
 
-## Deployment
+## Changelog
 
-- Platform: Vercel (static, no build step)
-- `vercel.json` rewrites all routes to `index.html`
-- Framework preset: Other, root directory: `./`, no build command
-- Auto-deploys on push to `master`
-- `node_modules` is gitignored and not deployed
+### Session 1
+- Fixed bugs 1–7 (see table above)
+- Added start screen, pause screen, game over screen
+- Extracted `gameUpdate.js` for testability
+- Added integration tests (`src/integration.test.js`)
+- Deployed to Vercel
 
----
-
-## Known gaps and future ideas
-
-### Gameplay
-- No mobile/touch support — player position is mouse-only
-- No sound effects or music
-- Obstacles always aim at a random point in the inner zone — they never track the player directly
-- No high score leaderboard (PB is local only)
-- No difficulty selection before starting
-
-### UX
-- No favicon (404 on every load, harmless but noisy)
-- No visual feedback when a bonus is collected (just the HUD countdown appearing)
-- The dev config panel (P key) is visible in production — could be hidden behind a flag
-
-### Code
-- `src/GameState.js` exports both `resetState()` and a singleton `state` — the singleton is unused, only `resetState()` is used
-- `BONUS_COLORS` is defined in both `bonuses.js` and `renderer.js` — minor duplication
-- `configPanel.js` is large and could be split, but it works and is self-contained
+### Session 2
+- Removed Share button
+- Added R-to-restart shortcut on game over screen
+- Added PB display on start screen
+- Reduced grace period from 2000ms to 500ms
+- Fixed player dot visible on start screen (bug 5)
+- Added `CONTEXT.md`
