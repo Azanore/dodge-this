@@ -11,7 +11,7 @@ import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
-import { initAudio, startMusic, pauseMusic, resumeMusic, stopMusic, playGameStart } from './audio.js'; // AUDIO
+import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart } from './audio.js'; // AUDIO
 
 // Apply config validation with fallbacks (Requirement 10.7)
 validateConfig(gameConfig);
@@ -49,7 +49,6 @@ function update(delta) {
   const result = gameUpdate(delta, state, accumulators);
   if (result === 'dead') {
     triggerShake();
-    stopMusic(); // AUDIO
     setTimeout(() => {
       loop.stop();
       showGameOver(canvas, state, onRestart);
@@ -80,7 +79,6 @@ function onRestart() {
   initRenderer();
   recomputeZones();
   updatePlayer(state);
-  startMusic(); // AUDIO
   loop.start();
 }
 

@@ -8,6 +8,8 @@ const SOUNDS = {
   scoreBank: 'sounds/score-bank.wav',
   multiplierMax: 'sounds/multiplier-max.wav',
   gameStart: 'sounds/game-start.ogg',
+  nearMiss: 'sounds/near-miss.wav',
+  zoneAppear: 'sounds/zone-appear.wav',
   music: 'sounds/music.wav',
 };
 
@@ -90,6 +92,8 @@ export function playDeath() { play('death'); }
 export function playPickup() { play('pickup'); }
 export function playScoreBank() { play('scoreBank'); }
 export function playGameStart() { play('gameStart'); }
+export function playNearMiss() { play('nearMiss'); }
+export function playZoneAppear() { play('zoneAppear'); }
 
 // Guards against re-firing while multiplier stays at max
 export function playMultiplierMax(currentMultiplier) {

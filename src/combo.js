@@ -3,6 +3,7 @@
 // Does not handle rendering or scoring — pure state mutation only.
 
 import { innerZone } from './zones.js';
+import { playZoneAppear } from './audio.js'; // AUDIO
 
 // Picks a random spawn position inside the inner zone
 function randomZoneSpawn() {
@@ -48,6 +49,7 @@ export function updateScoreZone(delta, state, accumulators) {
         vx: vel.vx,
         vy: vel.vy
       };
+      playZoneAppear(); // AUDIO
     }
     // Normal decay while zone inactive
     state.comboMultiplier = Math.max(
