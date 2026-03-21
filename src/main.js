@@ -11,6 +11,7 @@ import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
+import { initAudio, startMusic, pauseMusic, resumeMusic, stopMusic, playGameStart } from './audio.js'; // AUDIO
 
 // Apply config validation with fallbacks (Requirement 10.7)
 validateConfig(gameConfig);
@@ -48,7 +49,7 @@ function update(delta) {
   const result = gameUpdate(delta, state, accumulators);
   if (result === 'dead') {
     triggerShake();
-    // Keep loop running for shake duration, then stop and show game over
+    stopMusic(); // AUDIO
     setTimeout(() => {
       loop.stop();
       showGameOver(canvas, state, onRestart);
@@ -79,6 +80,7 @@ function onRestart() {
   initRenderer();
   recomputeZones();
   updatePlayer(state);
+  startMusic(); // AUDIO
   loop.start();
 }
 
@@ -88,6 +90,8 @@ function onStartAction(e) {
   if (e.type === 'keydown' && e.key === 'Escape') return;
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
+  initAudio().then(() => { startMusic(); }); // AUDIO
+  playGameStart(); // AUDIO
   state.status = 'grace';
   loop.start();
 }
@@ -106,11 +110,13 @@ window.addEventListener('keydown', (e) => {
     state.prevStatus = state.status;
     state.status = 'paused';
     loop.stop();
+    pauseMusic(); // AUDIO
     render(ctx, state, lastDelta);
     renderPauseScreen(ctx);
   } else if (state.status === 'paused') {
     state.status = state.prevStatus;
     state.prevStatus = null;
+    resumeMusic(); // AUDIO
     loop.start();
   }
 });

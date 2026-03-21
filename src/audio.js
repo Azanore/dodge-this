@@ -1,0 +1,101 @@
+// Audio manager — loads and plays all game sounds.
+// Related: main.js (init, music control), gameUpdate.js (death, multiplier-max), bonuses.js (pickup), hud.js (score-bank)
+// Self-contained: delete this file and remove // AUDIO lines in callers to remove all audio.
+
+const SOUNDS = {
+  death: 'sounds/death.wav',
+  pickup: 'sounds/pickup.wav',
+  scoreBank: 'sounds/score-bank.wav',
+  multiplierMax: 'sounds/multiplier-max.wav',
+  gameStart: 'sounds/game-start.ogg',
+  music: 'sounds/music.wav',
+};
+
+const buffers = {};
+let audioCtx = null;
+let musicSource = null;
+let musicPaused = false;
+let musicOffset = 0;
+let musicStartedAt = 0;
+
+// Tracks whether multiplier-max sound already fired at current 5x streak
+let multiplierMaxFired = false;
+
+// Initializes AudioContext and loads all buffers — call on first user gesture
+export async function initAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  await Promise.all(
+    Object.entries(SOUNDS).map(async ([key, path]) => {
+      const res = await fetch(path);
+      const arr = await res.arrayBuffer();
+      buffers[key] = await audioCtx.decodeAudioData(arr);
+    })
+  );
+}
+
+// Plays a one-shot sound by key
+function play(key) {
+  if (!audioCtx || !buffers[key]) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffers[key];
+  src.connect(audioCtx.destination);
+  src.start();
+}
+
+// Starts music looping from the beginning
+export function startMusic() {
+  if (!audioCtx || !buffers.music) return;
+  stopMusic();
+  musicSource = audioCtx.createBufferSource();
+  musicSource.buffer = buffers.music;
+  musicSource.loop = true;
+  musicSource.connect(audioCtx.destination);
+  musicSource.start();
+  musicStartedAt = audioCtx.currentTime;
+  musicOffset = 0;
+  musicPaused = false;
+}
+
+// Pauses music by stopping and recording offset
+export function pauseMusic() {
+  if (!musicSource || musicPaused) return;
+  musicOffset = (audioCtx.currentTime - musicStartedAt) % buffers.music.duration;
+  musicSource.stop();
+  musicSource = null;
+  musicPaused = true;
+}
+
+// Resumes music from where it paused
+export function resumeMusic() {
+  if (!audioCtx || !buffers.music || !musicPaused) return;
+  musicSource = audioCtx.createBufferSource();
+  musicSource.buffer = buffers.music;
+  musicSource.loop = true;
+  musicSource.connect(audioCtx.destination);
+  musicSource.start(0, musicOffset);
+  musicStartedAt = audioCtx.currentTime - musicOffset;
+  musicPaused = false;
+}
+
+// Stops music entirely
+export function stopMusic() {
+  if (!musicSource) return;
+  musicSource.stop();
+  musicSource = null;
+  musicPaused = false;
+  musicOffset = 0;
+}
+
+export function playDeath() { play('death'); }
+export function playPickup() { play('pickup'); }
+export function playScoreBank() { play('scoreBank'); }
+export function playGameStart() { play('gameStart'); }
+
+// Guards against re-firing while multiplier stays at max
+export function playMultiplierMax(currentMultiplier) {
+  if (currentMultiplier >= gameConfig.comboMultiplierMax) {
+    if (!multiplierMaxFired) { play('multiplierMax'); multiplierMaxFired = true; }
+  } else {
+    multiplierMaxFired = false;
+  }
+}
