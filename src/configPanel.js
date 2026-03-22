@@ -3,6 +3,7 @@
 // Does not contain game logic — only reads/writes gameConfig and delegates restart.
 
 import { toggleHitboxes } from './renderer.js';
+import { sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
 // Slider definitions: [key path, min, max, step]
 const SLIDERS = [
@@ -78,6 +79,17 @@ function buildPanel() {
   hitboxRow.querySelector('input').addEventListener('change', toggleHitboxes);
   debugSection.appendChild(hitboxRow);
   box.appendChild(debugSection);
+
+  // --- Audio ---
+  const audioSection = document.createElement('div');
+  audioSection.innerHTML = '<div style="color:#aaa;margin-bottom:6px">AUDIO</div>';
+  const sfxRow = makeCheckbox('audio-sfx', 'Sound effects', sfxEnabled);
+  sfxRow.querySelector('input').addEventListener('change', e => setSfx(e.target.checked));
+  const musicRow = makeCheckbox('audio-music', 'Music', musicEnabled);
+  musicRow.querySelector('input').addEventListener('change', e => setMusic(e.target.checked));
+  audioSection.appendChild(sfxRow);
+  audioSection.appendChild(musicRow);
+  box.appendChild(audioSection);
 
   // --- Buttons ---
   const btnRow = document.createElement('div');

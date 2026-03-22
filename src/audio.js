@@ -20,6 +20,23 @@ let musicPaused = false;
 let musicOffset = 0;
 let musicStartedAt = 0;
 
+// User preferences — persisted in localStorage
+export let sfxEnabled = localStorage.getItem('dodge_sfx') !== 'false';
+export let musicEnabled = localStorage.getItem('dodge_music') !== 'false';
+
+// Toggles — called from config panel, take effect immediately
+export function setSfx(enabled) {
+  sfxEnabled = enabled;
+  localStorage.setItem('dodge_sfx', enabled);
+}
+
+export function setMusic(enabled) {
+  musicEnabled = enabled;
+  localStorage.setItem('dodge_music', enabled);
+  if (!enabled) stopMusic();
+  else if (audioCtx && !musicSource) startMusic();
+}
+
 // Initializes AudioContext and loads all buffers — call on first user gesture
 export async function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -34,7 +51,7 @@ export async function initAudio() {
 
 // Plays a one-shot sound by key
 function play(key) {
-  if (!audioCtx || !buffers[key]) return;
+  if (!sfxEnabled || !audioCtx || !buffers[key]) return;
   const src = audioCtx.createBufferSource();
   src.buffer = buffers[key];
   src.connect(audioCtx.destination);
@@ -43,7 +60,7 @@ function play(key) {
 
 // Starts music looping from the beginning
 export function startMusic() {
-  if (!audioCtx || !buffers.music) return;
+  if (!musicEnabled || !audioCtx || !buffers.music) return;
   stopMusic();
   musicSource = audioCtx.createBufferSource();
   musicSource.buffer = buffers.music;
