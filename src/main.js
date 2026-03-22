@@ -11,7 +11,7 @@ import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
-import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart } from './audio.js'; // AUDIO
+import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
 // Apply config validation with fallbacks (Requirement 10.7)
 validateConfig(gameConfig);
@@ -56,14 +56,22 @@ function update(delta) {
   }
 }
 
+// Tracks pause screen audio button hit areas for click handling
+let pauseHitAreas = null;
+
+// Draws pause screen and stores hit areas
+function drawPauseScreen() {
+  pauseHitAreas = renderPauseScreen(ctx, sfxEnabled, musicEnabled);
+}
+
 function renderFrame() {
-  if (state.status === 'dead' && !isShaking()) return; // game over screen drawn by showGameOver; don't overwrite
+  if (state.status === 'dead' && !isShaking()) return;
   if (state.status === 'start') {
     render(ctx, state, lastDelta);
     renderStartScreen(ctx);
     return;
   }
-  if (state.status === 'paused') return; // last frame stays visible; overlay drawn once on pause
+  if (state.status === 'paused') return;
   render(ctx, state, lastDelta);
 }
 
@@ -110,12 +118,31 @@ window.addEventListener('keydown', (e) => {
     loop.stop();
     pauseMusic(); // AUDIO
     render(ctx, state, lastDelta);
-    renderPauseScreen(ctx);
+    drawPauseScreen();
   } else if (state.status === 'paused') {
     state.status = state.prevStatus;
     state.prevStatus = null;
+    pauseHitAreas = null;
     resumeMusic(); // AUDIO
     loop.start();
+  }
+});
+
+// Click handler for pause screen audio toggles
+canvas.addEventListener('click', (e) => {
+  if (state.status !== 'paused' || !pauseHitAreas) return;
+  const rect = canvas.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+  const { sfx, music } = pauseHitAreas;
+  if (px >= sfx.x && px <= sfx.x + sfx.w && py >= sfx.y && py <= sfx.y + sfx.h) {
+    setSfx(!sfxEnabled); // AUDIO
+    render(ctx, state, lastDelta);
+    drawPauseScreen();
+  } else if (px >= music.x && px <= music.x + music.w && py >= music.y && py <= music.y + music.h) {
+    setMusic(!musicEnabled); // AUDIO
+    render(ctx, state, lastDelta);
+    drawPauseScreen();
   }
 });
 
