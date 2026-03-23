@@ -64,6 +64,15 @@ const NEAR_MISS_FLASH_DURATION = 220;
 // Near-miss text state — single label, reset on each trigger, never stacked
 export let nearMissText = { remaining: 0 };
 
+// Floating banked score texts — spawned at score zone position, float up and fade
+const FLOAT_DURATION = 800;
+const scoreFloats = [];
+
+// Spawns a floating "+X" label at (x, y) — call when pending score banks
+export function triggerScoreFloat(amount, x, y) {
+  scoreFloats.push({ amount: Math.round(amount), x, y, remaining: FLOAT_DURATION });
+}
+
 // Spawns a flash ring at (x, y) with the bonus color
 export function triggerBonusFlash(x, y, color) {
   flashes.push({ x, y, color, remaining: FLASH_DURATION });
@@ -440,6 +449,25 @@ export function render(ctx, state, delta) {
     ctx.fillText('CLOSE!', px, py - 24);
     ctx.restore();
     nearMissText.remaining = Math.max(0, nearMissText.remaining - delta);
+  }
+
+  // 8b. Floating banked score — rises and fades at score zone position
+  for (let i = scoreFloats.length - 1; i >= 0; i--) {
+    const f = scoreFloats[i];
+    f.remaining -= delta;
+    if (f.remaining <= 0) { scoreFloats.splice(i, 1); continue; }
+    const t = 1 - f.remaining / FLOAT_DURATION; // 0→1 as it ages
+    const alpha = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4; // hold then fade
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold 20px monospace';
+    ctx.fillStyle = '#00ff88';
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 12;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`+${f.amount}`, f.x, f.y - 20 - t * 40); // floats upward 40px
+    ctx.restore();
   }
 
   // 9. HUD

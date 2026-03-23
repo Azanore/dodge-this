@@ -6,7 +6,7 @@ import { update as updatePlayer } from './player.js';
 import { spawnObstacle, updateObstacles } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
-import { triggerNearMiss } from './renderer.js';
+import { triggerNearMiss, triggerScoreFloat } from './renderer.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { updateScoreZone } from './combo.js';
 import { triggerScoreBump } from './hud.js';
@@ -46,8 +46,13 @@ export function gameUpdate(delta, state, accumulators) {
     // Only the bonus delta accumulates as pending — lost on death, banked when multiplier returns to 1x
     state.pendingScore += baseTick * (state.comboMultiplier - 1);
   } else if (state.pendingScore > 0) {
-    state.score += state.pendingScore;
+    const banked = state.pendingScore;
+    state.score += banked;
     state.pendingScore = 0;
+    // Float at last known zone position, or player position if zone gone
+    const floatX = state.scoreZone?.x ?? state.player.x;
+    const floatY = state.scoreZone?.y ?? state.player.y;
+    triggerScoreFloat(banked, floatX, floatY);
     triggerScoreBump();
   }
 
