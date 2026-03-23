@@ -245,65 +245,6 @@ export function renderStartScreen(ctx) {
 }
 
 
-// Returns hit areas for sfx and music toggles so main.js can handle clicks.
-export function renderPauseScreen(ctx, sfxOn, musicOn) {
-  const cw = ctx.canvas.width;
-  const ch = ctx.canvas.height;
-  const cx = cw / 2;
-
-  ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-  ctx.fillRect(0, 0, cw, ch);
-
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  ctx.font = 'bold 56px monospace';
-  ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = '#ffffff';
-  ctx.shadowBlur = 20;
-  ctx.fillText('PAUSED', cx, ch * 0.38);
-
-  ctx.font = '20px monospace';
-  ctx.fillStyle = '#cccccc';
-  ctx.shadowColor = '#cccccc';
-  ctx.shadowBlur = 8;
-  ctx.fillText('Press Esc to resume', cx, ch * 0.50);
-
-  // Audio toggles — two pill buttons centered below resume hint
-  const btnW = 160, btnH = 36, gap = 16;
-  const totalW = btnW * 2 + gap;
-  const btnY = ch * 0.62;
-  const sfxX = cx - totalW / 2;
-  const musicX = sfxX + btnW + gap;
-
-  ctx.shadowBlur = 0;
-  ctx.font = '14px monospace';
-  ctx.textBaseline = 'middle';
-
-  // SFX button
-  ctx.fillStyle = sfxOn ? '#00ff88' : '#333';
-  ctx.beginPath();
-  ctx.roundRect(sfxX, btnY - btnH / 2, btnW, btnH, 6);
-  ctx.fill();
-  ctx.fillStyle = sfxOn ? '#000' : '#888';
-  ctx.fillText(`SFX: ${sfxOn ? 'ON' : 'OFF'}`, sfxX + btnW / 2, btnY);
-
-  // Music button
-  ctx.fillStyle = musicOn ? '#00ff88' : '#333';
-  ctx.beginPath();
-  ctx.roundRect(musicX, btnY - btnH / 2, btnW, btnH, 6);
-  ctx.fill();
-  ctx.fillStyle = musicOn ? '#000' : '#888';
-  ctx.fillText(`MUSIC: ${musicOn ? 'ON' : 'OFF'}`, musicX + btnW / 2, btnY);
-
-  ctx.restore();
-
-  return {
-    sfx: { x: sfxX, y: btnY - btnH / 2, w: btnW, h: btnH },
-    music: { x: musicX, y: btnY - btnH / 2, w: btnW, h: btnH },
-  };
-}
 export function render(ctx, state, delta) {
   const cw = ctx.canvas.width;
   const ch = ctx.canvas.height;

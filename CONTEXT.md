@@ -180,6 +180,9 @@ Run: `npm test`
 - Bonus pills moved top-right-of-center, fixed width, depleting color fill left-to-right — `hud.js`
 - Floating `+X` banked score text spawns at score zone position, floats up and fades over 800ms — `renderer.js`, `gameUpdate.js`
 - Inner zone wall contact pulse: cyan line segment spreads along wall from hit point, once per contact — `renderer.js`
+- Pause screen and game over screen migrated from canvas to HTML/CSS overlays — consistent with how-to-play modal pattern
+- `renderPauseScreen()` deleted from `renderer.js`; `gameOver.js` rewritten as HTML-driven module
+- Manual canvas hit-area detection for pause buttons removed from `main.js`; replaced with real HTML button listeners
 - Fixed: player radius not accounted for in zone clamping — ball no longer visually exits inner zone — `player.js`
 - Fixed: score zone spawn/wander didn't account for zone radius — zone could bleed outside inner zone — `combo.js`
 
