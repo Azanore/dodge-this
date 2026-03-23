@@ -132,11 +132,13 @@ Run: `npm test`
 - Deployed to Vercel
 
 ### Session 11
-- Fixed how-to-play modal: single-column layout, bullet uses r=6 to avoid overflow, modal height 480px
-- `?` button moved to center below "Click to begin" prompt — no longer isolated in corner
-- "? How to play" link added to pause screen below audio toggles
-- Modal accessible from start screen and pause screen; Escape or any click closes it without unpausing
-- Blast radius: `src/renderer.js`, `src/main.js`
+- Migrated how-to-play modal from canvas to HTML/CSS — proper scroll, contrast, and text rendering
+- `?` button is now an HTML `<button>` (fixed bottom-right), shown only on start/pause screens
+- Shape icons in modal are inline `<canvas>` elements drawn once on open using exported draw functions
+- `renderHowToPlay()` deleted from renderer.js; `?` button and help link removed from canvas screens
+- `glowCircle`, `drawBall`, `drawBullet`, `drawShard`, `drawTracker` exported from renderer.js
+- Modal closes on backdrop click or Escape; Escape no longer unpauses while modal is open
+- Blast radius: `index.html`, `src/renderer.js`, `src/main.js`
 
 ### Session 10
 - Difficulty tuning: `baseSpawnInterval` 1800 → 1200ms (pressure from second 1), base speeds bumped (ball 0.18→0.22, bullet 0.26→0.30, shard 0.22→0.26, tracker 0.11→0.13)

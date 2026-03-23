@@ -8,7 +8,7 @@ import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
-import { render, renderStartScreen, renderHowToPlay, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
+import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
@@ -51,6 +51,7 @@ function update(delta) {
     triggerShake();
     setTimeout(() => {
       loop.stop();
+      syncHelpBtn();
       showGameOver(canvas, state, onRestart);
     }, 450);
   }
@@ -58,10 +59,6 @@ function update(delta) {
 
 // Tracks pause screen audio button hit areas for click handling
 let pauseHitAreas = null;
-
-// Tracks ? button hit area and modal open state for start screen
-let howToPlayOpen = false;
-let helpBtnArea = null;
 
 // Draws pause screen and stores hit areas
 function drawPauseScreen() {
@@ -72,8 +69,7 @@ function renderFrame() {
   if (state.status === 'dead' && !isShaking()) return;
   if (state.status === 'start') {
     render(ctx, state, lastDelta);
-    helpBtnArea = renderStartScreen(ctx);
-    if (howToPlayOpen) renderHowToPlay(ctx);
+    renderStartScreen(ctx);
     return;
   }
   if (state.status === 'paused') return;
@@ -92,6 +88,7 @@ function onRestart() {
   initRenderer();
   recomputeZones();
   updatePlayer(state);
+  syncHelpBtn();
   loop.start();
 }
 
@@ -99,43 +96,17 @@ function onRestart() {
 function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
-  // If modal is open, any key/click closes it instead of starting
-  if (howToPlayOpen) {
-    howToPlayOpen = false;
-    renderFrame();
-    return;
-  }
-  // Block start if click landed on the ? button
-  if (e.type === 'click' && helpBtnArea) {
-    const rect = canvas.getBoundingClientRect();
-    const px = e.clientX - rect.left;
-    const py = e.clientY - rect.top;
-    const { x, y, w, h } = helpBtnArea;
-    if (px >= x && px <= x + w && py >= y && py <= y + h) return;
-  }
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   initAudio().then(() => { startMusic(); }); // AUDIO
   playGameStart(); // AUDIO
   state.status = 'grace';
+  syncHelpBtn();
   loop.start();
 }
 
 canvas.addEventListener('click', onStartAction);
 window.addEventListener('keydown', onStartAction);
-
-// ? button click — toggles how-to-play modal on start screen
-canvas.addEventListener('click', (e) => {
-  if (state.status !== 'start' || !helpBtnArea) return;
-  const rect = canvas.getBoundingClientRect();
-  const px = e.clientX - rect.left;
-  const py = e.clientY - rect.top;
-  const { x, y, w, h } = helpBtnArea;
-  if (px >= x && px <= x + w && py >= y && py <= y + h) {
-    howToPlayOpen = !howToPlayOpen;
-    renderFrame();
-  }
-});
 
 // Escape key: pause/unpause during active or grace; ignored in dead/start
 window.addEventListener('keydown', (e) => {
@@ -144,13 +115,6 @@ window.addEventListener('keydown', (e) => {
   const panel = document.getElementById('config-panel');
   if (panel && panel.style.display !== 'none') return;
 
-  // Close how-to-play modal first if open
-  if (howToPlayOpen) {
-    howToPlayOpen = false;
-    if (state.status === 'paused') { render(ctx, state, lastDelta); drawPauseScreen(); }
-    return;
-  }
-
   if (state.status === 'active' || state.status === 'grace') {
     state.prevStatus = state.status;
     state.status = 'paused';
@@ -158,31 +122,24 @@ window.addEventListener('keydown', (e) => {
     pauseMusic(); // AUDIO
     render(ctx, state, lastDelta);
     drawPauseScreen();
+    syncHelpBtn();
   } else if (state.status === 'paused') {
     state.status = state.prevStatus;
     state.prevStatus = null;
     pauseHitAreas = null;
     resumeMusic(); // AUDIO
+    syncHelpBtn();
     loop.start();
   }
 });
 
-// Click handler for pause screen audio toggles and how-to-play link
+// Click handler for pause screen audio toggles
 canvas.addEventListener('click', (e) => {
   if (state.status !== 'paused' || !pauseHitAreas) return;
   const rect = canvas.getBoundingClientRect();
   const px = e.clientX - rect.left;
   const py = e.clientY - rect.top;
-
-  // If modal is open, any click closes it
-  if (howToPlayOpen) {
-    howToPlayOpen = false;
-    render(ctx, state, lastDelta);
-    drawPauseScreen();
-    return;
-  }
-
-  const { sfx, music, help } = pauseHitAreas;
+  const { sfx, music } = pauseHitAreas;
   if (px >= sfx.x && px <= sfx.x + sfx.w && py >= sfx.y && py <= sfx.y + sfx.h) {
     setSfx(!sfxEnabled); // AUDIO
     render(ctx, state, lastDelta);
@@ -191,16 +148,72 @@ canvas.addEventListener('click', (e) => {
     setMusic(!musicEnabled); // AUDIO
     render(ctx, state, lastDelta);
     drawPauseScreen();
-  } else if (help && px >= help.x && px <= help.x + help.w && py >= help.y && py <= help.y + help.h) {
-    howToPlayOpen = true;
-    render(ctx, state, lastDelta);
-    drawPauseScreen();
-    renderHowToPlay(ctx);
+  }
+});
+
+// HTML how-to-play modal — show/hide button based on game status, draw shape icons once on open
+const helpBtn = document.getElementById('help-btn');
+const howToPlayEl = document.getElementById('how-to-play');
+
+// Draws all shape icons into their inline canvases
+function drawHtpIcons() {
+  const C = (id) => document.getElementById(id);
+  const cx2d = (id) => C(id).getContext('2d');
+  const cx = 16, cy = 16; // center of each 32x32 canvas
+
+  const pc = cx2d('htp-player');
+  glowCircle(pc, cx, cy, 9, '#00eeff', 12);
+  glowCircle(pc, cx, cy, 3, '#ffffff', 5);
+
+  drawBall(cx2d('htp-ball'), { x: cx, y: cy, radius: 10 }, '#ff4444');
+  drawBullet(cx2d('htp-bullet'), { x: cx, y: cy, radius: 5, vx: 1, vy: 0 }, '#ffffff');
+  drawShard(cx2d('htp-shard'), { x: cx, y: cy, radius: 10, vx: 1, vy: 0 }, '#ff9900');
+  drawTracker(cx2d('htp-tracker'), { x: cx, y: cy, radius: 9 }, '#cc44ff');
+
+  const zc = cx2d('htp-zone');
+  zc.strokeStyle = '#00ff88';
+  zc.shadowColor = '#00ff88';
+  zc.shadowBlur = 8;
+  zc.lineWidth = 2;
+  zc.beginPath();
+  zc.arc(cx, cy, 11, 0, Math.PI * 2);
+  zc.stroke();
+
+  const bonusIcons = [
+    ['htp-slowmo', '#0088ff'], ['htp-shield', '#ffe600'],
+    ['htp-clear', '#ff4dff'], ['htp-shrink', '#00ff99'],
+  ];
+  for (const [id, color] of bonusIcons) {
+    const bc = cx2d(id);
+    glowCircle(bc, cx, cy, 8, color, 12);
+    glowCircle(bc, cx, cy, 4, '#ffffff', 5);
+  }
+}
+
+// Updates help button visibility based on current game status
+function syncHelpBtn() {
+  const visible = state.status === 'start' || state.status === 'paused';
+  helpBtn.style.display = visible ? 'block' : 'none';
+}
+
+helpBtn.addEventListener('click', () => {
+  drawHtpIcons();
+  howToPlayEl.classList.add('open');
+});
+
+howToPlayEl.addEventListener('click', (e) => {
+  if (e.target === howToPlayEl) howToPlayEl.classList.remove('open');
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && howToPlayEl.classList.contains('open')) {
+    howToPlayEl.classList.remove('open');
   }
 });
 
 // Render the start screen before the loop begins
 renderFrame();
+syncHelpBtn();
 
 // Init dev config panel — passes loop control and restart callback (Requirement 12.1–12.7)
 initConfigPanel(loop, onRestart, () => state.status);

@@ -90,7 +90,7 @@ export function initRenderer() {
 }
 
 // Draws a glowing circle at (x, y) with given radius, color, and blur amount
-function glowCircle(ctx, x, y, radius, color, blur) {
+export function glowCircle(ctx, x, y, radius, color, blur) {
   ctx.save();
   ctx.shadowColor = color;
   ctx.shadowBlur = blur;
@@ -102,12 +102,12 @@ function glowCircle(ctx, x, y, radius, color, blur) {
 }
 
 // Draws a ball obstacle — filled glowing circle
-function drawBall(ctx, obs, color) {
+export function drawBall(ctx, obs, color) {
   glowCircle(ctx, obs.x, obs.y, obs.radius, color, 18);
 }
 
 // Draws a bullet obstacle — elongated capsule oriented along velocity
-function drawBullet(ctx, obs, color) {
+export function drawBullet(ctx, obs, color) {
   const angle = Math.atan2(obs.vy, obs.vx);
   const len = obs.radius * 3.5;
   const hw = obs.radius * 0.7; // half-width of capsule
@@ -127,7 +127,7 @@ function drawBullet(ctx, obs, color) {
 }
 
 // Draws a shard obstacle — sharp triangle oriented along velocity
-function drawShard(ctx, obs, color) {
+export function drawShard(ctx, obs, color) {
   const angle = Math.atan2(obs.vy, obs.vx);
   const r = obs.radius;
   ctx.save();
@@ -146,7 +146,7 @@ function drawShard(ctx, obs, color) {
 }
 
 // Draws a tracker obstacle — pulsing spinning diamond that hunts the player
-function drawTracker(ctx, obs, color) {
+export function drawTracker(ctx, obs, color) {
   const r = obs.radius * 1.3;
   ctx.save();
   ctx.translate(obs.x, obs.y);
@@ -183,8 +183,7 @@ function drawObstacle(ctx, obs) {
   else drawBall(ctx, obs, color);
 }
 
-// Renders the start screen overlay with title, prompt, personal best, and ? button.
-// Returns the hit area of the ? button for click handling in main.js.
+// Renders the start screen overlay with title, prompt, and personal best.
 export function renderStartScreen(ctx) {
   const cw = ctx.canvas.width;
   const ch = ctx.canvas.height;
@@ -224,169 +223,7 @@ export function renderStartScreen(ctx) {
   ctx.fillStyle = '#cccccc';
   ctx.shadowColor = '#cccccc';
   ctx.shadowBlur = 8;
-  const promptY = pb && pb.score > 0 ? ch * 0.56 : ch * 0.54;
-  ctx.fillText('Click or press any key to begin', cx, promptY);
-
-  // ? button — sits just below the prompt, centered
-  const btnR = 14;
-  const btnX = cx;
-  const btnY = promptY + 36;
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
-  ctx.beginPath();
-  ctx.arc(btnX, btnY, btnR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(btnX, btnY, btnR, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.font = '13px monospace';
-  ctx.fillStyle = '#888888';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('?', btnX, btnY);
-
-  ctx.restore();
-
-  return { x: btnX - btnR, y: btnY - btnR, w: btnR * 2, h: btnR * 2 };
-}
-
-// Renders the how-to-play modal over the start screen.
-// Uses actual in-game draw functions at a fixed icon radius for visual consistency.
-export function renderHowToPlay(ctx) {
-  const cw = ctx.canvas.width;
-  const ch = ctx.canvas.height;
-  const cx = cw / 2;
-
-  const ICON_R = 10;           // consistent icon radius — bullet uses smaller to avoid overflow
-  const MODAL_W = Math.min(480, cw - 60);
-  const MODAL_H = 480;
-  const mx = cx - MODAL_W / 2;
-  const my = ch / 2 - MODAL_H / 2;
-  const COL_ICON = mx + 36;    // icon center x
-  const COL_TEXT = mx + 60;    // text start x
-  const ROW_H = 32;
-
-  // Dim everything behind modal
-  ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.75)';
-  ctx.fillRect(0, 0, cw, ch);
-
-  // Modal panel
-  ctx.fillStyle = '#0d0d1a';
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(mx, my, MODAL_W, MODAL_H, 12);
-  ctx.fill();
-  ctx.stroke();
-
-  // Title
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = 'bold 18px monospace';
-  ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = '#ffffff';
-  ctx.shadowBlur = 8;
-  ctx.fillText('HOW TO PLAY', cx, my + 28);
-  ctx.shadowBlur = 0;
-
-  // Helpers
-  function sectionLabel(label, y) {
-    ctx.font = '10px monospace';
-    ctx.fillStyle = '#333344';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label.toUpperCase(), COL_TEXT, y);
-  }
-
-  function row(iconFn, y, label, desc) {
-    iconFn(y);
-    ctx.font = 'bold 13px monospace';
-    ctx.fillStyle = '#cccccc';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, COL_TEXT, y);
-    const labelW = ctx.measureText(label).width;
-    ctx.font = '13px monospace';
-    ctx.fillStyle = '#555566';
-    ctx.fillText(`  ${desc}`, COL_TEXT + labelW, y);
-  }
-
-  let y = my + 54;
-
-  // ── YOU ──
-  sectionLabel('YOU', y);
-  y += 18;
-  row(() => {
-    glowCircle(ctx, COL_ICON, y, ICON_R * 0.8, '#00eeff', 12);
-    glowCircle(ctx, COL_ICON, y, ICON_R * 0.3, '#ffffff', 5);
-  }, y, 'Your ship', 'move with your mouse — don\'t get hit');
-  y += ROW_H + 6;
-
-  // ── OBSTACLES ──
-  sectionLabel('OBSTACLES — AVOID ALL OF THEM', y);
-  y += 18;
-
-  row(() => drawBall(ctx, { x: COL_ICON, y, radius: ICON_R }, OBSTACLE_COLORS.ball),
-    y, 'Ball', 'steady, predictable');
-  y += ROW_H;
-
-  // Bullet uses smaller radius so capsule doesn't overflow the icon column
-  row(() => drawBullet(ctx, { x: COL_ICON, y, radius: 6, vx: 1, vy: 0 }, OBSTACLE_COLORS.bullet),
-    y, 'Bullet', 'fast and straight');
-  y += ROW_H;
-
-  row(() => drawShard(ctx, { x: COL_ICON, y, radius: ICON_R, vx: 1, vy: 0 }, OBSTACLE_COLORS.shard),
-    y, 'Shard', 'unpredictable angle');
-  y += ROW_H;
-
-  row(() => drawTracker(ctx, { x: COL_ICON, y, radius: ICON_R }, OBSTACLE_COLORS.tracker),
-    y, 'Tracker', 'hunts you — only screenclear removes it');
-  y += ROW_H + 6;
-
-  // ── SCORE ZONE ──
-  sectionLabel('SCORE ZONE', y);
-  y += 18;
-  row(() => {
-    ctx.save();
-    ctx.strokeStyle = '#00ff88';
-    ctx.shadowColor = '#00ff88';
-    ctx.shadowBlur = 10;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(COL_ICON, y, ICON_R, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }, y, 'Green zone', 'enter to build multiplier — score banks at x1');
-  y += ROW_H + 6;
-
-  // ── POWER-UPS ──
-  sectionLabel('POWER-UPS — COLLECT THEM', y);
-  y += 18;
-
-  const bonuses = [
-    { color: '#0088ff', label: 'Slow-mo', desc: 'slows all obstacles' },
-    { color: '#ffe600', label: 'Shield', desc: 'temporary invincibility' },
-    { color: '#ff4dff', label: 'Clear', desc: 'removes all obstacles instantly' },
-    { color: '#00ff99', label: 'Shrink', desc: 'smaller hitbox' },
-  ];
-  for (const b of bonuses) {
-    const br = ICON_R * 0.7;
-    row(() => {
-      glowCircle(ctx, COL_ICON, y, br, b.color, 12);
-      glowCircle(ctx, COL_ICON, y, br * 0.45, '#ffffff', 5);
-    }, y, b.label, b.desc);
-    y += ROW_H;
-  }
-
-  // Dismiss hint
-  ctx.font = '11px monospace';
-  ctx.fillStyle = '#333344';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('click anywhere or press any key to close', cx, my + MODAL_H - 16);
+  ctx.fillText('Click or press any key to begin', cx, pb && pb.score > 0 ? ch * 0.56 : ch * 0.54);
 
   ctx.restore();
 }
@@ -444,20 +281,11 @@ export function renderPauseScreen(ctx, sfxOn, musicOn) {
   ctx.fillStyle = musicOn ? '#000' : '#888';
   ctx.fillText(`MUSIC: ${musicOn ? 'ON' : 'OFF'}`, musicX + btnW / 2, btnY);
 
-  // How to play link
-  const helpY = btnY + btnH / 2 + 24;
-  ctx.font = '13px monospace';
-  ctx.fillStyle = '#444455';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('? How to play', cx, helpY);
-
   ctx.restore();
 
   return {
     sfx: { x: sfxX, y: btnY - btnH / 2, w: btnW, h: btnH },
     music: { x: musicX, y: btnY - btnH / 2, w: btnW, h: btnH },
-    help: { x: cx - 60, y: helpY - 10, w: 120, h: 20 },
   };
 }
 export function render(ctx, state, delta) {
