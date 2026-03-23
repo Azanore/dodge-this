@@ -13,6 +13,7 @@ export function resetState() {
     bonuses: [],              // bonus pickups currently on the field
     activeEffects: {},        // { slowmo: {remaining}, shrink: {remaining}, invincibility: {remaining} }
     slowmoMultiplier: 1,      // speed reduction factor during slow-mo bonus
+    slowmoFadeRemaining: 0,   // ms remaining in slowmo fade-out (eases back to 1 after expiry)
     player: {
       x: 0,
       y: 0,

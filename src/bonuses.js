@@ -77,19 +77,28 @@ export function collectBonus(type, state, x = 0, y = 0) {
   }
 }
 
-// Ticks all active effects down by delta ms and cleans up expired ones
+// Ticks all active effects down by delta ms, cleans up expired ones, and advances slowmo fade-out
 export function updateEffects(delta, state) {
   for (const [type, effect] of Object.entries(state.activeEffects)) {
     effect.remaining -= delta;
 
     if (effect.remaining <= 0) {
-      // Restore pre-bonus state on expiry
       if (type === 'slowmo') {
-        state.slowmoMultiplier = effect.prevMultiplier;
+        // Start fade-out instead of snapping back
+        state.slowmoFadeRemaining = gameConfig.slowmoFadeDuration;
       } else if (type === 'shrink') {
         state.player.radius = effect.prevRadius;
       }
       delete state.activeEffects[type];
     }
+  }
+
+  // Gradually ease slowmoMultiplier back to 1 after expiry
+  if (state.slowmoFadeRemaining > 0) {
+    state.slowmoFadeRemaining -= delta;
+    const t = Math.max(0, state.slowmoFadeRemaining / gameConfig.slowmoFadeDuration);
+    // t goes 1→0 as fade progresses; lerp from 0.4 to 1
+    state.slowmoMultiplier = 1 - t * (1 - 0.4);
+    if (state.slowmoFadeRemaining <= 0) state.slowmoMultiplier = 1;
   }
 }

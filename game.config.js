@@ -3,7 +3,7 @@
 // Loaded as a classic script — window.gameConfig is set synchronously before any module runs.
 window.gameConfig = {
   gracePeriod: 500,            // ms before first obstacle spawns
-  playerHitboxRadius: 14,      // base player hitbox radius in pixels
+  playerHitboxRadius: 10,      // base player hitbox radius in pixels
   outerZoneScale: 1.3,         // outer zone is this multiple of inner zone on each axis
 
   maxSpeedMultiplier: 4.0,     // hard cap on obstacle speed multiplier
@@ -16,11 +16,13 @@ window.gameConfig = {
 
   scoreZoneInterval: 10000,    // ms between zone appearances
   scoreZoneDuration: 7000,     // ms zone stays active
-  scoreZoneRadius: 90,         // px radius of the score zone
+  scoreZoneRadius: 110,        // px radius of the score zone
   scoreZoneWanderSpeed: 40,    // px per second wander speed
 
+  slowmoFadeDuration: 1500,    // ms to ease slowmoMultiplier back to 1 after expiry
+
   difficulty: {
-    speedScaleFactor: 0.6,     // controls how fast speed ramps up (logarithmic)
+    speedScaleFactor: 0.35,    // controls how fast speed ramps up (logarithmic)
     spawnRateDecayRate: 0.04,  // controls how fast spawn interval shrinks (exponential)
     spawnRateMin: 400,         // ms — spawn interval never drops below this
     baseSpawnInterval: 1800,   // ms — starting spawn interval
@@ -31,7 +33,7 @@ window.gameConfig = {
     ball: { enabled: true, baseSpeed: 0.18, spawnWeight: 5 },
     bullet: { enabled: true, baseSpeed: 0.26, spawnWeight: 3 },
     shard: { enabled: true, baseSpeed: 0.22, spawnWeight: 2 },
-    tracker: { enabled: true, baseSpeed: 0.13, spawnWeight: 1, turnRate: 0.04 }
+    tracker: { enabled: true, baseSpeed: 0.11, spawnWeight: 1, turnRate: 0.025 }
   },
 
   bonusTypes: {
