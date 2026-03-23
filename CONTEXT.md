@@ -131,6 +131,12 @@ Run: `npm test`
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
 
+### Session 9
+- Difficulty curve tuned to hit full chaos at ~75s (Option A)
+- `speedScaleFactor` 0.35 → 0.5 (hits ~3.2x at 75s, ~3.26x at 90s)
+- `spawnRateDecayRate` 0.04 → 0.05 (spawn floor reached at ~30s instead of ~38s)
+- `maxSpeedMultiplier` 4.0 → 3.5 (cap feels intense but survivable)
+
 ### Session 8
 - Added `src/audio.js` — self-contained audio module, removable via `// AUDIO` markers in callers
 - 7 sound files in `/sounds`: `death`, `pickup`, `score-bank`, `multiplier-max`, `game-start`, `near-miss`, `zone-appear`, `music`
