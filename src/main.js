@@ -144,6 +144,13 @@ window.addEventListener('keydown', (e) => {
   const panel = document.getElementById('config-panel');
   if (panel && panel.style.display !== 'none') return;
 
+  // Close how-to-play modal first if open
+  if (howToPlayOpen) {
+    howToPlayOpen = false;
+    if (state.status === 'paused') { render(ctx, state, lastDelta); drawPauseScreen(); }
+    return;
+  }
+
   if (state.status === 'active' || state.status === 'grace') {
     state.prevStatus = state.status;
     state.status = 'paused';
@@ -160,13 +167,22 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Click handler for pause screen audio toggles
+// Click handler for pause screen audio toggles and how-to-play link
 canvas.addEventListener('click', (e) => {
   if (state.status !== 'paused' || !pauseHitAreas) return;
   const rect = canvas.getBoundingClientRect();
   const px = e.clientX - rect.left;
   const py = e.clientY - rect.top;
-  const { sfx, music } = pauseHitAreas;
+
+  // If modal is open, any click closes it
+  if (howToPlayOpen) {
+    howToPlayOpen = false;
+    render(ctx, state, lastDelta);
+    drawPauseScreen();
+    return;
+  }
+
+  const { sfx, music, help } = pauseHitAreas;
   if (px >= sfx.x && px <= sfx.x + sfx.w && py >= sfx.y && py <= sfx.y + sfx.h) {
     setSfx(!sfxEnabled); // AUDIO
     render(ctx, state, lastDelta);
@@ -175,6 +191,11 @@ canvas.addEventListener('click', (e) => {
     setMusic(!musicEnabled); // AUDIO
     render(ctx, state, lastDelta);
     drawPauseScreen();
+  } else if (help && px >= help.x && px <= help.x + help.w && py >= help.y && py <= help.y + help.h) {
+    howToPlayOpen = true;
+    render(ctx, state, lastDelta);
+    drawPauseScreen();
+    renderHowToPlay(ctx);
   }
 });
 

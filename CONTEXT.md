@@ -132,11 +132,11 @@ Run: `npm test`
 - Deployed to Vercel
 
 ### Session 11
-- Added how-to-play modal on start screen — `?` button bottom-right corner
-- Modal renders actual in-game shapes (ball, bullet, shard, tracker, score zone ring, bonus pickups) at consistent 14px radius
-- Sections: YOU / OBSTACLES / SCORE ZONE / POWER-UPS
-- Open: click `?`. Close: click anywhere or press any key. Starting the game is blocked while modal is open
-- Blast radius: `src/renderer.js` (renderHowToPlay, renderStartScreen returns hit area), `src/main.js` (modal state + click wiring)
+- Fixed how-to-play modal: single-column layout, bullet uses r=6 to avoid overflow, modal height 480px
+- `?` button moved to center below "Click to begin" prompt — no longer isolated in corner
+- "? How to play" link added to pause screen below audio toggles
+- Modal accessible from start screen and pause screen; Escape or any click closes it without unpausing
+- Blast radius: `src/renderer.js`, `src/main.js`
 
 ### Session 10
 - Difficulty tuning: `baseSpawnInterval` 1800 → 1200ms (pressure from second 1), base speeds bumped (ball 0.18→0.22, bullet 0.26→0.30, shard 0.22→0.26, tracker 0.11→0.13)

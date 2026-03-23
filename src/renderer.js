@@ -224,19 +224,25 @@ export function renderStartScreen(ctx) {
   ctx.fillStyle = '#cccccc';
   ctx.shadowColor = '#cccccc';
   ctx.shadowBlur = 8;
-  ctx.fillText('Click or press any key to begin', cx, pb && pb.score > 0 ? ch * 0.56 : ch * 0.54);
+  const promptY = pb && pb.score > 0 ? ch * 0.56 : ch * 0.54;
+  ctx.fillText('Click or press any key to begin', cx, promptY);
 
-  // ? button — bottom-right corner
-  const btnR = 18;
-  const btnX = cw - 36;
-  const btnY = ch - 36;
+  // ? button — sits just below the prompt, centered
+  const btnR = 14;
+  const btnX = cx;
+  const btnY = promptY + 36;
   ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
   ctx.beginPath();
   ctx.arc(btnX, btnY, btnR, 0, Math.PI * 2);
   ctx.fill();
-  ctx.font = 'bold 18px monospace';
-  ctx.fillStyle = '#aaaaaa';
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(btnX, btnY, btnR, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.font = '13px monospace';
+  ctx.fillStyle = '#888888';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('?', btnX, btnY);
@@ -253,15 +259,18 @@ export function renderHowToPlay(ctx) {
   const ch = ctx.canvas.height;
   const cx = cw / 2;
 
-  const ICON_R = 14;         // consistent icon radius for all shapes
-  const MODAL_W = Math.min(520, cw - 60);
-  const MODAL_H = 420;
+  const ICON_R = 10;           // consistent icon radius — bullet uses smaller to avoid overflow
+  const MODAL_W = Math.min(480, cw - 60);
+  const MODAL_H = 480;
   const mx = cx - MODAL_W / 2;
   const my = ch / 2 - MODAL_H / 2;
+  const COL_ICON = mx + 36;    // icon center x
+  const COL_TEXT = mx + 60;    // text start x
+  const ROW_H = 32;
 
   // Dim everything behind modal
   ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillStyle = 'rgba(0,0,0,0.75)';
   ctx.fillRect(0, 0, cw, ch);
 
   // Modal panel
@@ -276,115 +285,108 @@ export function renderHowToPlay(ctx) {
   // Title
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = 'bold 20px monospace';
+  ctx.font = 'bold 18px monospace';
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = '#ffffff';
   ctx.shadowBlur = 8;
-  ctx.fillText('HOW TO PLAY', cx, my + 32);
+  ctx.fillText('HOW TO PLAY', cx, my + 28);
   ctx.shadowBlur = 0;
 
-  // Section helper — draws a dim label
-  const COL_ICON = mx + 44;   // icon center x
-  const COL_TEXT = mx + 72;   // text start x
-  const ROW_H = 36;
-
+  // Helpers
   function sectionLabel(label, y) {
-    ctx.font = '11px monospace';
-    ctx.fillStyle = '#444455';
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#333344';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(label.toUpperCase(), COL_TEXT, y);
   }
 
-  function row(y, label, desc) {
-    ctx.font = '13px monospace';
+  function row(iconFn, y, label, desc) {
+    iconFn(y);
+    ctx.font = 'bold 13px monospace';
     ctx.fillStyle = '#cccccc';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(label, COL_TEXT, y);
-    ctx.fillStyle = '#666677';
-    ctx.fillText(`  ${desc}`, COL_TEXT + ctx.measureText(label).width, y);
+    const labelW = ctx.measureText(label).width;
+    ctx.font = '13px monospace';
+    ctx.fillStyle = '#555566';
+    ctx.fillText(`  ${desc}`, COL_TEXT + labelW, y);
   }
 
-  let y = my + 68;
+  let y = my + 54;
 
   // ── YOU ──
-  sectionLabel('YOU', y - 10);
-  y += 14;
-  glowCircle(ctx, COL_ICON, y, ICON_R * 0.7, '#00eeff', 14);
-  glowCircle(ctx, COL_ICON, y, ICON_R * 0.28, '#ffffff', 6);
-  row(y, 'Your ship', 'move with your mouse — don\'t get hit');
-  y += ROW_H + 8;
+  sectionLabel('YOU', y);
+  y += 18;
+  row(() => {
+    glowCircle(ctx, COL_ICON, y, ICON_R * 0.8, '#00eeff', 12);
+    glowCircle(ctx, COL_ICON, y, ICON_R * 0.3, '#ffffff', 5);
+  }, y, 'Your ship', 'move with your mouse — don\'t get hit');
+  y += ROW_H + 6;
 
   // ── OBSTACLES ──
-  sectionLabel('OBSTACLES — AVOID ALL OF THEM', y - 10);
-  y += 14;
+  sectionLabel('OBSTACLES — AVOID ALL OF THEM', y);
+  y += 18;
 
-  drawBall(ctx, { x: COL_ICON, y, radius: ICON_R }, OBSTACLE_COLORS.ball);
-  row(y, 'Ball', 'steady, predictable');
+  row(() => drawBall(ctx, { x: COL_ICON, y, radius: ICON_R }, OBSTACLE_COLORS.ball),
+    y, 'Ball', 'steady, predictable');
   y += ROW_H;
 
-  drawBullet(ctx, { x: COL_ICON, y, radius: ICON_R, vx: 1, vy: 0 }, OBSTACLE_COLORS.bullet);
-  row(y, 'Bullet', 'fast and straight');
+  // Bullet uses smaller radius so capsule doesn't overflow the icon column
+  row(() => drawBullet(ctx, { x: COL_ICON, y, radius: 6, vx: 1, vy: 0 }, OBSTACLE_COLORS.bullet),
+    y, 'Bullet', 'fast and straight');
   y += ROW_H;
 
-  drawShard(ctx, { x: COL_ICON, y, radius: ICON_R, vx: 1, vy: 0 }, OBSTACLE_COLORS.shard);
-  row(y, 'Shard', 'unpredictable angle');
+  row(() => drawShard(ctx, { x: COL_ICON, y, radius: ICON_R, vx: 1, vy: 0 }, OBSTACLE_COLORS.shard),
+    y, 'Shard', 'unpredictable angle');
   y += ROW_H;
 
-  drawTracker(ctx, { x: COL_ICON, y, radius: ICON_R }, OBSTACLE_COLORS.tracker);
-  row(y, 'Tracker', 'hunts you — only screenclear removes it');
-  y += ROW_H + 8;
+  row(() => drawTracker(ctx, { x: COL_ICON, y, radius: ICON_R }, OBSTACLE_COLORS.tracker),
+    y, 'Tracker', 'hunts you — only screenclear removes it');
+  y += ROW_H + 6;
 
   // ── SCORE ZONE ──
-  sectionLabel('SCORE ZONE', y - 10);
-  y += 14;
-  ctx.save();
-  ctx.strokeStyle = '#00ff88';
-  ctx.shadowColor = '#00ff88';
-  ctx.shadowBlur = 10;
-  ctx.lineWidth = 2;
-  ctx.globalAlpha = 0.9;
-  ctx.beginPath();
-  ctx.arc(COL_ICON, y, ICON_R, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-  row(y, 'Green zone', 'enter to build multiplier — score banks at x1');
-  y += ROW_H + 8;
+  sectionLabel('SCORE ZONE', y);
+  y += 18;
+  row(() => {
+    ctx.save();
+    ctx.strokeStyle = '#00ff88';
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(COL_ICON, y, ICON_R, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }, y, 'Green zone', 'enter to build multiplier — score banks at x1');
+  y += ROW_H + 6;
 
   // ── POWER-UPS ──
-  sectionLabel('POWER-UPS — COLLECT THEM', y - 10);
-  y += 14;
+  sectionLabel('POWER-UPS — COLLECT THEM', y);
+  y += 18;
 
-  const BONUS_ICON_R = ICON_R * 0.75;
   const bonuses = [
     { color: '#0088ff', label: 'Slow-mo', desc: 'slows all obstacles' },
     { color: '#ffe600', label: 'Shield', desc: 'temporary invincibility' },
-    { color: '#ff4dff', label: 'Clear', desc: 'removes all obstacles' },
+    { color: '#ff4dff', label: 'Clear', desc: 'removes all obstacles instantly' },
     { color: '#00ff99', label: 'Shrink', desc: 'smaller hitbox' },
   ];
-  const cols = 2;
-  const colW = MODAL_W / cols;
-  bonuses.forEach((b, i) => {
-    const bx = mx + (i % cols) * colW + 44;
-    const by = y + Math.floor(i / cols) * ROW_H;
-    glowCircle(ctx, bx, by, BONUS_ICON_R, b.color, 14);
-    glowCircle(ctx, bx, by, BONUS_ICON_R * 0.5, '#ffffff', 6);
-    ctx.font = '13px monospace';
-    ctx.fillStyle = '#cccccc';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(b.label, bx + 28, by);
-    ctx.fillStyle = '#666677';
-    ctx.fillText(`  ${b.desc}`, bx + 28 + ctx.measureText(b.label).width, by);
-  });
+  for (const b of bonuses) {
+    const br = ICON_R * 0.7;
+    row(() => {
+      glowCircle(ctx, COL_ICON, y, br, b.color, 12);
+      glowCircle(ctx, COL_ICON, y, br * 0.45, '#ffffff', 5);
+    }, y, b.label, b.desc);
+    y += ROW_H;
+  }
 
   // Dismiss hint
-  ctx.font = '12px monospace';
-  ctx.fillStyle = '#444455';
+  ctx.font = '11px monospace';
+  ctx.fillStyle = '#333344';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('click anywhere or press any key to close', cx, my + MODAL_H - 18);
+  ctx.fillText('click anywhere or press any key to close', cx, my + MODAL_H - 16);
 
   ctx.restore();
 }
@@ -442,15 +444,22 @@ export function renderPauseScreen(ctx, sfxOn, musicOn) {
   ctx.fillStyle = musicOn ? '#000' : '#888';
   ctx.fillText(`MUSIC: ${musicOn ? 'ON' : 'OFF'}`, musicX + btnW / 2, btnY);
 
+  // How to play link
+  const helpY = btnY + btnH / 2 + 24;
+  ctx.font = '13px monospace';
+  ctx.fillStyle = '#444455';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('? How to play', cx, helpY);
+
   ctx.restore();
 
   return {
     sfx: { x: sfxX, y: btnY - btnH / 2, w: btnW, h: btnH },
     music: { x: musicX, y: btnY - btnH / 2, w: btnW, h: btnH },
+    help: { x: cx - 60, y: helpY - 10, w: 120, h: 20 },
   };
 }
-
-// Main render function — called every frame
 export function render(ctx, state, delta) {
   const cw = ctx.canvas.width;
   const ch = ctx.canvas.height;
