@@ -6,6 +6,7 @@ const PB_KEY = 'dodge_pb';
 
 const OVERLAY_COLOR = 'rgba(0, 0, 0, 0.78)';
 const TITLE_FONT = 'bold 48px monospace';
+const SCORE_FONT = 'bold 36px monospace';
 const LABEL_FONT = '20px monospace';
 const SMALL_FONT = '14px monospace';
 const BTN_W = 180;
@@ -86,10 +87,11 @@ export function showGameOver(canvas, state, onRestart) {
 
   // Layout anchors
   const titleY = ch * 0.28;
-  const timeY = ch * 0.42;
-  const pbY = ch * 0.50;
-  const restartY = ch * 0.62;
-  const hintY = ch * 0.62 + BTN_H + 14;
+  const scoreY = ch * 0.40;
+  const elapsedY = ch * 0.47;
+  const pbY = ch * 0.54;
+  const restartY = ch * 0.65;
+  const hintY = ch * 0.65 + BTN_H + 14;
 
   // Draw overlay
   ctx.save();
@@ -105,23 +107,26 @@ export function showGameOver(canvas, state, onRestart) {
   ctx.shadowBlur = 20;
   ctx.fillText('GAME OVER', cx, titleY);
 
-  // Final score + elapsed
-  ctx.font = LABEL_FONT;
+  // Score — large and bold, primary
+  ctx.font = SCORE_FONT;
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = '#ffffff';
-  ctx.shadowBlur = 8;
-  ctx.fillText(`Score: ${points}  •  ${elapsed}s`, cx, timeY);
+  ctx.shadowBlur = 12;
+  ctx.fillText(`${points} pts`, cx, scoreY);
 
-  // Personal best (omit if localStorage was unavailable and pb is 0)
+  // Elapsed — smaller, secondary grey
+  ctx.font = SMALL_FONT;
+  ctx.fillStyle = '#666666';
+  ctx.shadowBlur = 0;
+  ctx.fillText(`${elapsed}s`, cx, elapsedY);
+
+  // Personal best
   if (hasPB) {
     ctx.font = SMALL_FONT;
-    ctx.fillStyle = '#aaaaaa';
-    ctx.shadowBlur = 0;
-    const pbLabel = isNewBest ? 'New Best: ' : 'Best: ';
-    ctx.fillText(`${pbLabel}${pbPoints} pts  •  ${pbElapsed}s`, cx, pbY);
+    ctx.fillStyle = isNewBest ? '#00ff88' : '#aaaaaa';
+    const pbLabel = isNewBest ? 'New Best' : `Best  ${pbPoints} pts  ${pbElapsed}s`;
+    ctx.fillText(pbLabel, cx, pbY);
   }
-
-  ctx.shadowBlur = 0;
 
   // Restart button
   const restartBtn = drawButton(ctx, 'Restart', cx, restartY, '#2255cc');
