@@ -23,7 +23,7 @@
       font: 16px monospace;
       cursor: pointer;
       display: none;
-      z-index: 10;
+      z-index: 25;
       transition: border-color 0.15s, color 0.15s;
     }
     #help-btn:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
@@ -40,7 +40,7 @@
     }
     .overlay.open { display: flex; }
 
-    #how-to-play { background: rgba(0,0,0,0.75); }
+    #how-to-play { background: rgba(0,0,0,0.75); z-index: 30; }
     #pause-screen { background: rgba(0,0,0,0.6); }
     #game-over-screen { background: rgba(0,0,0,0.78); }
 
@@ -148,6 +148,28 @@
 
   <button id="help-btn">?</button>
 
+  <div id="pause-screen" class="overlay">
+    <div class="overlay-panel">
+      <div class="overlay-title" style="color:#fff;text-shadow:0 0 20px #fff">PAUSED</div>
+      <div class="overlay-subtitle">Press Esc to resume</div>
+      <div class="btn-row" style="margin-top:16px">
+        <button id="sfx-btn" class="toggle-btn">SFX: ON</button>
+        <button id="music-btn" class="toggle-btn">MUSIC: ON</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-over-screen" class="overlay">
+    <div class="overlay-panel">
+      <div class="overlay-title" style="color:#ff4444;text-shadow:0 0 20px #ff4444">GAME OVER</div>
+      <div id="go-score" class="overlay-score"></div>
+      <div id="go-elapsed" class="overlay-meta"></div>
+      <div id="go-pb" class="overlay-pb"></div>
+      <button id="restart-btn" class="overlay-btn primary">Restart</button>
+      <div class="overlay-label">or press R</div>
+    </div>
+  </div>
+
   <div id="how-to-play" class="overlay">
     <div class="htp-panel">
       <h2>HOW TO PLAY</h2>
@@ -211,28 +233,6 @@
       </div>
 
       <p class="htp-hint">click outside or press Escape to close</p>
-    </div>
-  </div>
-
-  <div id="pause-screen" class="overlay">
-    <div class="overlay-panel">
-      <div class="overlay-title" style="color:#fff;text-shadow:0 0 20px #fff">PAUSED</div>
-      <div class="overlay-subtitle">Press Esc to resume</div>
-      <div class="btn-row" style="margin-top:16px">
-        <button id="sfx-btn" class="toggle-btn">SFX: ON</button>
-        <button id="music-btn" class="toggle-btn">MUSIC: ON</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="game-over-screen" class="overlay">
-    <div class="overlay-panel">
-      <div class="overlay-title" style="color:#ff4444;text-shadow:0 0 20px #ff4444">GAME OVER</div>
-      <div id="go-score" class="overlay-score"></div>
-      <div id="go-elapsed" class="overlay-meta"></div>
-      <div id="go-pb" class="overlay-pb"></div>
-      <button id="restart-btn" class="overlay-btn primary">Restart</button>
-      <div class="overlay-label">or press R</div>
     </div>
   </div>
 
