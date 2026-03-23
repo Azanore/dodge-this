@@ -5,12 +5,13 @@
 import { innerZone } from './zones.js';
 import { playZoneAppear } from './audio.js'; // AUDIO
 
-// Picks a random spawn position inside the inner zone
+// Picks a random spawn position inside the inner zone, padded by zone radius
 function randomZoneSpawn() {
   const { x, y, width, height } = innerZone;
+  const r = gameConfig.scoreZoneRadius;
   return {
-    x: x + Math.random() * width,
-    y: y + Math.random() * height
+    x: x + r + Math.random() * (width - r * 2),
+    y: y + r + Math.random() * (height - r * 2)
   };
 }
 
@@ -76,13 +77,14 @@ export function updateScoreZone(delta, state, accumulators) {
   zone.y += zone.vy * delta;
 
   const { x: ix, y: iy, width: iw, height: ih } = innerZone;
-  if (zone.x < ix || zone.x > ix + iw) {
+  const zr = zone.radius;
+  if (zone.x < ix + zr || zone.x > ix + iw - zr) {
     zone.vx = -zone.vx;
-    zone.x = Math.max(ix, Math.min(ix + iw, zone.x));
+    zone.x = Math.max(ix + zr, Math.min(ix + iw - zr, zone.x));
   }
-  if (zone.y < iy || zone.y > iy + ih) {
+  if (zone.y < iy + zr || zone.y > iy + ih - zr) {
     zone.vy = -zone.vy;
-    zone.y = Math.max(iy, Math.min(iy + ih, zone.y));
+    zone.y = Math.max(iy + zr, Math.min(iy + ih - zr, zone.y));
   }
 
   // Multiplier: build inside, fast decay outside

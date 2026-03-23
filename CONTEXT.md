@@ -172,6 +172,17 @@ Run: `npm test`
 - Score formula changed from `delta * multiplier` to `(delta/1000) * 10` — numbers now in hundreds not hundreds-of-thousands
 - `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
 
+### Session 12
+- Score zone "inside" feedback: subtle green fill + brighter/thicker outline when player is inside zone (`renderer.js`)
+- Multiplier label floats above zone circle — self-teaches the mechanic to new players
+- Pending score color: mint when safe, amber (`#ffaa44`) when draining (player outside active zone) — `hud.js`
+- HUD redesign: score top-center (28px), bank pulse flashes green + scales 35% over 380ms, timer dimmed
+- Bonus pills moved top-right-of-center, fixed width, depleting color fill left-to-right — `hud.js`
+- Floating `+X` banked score text spawns at score zone position, floats up and fades over 800ms — `renderer.js`, `gameUpdate.js`
+- Inner zone wall contact pulse: cyan line segment spreads along wall from hit point, once per contact — `renderer.js`
+- Fixed: player radius not accounted for in zone clamping — ball no longer visually exits inner zone — `player.js`
+- Fixed: score zone spawn/wander didn't account for zone radius — zone could bleed outside inner zone — `combo.js`
+
 ### Session 6
 - Added combo multiplier system: `state.score` (delta × comboMultiplier), `state.comboMultiplier` in `[1.0, 5.0]`
 - Score replaces elapsed time as PB metric — `dodge_pb` now stores score points, not ms

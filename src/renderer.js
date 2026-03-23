@@ -50,6 +50,13 @@ const SHAKE_DURATION = 400;
 const SHAKE_MAGNITUDE = 10;
 let shakeRemaining = 0;
 
+// Tracks which walls the player was touching last frame — prevents re-firing while held
+let wallContact = { top: false, right: false, bottom: false, left: false };
+
+// Wall contact pulses — arc segments that spread along the wall from hit point
+const WALL_PULSE_DURATION = 300;
+const wallPulses = [];
+
 // Starts a screen shake — call this when death is detected
 export function triggerShake() { shakeRemaining = SHAKE_DURATION; }
 
@@ -341,11 +348,26 @@ export function render(ctx, state, delta) {
   ctx.clearRect(innerZone.x, innerZone.y, innerZone.width, innerZone.height);
   ctx.restore();
 
-  // 4. Inner zone — subtle lighter fill
+  // 4. Inner zone — subtle fill; wall pulse spawned once per contact at hit point
   ctx.save();
   ctx.fillStyle = 'rgba(10, 10, 40, 0.6)';
   ctx.fillRect(innerZone.x, innerZone.y, innerZone.width, innerZone.height);
   ctx.restore();
+
+  // Detect wall contact edges, fire a pulse ring at the hit point on first touch only
+  const { x: px, y: py, radius: pr } = state.player;
+  const { x: iz_x, y: iz_y, width: iz_w, height: iz_h } = innerZone;
+  const hitting = {
+    left: px - pr <= iz_x,
+    right: px + pr >= iz_x + iz_w,
+    top: py - pr <= iz_y,
+    bottom: py + pr >= iz_y + iz_h,
+  };
+  if (hitting.left && !wallContact.left) wallPulses.push({ x: iz_x, y: py, axis: 'v', remaining: WALL_PULSE_DURATION });
+  if (hitting.right && !wallContact.right) wallPulses.push({ x: iz_x + iz_w, y: py, axis: 'v', remaining: WALL_PULSE_DURATION });
+  if (hitting.top && !wallContact.top) wallPulses.push({ x: px, y: iz_y, axis: 'h', remaining: WALL_PULSE_DURATION });
+  if (hitting.bottom && !wallContact.bottom) wallPulses.push({ x: px, y: iz_y + iz_h, axis: 'h', remaining: WALL_PULSE_DURATION });
+  wallContact = hitting;
 
   // 5. Obstacles — per-type shapes with glow
   for (const obs of state.obstacles) {
@@ -416,6 +438,33 @@ export function render(ctx, state, delta) {
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(f.x, f.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 6d. Wall contact pulses — line segments spreading along the wall from hit point, clamped to zone
+  const { x: iz_x2, y: iz_y2, width: iz_w2, height: iz_h2 } = innerZone;
+  for (let i = wallPulses.length - 1; i >= 0; i--) {
+    const w = wallPulses[i];
+    w.remaining -= delta;
+    if (w.remaining <= 0) { wallPulses.splice(i, 1); continue; }
+    const t = 1 - w.remaining / WALL_PULSE_DURATION; // 0→1
+    const spread = t * 80;
+    const alpha = (1 - t) * 1.0;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = '#00eeff';
+    ctx.shadowColor = '#00eeff';
+    ctx.shadowBlur = 16 * (1 - t);
+    ctx.lineWidth = 3 - t * 2;
+    ctx.beginPath();
+    if (w.axis === 'h') {
+      ctx.moveTo(Math.max(iz_x2, w.x - spread), w.y);
+      ctx.lineTo(Math.min(iz_x2 + iz_w2, w.x + spread), w.y);
+    } else {
+      ctx.moveTo(w.x, Math.max(iz_y2, w.y - spread));
+      ctx.lineTo(w.x, Math.min(iz_y2 + iz_h2, w.y + spread));
+    }
     ctx.stroke();
     ctx.restore();
   }
