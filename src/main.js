@@ -96,6 +96,7 @@ function onRestart() {
 function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
+  if (howToPlayEl.classList.contains('open')) return; // modal intercepts input
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   initAudio().then(() => { startMusic(); }); // AUDIO
@@ -112,6 +113,7 @@ window.addEventListener('keydown', onStartAction);
 window.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (state.status === 'dead' || state.status === 'start') return;
+  if (howToPlayEl.classList.contains('open')) return; // modal handles its own Escape
   const panel = document.getElementById('config-panel');
   if (panel && panel.style.display !== 'none') return;
 
