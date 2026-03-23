@@ -58,7 +58,6 @@
       letter-spacing: 2px;
       margin-bottom: 8px;
     }
-    .overlay-subtitle { font-size: 20px; color: #ccc; }
     .overlay-label { font-size: 14px; color: #666; }
     .overlay-score { font-size: 36px; font-weight: bold; color: #fff; text-shadow: 0 0 12px #fff; }
     .overlay-meta  { font-size: 14px; color: #666; }
@@ -151,8 +150,9 @@
   <div id="pause-screen" class="overlay">
     <div class="overlay-panel">
       <div class="overlay-title" style="color:#fff;text-shadow:0 0 20px #fff">PAUSED</div>
-      <div class="overlay-subtitle">Press Esc to resume</div>
-      <div class="btn-row" style="margin-top:16px">
+      <button id="resume-btn" class="overlay-btn primary">Resume</button>
+      <div class="overlay-label">or press Esc</div>
+      <div class="btn-row" style="margin-top:8px">
         <button id="sfx-btn" class="toggle-btn">SFX: ON</button>
         <button id="music-btn" class="toggle-btn">MUSIC: ON</button>
       </div>

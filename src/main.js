@@ -103,19 +103,25 @@ window.addEventListener('keydown', (e) => {
     pauseScreenEl.classList.add('open');
     syncHelpBtn();
   } else if (state.status === 'paused') {
-    state.status = state.prevStatus;
-    state.prevStatus = null;
-    pauseScreenEl.classList.remove('open');
-    resumeMusic(); // AUDIO
-    syncHelpBtn();
-    loop.start();
+    resumeGame();
   }
 });
+
+function resumeGame() {
+  state.status = state.prevStatus;
+  state.prevStatus = null;
+  pauseScreenEl.classList.remove('open');
+  resumeMusic(); // AUDIO
+  syncHelpBtn();
+  loop.start();
+}
 
 // Pause screen — audio toggle buttons
 const pauseScreenEl = document.getElementById('pause-screen');
 const sfxBtn = document.getElementById('sfx-btn');
 const musicBtn = document.getElementById('music-btn');
+
+document.getElementById('resume-btn').addEventListener('click', resumeGame);
 
 // Syncs toggle button appearance to current enabled state
 function syncAudioBtns() {
