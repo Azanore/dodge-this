@@ -157,11 +157,17 @@ canvas.addEventListener('click', (e) => {
 const helpBtn = document.getElementById('help-btn');
 const howToPlayEl = document.getElementById('how-to-play');
 
-// Draws all shape icons into their inline canvases
+// Draws all shape icons into their inline canvases — clears first to prevent glow accumulation
 function drawHtpIcons() {
-  const C = (id) => document.getElementById(id);
-  const cx2d = (id) => C(id).getContext('2d');
-  const cx = 16, cy = 16; // center of each 32x32 canvas
+  const ids = ['htp-player', 'htp-ball', 'htp-bullet', 'htp-shard', 'htp-tracker', 'htp-zone', 'htp-slowmo', 'htp-shield', 'htp-clear', 'htp-shrink'];
+  const cx2d = (id) => document.getElementById(id).getContext('2d');
+  const cx = 16, cy = 16;
+
+  // Clear all canvases before redrawing
+  for (const id of ids) {
+    const c = cx2d(id);
+    c.clearRect(0, 0, 32, 32);
+  }
 
   const pc = cx2d('htp-player');
   glowCircle(pc, cx, cy, 9, '#00eeff', 12);
@@ -181,11 +187,7 @@ function drawHtpIcons() {
   zc.arc(cx, cy, 11, 0, Math.PI * 2);
   zc.stroke();
 
-  const bonusIcons = [
-    ['htp-slowmo', '#0088ff'], ['htp-shield', '#ffe600'],
-    ['htp-clear', '#ff4dff'], ['htp-shrink', '#00ff99'],
-  ];
-  for (const [id, color] of bonusIcons) {
+  for (const [id, color] of [['htp-slowmo', '#0088ff'], ['htp-shield', '#ffe600'], ['htp-clear', '#ff4dff'], ['htp-shrink', '#00ff99']]) {
     const bc = cx2d(id);
     glowCircle(bc, cx, cy, 8, color, 12);
     glowCircle(bc, cx, cy, 4, '#ffffff', 5);
