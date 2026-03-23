@@ -353,18 +353,41 @@ export function render(ctx, state, delta) {
     if (showHitboxes) drawHitbox(ctx, pickup.x, pickup.y, pickup.radius);
   }
 
-  // 6b. Score zone — pulsing circle outline with green glow
+  // 6b. Score zone — outline + fill/label when player is inside; teaches the mechanic visually
   if (state.scoreZone?.active) {
     const pulse = 0.5 + 0.5 * Math.sin(pulseT * 3);
+    const { x: zx, y: zy, radius: zr } = state.scoreZone;
+    const { x: px, y: py } = state.player;
+    const dx = px - zx, dy = py - zy;
+    const playerInside = dx * dx + dy * dy <= zr * zr;
+
     ctx.save();
+
+    // Subtle fill — stronger when player is inside
+    ctx.beginPath();
+    ctx.arc(zx, zy, zr, 0, Math.PI * 2);
+    ctx.fillStyle = playerInside ? 'rgba(0, 255, 136, 0.10)' : 'rgba(0, 255, 136, 0.03)';
+    ctx.fill();
+
+    // Outline — brighter and thicker when player is inside
     ctx.strokeStyle = '#00ff88';
     ctx.shadowColor = '#00ff88';
-    ctx.shadowBlur = 10 + 10 * pulse;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.6 + 0.4 * pulse;
+    ctx.shadowBlur = playerInside ? 18 + 8 * pulse : 10 + 10 * pulse;
+    ctx.lineWidth = playerInside ? 2.5 : 1.5;
+    ctx.globalAlpha = playerInside ? 1.0 : 0.6 + 0.4 * pulse;
     ctx.beginPath();
-    ctx.arc(state.scoreZone.x, state.scoreZone.y, state.scoreZone.radius, 0, Math.PI * 2);
+    ctx.arc(zx, zy, zr, 0, Math.PI * 2);
     ctx.stroke();
+
+    // Multiplier label inside zone — self-teaches the mechanic
+    ctx.globalAlpha = playerInside ? 0.9 : 0.35;
+    ctx.font = 'bold 13px monospace';
+    ctx.fillStyle = '#00ff88';
+    ctx.shadowBlur = playerInside ? 10 : 0;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(`x${state.comboMultiplier.toFixed(1)}`, zx, zy - zr - 6);
+
     ctx.restore();
   }
 
