@@ -189,7 +189,14 @@ export function renderStartScreen(ctx) {
   const ch = ctx.canvas.height;
   const cx = cw / 2;
 
-  const pb = parseFloat(localStorage.getItem('dodge_pb')) || 0;
+  const rawPB = localStorage.getItem('dodge_pb');
+  let pb = null;
+  if (rawPB) {
+    try {
+      const parsed = JSON.parse(rawPB);
+      pb = typeof parsed === 'number' ? { score: parsed, elapsed: 0 } : parsed;
+    } catch { pb = null; }
+  }
 
   ctx.save();
   ctx.fillStyle = 'rgba(0, 0, 0, 0.92)';
@@ -204,18 +211,19 @@ export function renderStartScreen(ctx) {
   ctx.shadowBlur = 30;
   ctx.fillText('DODGE', cx, ch * 0.38);
 
-  if (pb > 0) {
+  if (pb && pb.score > 0) {
     ctx.font = '16px monospace';
     ctx.fillStyle = '#888888';
     ctx.shadowBlur = 0;
-    ctx.fillText(`Best: ${Math.round(pb)} pts`, cx, ch * 0.48);
+    const elapsedStr = pb.elapsed > 0 ? `  •  ${(pb.elapsed / 1000).toFixed(1)}s` : '';
+    ctx.fillText(`Best: ${Math.round(pb.score)} pts${elapsedStr}`, cx, ch * 0.48);
   }
 
   ctx.font = '20px monospace';
   ctx.fillStyle = '#cccccc';
   ctx.shadowColor = '#cccccc';
   ctx.shadowBlur = 8;
-  ctx.fillText('Click or press any key to begin', cx, pb > 0 ? ch * 0.56 : ch * 0.54);
+  ctx.fillText('Click or press any key to begin', cx, pb && pb.score > 0 ? ch * 0.56 : ch * 0.54);
 
   ctx.restore();
 }

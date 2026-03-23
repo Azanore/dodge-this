@@ -131,6 +131,12 @@ Run: `npm test`
 - Added integration tests (`src/integration.test.js`)
 - Deployed to Vercel
 
+### Session 10
+- Difficulty tuning: `baseSpawnInterval` 1800 → 1200ms (pressure from second 1), base speeds bumped (ball 0.18→0.22, bullet 0.26→0.30, shard 0.22→0.26, tracker 0.11→0.13)
+- PB now stores `{ score, elapsed }` as JSON — legacy numeric values auto-migrated on read
+- Game over screen shows `Score: X  •  Ys` and `Best: X pts  •  Ys`
+- Start screen shows `Best: X pts  •  Ys`
+
 ### Session 9
 - Difficulty curve tuned to hit full chaos at ~75s (Option A)
 - `speedScaleFactor` 0.35 → 0.5 (hits ~3.2x at 75s, ~3.26x at 90s)

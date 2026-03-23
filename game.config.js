@@ -25,15 +25,15 @@ window.gameConfig = {
     speedScaleFactor: 0.5,     // controls how fast speed ramps up (logarithmic) — hits ~3.2x at 75s
     spawnRateDecayRate: 0.05,  // controls how fast spawn interval shrinks — hits floor ~30s
     spawnRateMin: 400,         // ms — spawn interval never drops below this
-    baseSpawnInterval: 1800,   // ms — starting spawn interval
+    baseSpawnInterval: 1200,   // ms — starting spawn interval
     maxObstaclesOnScreen: 25   // hard cap on simultaneous obstacles
   },
 
   obstacleTypes: {
-    ball: { enabled: true, baseSpeed: 0.18, spawnWeight: 5 },
-    bullet: { enabled: true, baseSpeed: 0.26, spawnWeight: 3 },
-    shard: { enabled: true, baseSpeed: 0.22, spawnWeight: 2 },
-    tracker: { enabled: true, baseSpeed: 0.11, spawnWeight: 1, turnRate: 0.025 }
+    ball: { enabled: true, baseSpeed: 0.22, spawnWeight: 5 },
+    bullet: { enabled: true, baseSpeed: 0.30, spawnWeight: 3 },
+    shard: { enabled: true, baseSpeed: 0.26, spawnWeight: 2 },
+    tracker: { enabled: true, baseSpeed: 0.13, spawnWeight: 1, turnRate: 0.025 }
   },
 
   bonusTypes: {

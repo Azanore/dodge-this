@@ -12,29 +12,34 @@ const BTN_W = 180;
 const BTN_H = 44;
 const BTN_RADIUS = 8;
 
-// Reads personal best from localStorage; returns 0 on any failure
+// Reads personal best from localStorage; returns { score: 0, elapsed: 0 } on any failure
 function readPB() {
   try {
-    return parseFloat(localStorage.getItem(PB_KEY)) || 0;
+    const raw = localStorage.getItem(PB_KEY);
+    if (!raw) return { score: 0, elapsed: 0 };
+    const parsed = JSON.parse(raw);
+    // Migrate legacy numeric PB (score only, no elapsed)
+    if (typeof parsed === 'number') return { score: parsed, elapsed: 0 };
+    return parsed;
   } catch {
-    return 0;
+    return { score: 0, elapsed: 0 };
   }
 }
 
 // Writes personal best to localStorage; silently ignores failures
 function writePB(value) {
   try {
-    localStorage.setItem(PB_KEY, String(value));
+    localStorage.setItem(PB_KEY, JSON.stringify(value));
   } catch {
     // localStorage unavailable — no-op per Requirement 3.4
   }
 }
 
 // Reads current PB, updates it if score is higher, returns the new display PB
-export function updatePB(score) {
+export function updatePB(score, elapsed) {
   const pb = readPB();
-  if (score > pb) writePB(score);
-  return Math.max(pb, score);
+  if (score > pb.score) writePB({ score, elapsed });
+  return score > pb.score ? { score, elapsed } : pb;
 }
 
 // Draws a rounded rectangle button and returns its bounding box
@@ -70,12 +75,14 @@ export function showGameOver(canvas, state, onRestart) {
 
   // Personal best logic (Requirements 3.1, 3.2)
   const prevPB = readPB();
-  const displayPB = updatePB(state.score);
-  const isNewBest = state.score >= prevPB;
+  const displayPB = updatePB(state.score, state.elapsed);
+  const isNewBest = state.score >= prevPB.score;
 
   const points = Math.round(state.score);
-  const pbPoints = Math.round(displayPB);
-  const hasPB = displayPB > 0;
+  const elapsed = (state.elapsed / 1000).toFixed(1);
+  const pbPoints = Math.round(displayPB.score);
+  const pbElapsed = (displayPB.elapsed / 1000).toFixed(1);
+  const hasPB = displayPB.score > 0;
 
   // Layout anchors
   const titleY = ch * 0.28;
@@ -98,12 +105,12 @@ export function showGameOver(canvas, state, onRestart) {
   ctx.shadowBlur = 20;
   ctx.fillText('GAME OVER', cx, titleY);
 
-  // Final score
+  // Final score + elapsed
   ctx.font = LABEL_FONT;
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = '#ffffff';
   ctx.shadowBlur = 8;
-  ctx.fillText(`Score: ${points}`, cx, timeY);
+  ctx.fillText(`Score: ${points}  •  ${elapsed}s`, cx, timeY);
 
   // Personal best (omit if localStorage was unavailable and pb is 0)
   if (hasPB) {
@@ -111,7 +118,7 @@ export function showGameOver(canvas, state, onRestart) {
     ctx.fillStyle = '#aaaaaa';
     ctx.shadowBlur = 0;
     const pbLabel = isNewBest ? 'New Best: ' : 'Best: ';
-    ctx.fillText(`${pbLabel}${pbPoints} pts`, cx, pbY);
+    ctx.fillText(`${pbLabel}${pbPoints} pts  •  ${pbElapsed}s`, cx, pbY);
   }
 
   ctx.shadowBlur = 0;
