@@ -8,7 +8,7 @@ import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
-import { render, renderStartScreen, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
+import { render, renderStartScreen, renderHowToPlay, renderPauseScreen, initRenderer, isShaking, triggerShake } from './renderer.js';
 import { showGameOver } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
@@ -59,6 +59,10 @@ function update(delta) {
 // Tracks pause screen audio button hit areas for click handling
 let pauseHitAreas = null;
 
+// Tracks ? button hit area and modal open state for start screen
+let howToPlayOpen = false;
+let helpBtnArea = null;
+
 // Draws pause screen and stores hit areas
 function drawPauseScreen() {
   pauseHitAreas = renderPauseScreen(ctx, sfxEnabled, musicEnabled);
@@ -68,7 +72,8 @@ function renderFrame() {
   if (state.status === 'dead' && !isShaking()) return;
   if (state.status === 'start') {
     render(ctx, state, lastDelta);
-    renderStartScreen(ctx);
+    helpBtnArea = renderStartScreen(ctx);
+    if (howToPlayOpen) renderHowToPlay(ctx);
     return;
   }
   if (state.status === 'paused') return;
@@ -94,6 +99,20 @@ function onRestart() {
 function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
+  // If modal is open, any key/click closes it instead of starting
+  if (howToPlayOpen) {
+    howToPlayOpen = false;
+    renderFrame();
+    return;
+  }
+  // Block start if click landed on the ? button
+  if (e.type === 'click' && helpBtnArea) {
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const { x, y, w, h } = helpBtnArea;
+    if (px >= x && px <= x + w && py >= y && py <= y + h) return;
+  }
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   initAudio().then(() => { startMusic(); }); // AUDIO
@@ -104,6 +123,19 @@ function onStartAction(e) {
 
 canvas.addEventListener('click', onStartAction);
 window.addEventListener('keydown', onStartAction);
+
+// ? button click — toggles how-to-play modal on start screen
+canvas.addEventListener('click', (e) => {
+  if (state.status !== 'start' || !helpBtnArea) return;
+  const rect = canvas.getBoundingClientRect();
+  const px = e.clientX - rect.left;
+  const py = e.clientY - rect.top;
+  const { x, y, w, h } = helpBtnArea;
+  if (px >= x && px <= x + w && py >= y && py <= y + h) {
+    howToPlayOpen = !howToPlayOpen;
+    renderFrame();
+  }
+});
 
 // Escape key: pause/unpause during active or grace; ignored in dead/start
 window.addEventListener('keydown', (e) => {
