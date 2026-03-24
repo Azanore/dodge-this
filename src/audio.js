@@ -17,7 +17,6 @@ const buffers = {};
 let audioCtx = null;
 let musicSource = null;
 let musicGain = null;
-let musicPaused = false;
 let musicOffset = 0;
 let musicStartedAt = 0;
 
@@ -75,22 +74,19 @@ export function startMusic() {
   musicSource.start();
   musicStartedAt = audioCtx.currentTime;
   musicOffset = 0;
-  musicPaused = false;
 }
 
-// Records pause offset — always called on game pause regardless of musicEnabled
+// Records pause offset and stops source — always called on game pause
 export function pauseMusic() {
   if (musicSource) {
     musicOffset = (audioCtx.currentTime - musicStartedAt) % buffers.music.duration;
     musicSource.stop();
     musicSource = null;
   }
-  musicPaused = true;
 }
 
-// Resumes from saved offset if enabled, otherwise just clears paused flag
+// Resumes from saved offset if enabled, otherwise no-op
 export function resumeMusic() {
-  musicPaused = false;
   if (!musicEnabled || !audioCtx || !buffers.music) return;
   musicGain = audioCtx.createGain();
   musicGain.gain.value = 1;
@@ -109,7 +105,6 @@ export function stopMusic() {
   musicSource.stop();
   musicSource = null;
   musicGain = null;
-  musicPaused = false;
   musicOffset = 0;
 }
 
