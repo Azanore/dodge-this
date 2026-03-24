@@ -37,7 +37,7 @@ export function setMusic(enabled) {
   musicEnabled = enabled;
   localStorage.setItem('dodge_music', enabled);
   if (!enabled) fadeOutMusic();
-  else if (audioCtx && !musicSource) startMusic();
+  else if (audioCtx && !musicSource && !musicPaused) startMusic();
 }
 
 // Initializes AudioContext and loads all buffers — call on first user gesture
