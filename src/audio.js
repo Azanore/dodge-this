@@ -90,6 +90,8 @@ export function pauseMusic() {
 // Resumes music from where it paused, routed through a fresh GainNode
 export function resumeMusic() {
   if (!audioCtx || !buffers.music || !musicPaused) return;
+  musicPaused = false;
+  if (!musicEnabled) return;
   musicGain = audioCtx.createGain();
   musicGain.gain.value = 1;
   musicGain.connect(audioCtx.destination);
