@@ -136,8 +136,10 @@ syncAudioBtns();
 sfxBtn.addEventListener('click', () => { setSfx(!sfxEnabled); syncAudioBtns(); }); // AUDIO
 musicBtn.addEventListener('click', () => {
   setMusic(!musicEnabled);
-  const running = state.status === 'active' || state.status === 'grace';
-  if (musicEnabled && running) startMusic(); // re-enable during active play
+  if (musicEnabled) {
+    if (state.status === 'paused') resumeMusic();
+    else if (state.status === 'active' || state.status === 'grace') startMusic();
+  }
   syncAudioBtns();
 }); // AUDIO
 

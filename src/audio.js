@@ -27,21 +27,17 @@ const MUSIC_FADE_OUT = 0.3; // seconds
 export let sfxEnabled = localStorage.getItem('dodge_sfx') !== 'false';
 export let musicEnabled = localStorage.getItem('dodge_music') !== 'false';
 
-// Toggles — called from config panel, take effect immediately
+// Toggles SFX on/off
 export function setSfx(enabled) {
   sfxEnabled = enabled;
   localStorage.setItem('dodge_sfx', enabled);
 }
 
+// Toggles music on/off — fades out if playing, does not start (callers handle that)
 export function setMusic(enabled) {
   musicEnabled = enabled;
   localStorage.setItem('dodge_music', enabled);
-  if (!enabled) {
-    fadeOutMusic();
-    musicPaused = false; // clear paused flag — resumeMusic won't restart a disabled track
-  } else if (!musicSource) {
-    musicPaused = true; // no source running — mark as paused so resumeMusic starts it on unpause
-  }
+  if (!enabled) fadeOutMusic();
 }
 
 // Initializes AudioContext and loads all buffers — call on first user gesture
@@ -82,20 +78,20 @@ export function startMusic() {
   musicPaused = false;
 }
 
-// Pauses music by stopping and recording offset
+// Records pause offset — always called on game pause regardless of musicEnabled
 export function pauseMusic() {
-  if (!musicSource || musicPaused) return;
-  musicOffset = (audioCtx.currentTime - musicStartedAt) % buffers.music.duration;
-  musicSource.stop();
-  musicSource = null;
+  if (musicSource) {
+    musicOffset = (audioCtx.currentTime - musicStartedAt) % buffers.music.duration;
+    musicSource.stop();
+    musicSource = null;
+  }
   musicPaused = true;
 }
 
-// Resumes music from where it paused, routed through a fresh GainNode
+// Resumes from saved offset if enabled, otherwise just clears paused flag
 export function resumeMusic() {
-  if (!audioCtx || !buffers.music || !musicPaused) return;
   musicPaused = false;
-  if (!musicEnabled) return;
+  if (!musicEnabled || !audioCtx || !buffers.music) return;
   musicGain = audioCtx.createGain();
   musicGain.gain.value = 1;
   musicGain.connect(audioCtx.destination);
@@ -105,7 +101,6 @@ export function resumeMusic() {
   musicSource.connect(musicGain);
   musicSource.start(0, musicOffset);
   musicStartedAt = audioCtx.currentTime - musicOffset;
-  musicPaused = false;
 }
 
 // Stops music entirely
