@@ -67,6 +67,7 @@ function onRestart() {
   recomputeZones();
   updatePlayer(state);
   syncHelpBtn();
+  startMusic(); // AUDIO — restart music from beginning on each new game
   loop.start();
 }
 
@@ -135,7 +136,8 @@ syncAudioBtns();
 sfxBtn.addEventListener('click', () => { setSfx(!sfxEnabled); syncAudioBtns(); }); // AUDIO
 musicBtn.addEventListener('click', () => {
   setMusic(!musicEnabled);
-  if (musicEnabled && state.status !== 'paused') startMusic(); // re-enable during active play
+  const running = state.status === 'active' || state.status === 'grace';
+  if (musicEnabled && running) startMusic(); // re-enable during active play
   syncAudioBtns();
 }); // AUDIO
 
