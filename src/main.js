@@ -133,7 +133,11 @@ function syncAudioBtns() {
 syncAudioBtns();
 
 sfxBtn.addEventListener('click', () => { setSfx(!sfxEnabled); syncAudioBtns(); }); // AUDIO
-musicBtn.addEventListener('click', () => { setMusic(!musicEnabled); syncAudioBtns(); }); // AUDIO
+musicBtn.addEventListener('click', () => {
+  setMusic(!musicEnabled);
+  if (musicEnabled && state.status !== 'paused') startMusic(); // re-enable during active play
+  syncAudioBtns();
+}); // AUDIO
 
 // How-to-play modal
 const helpBtn = document.getElementById('help-btn');
