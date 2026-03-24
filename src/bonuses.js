@@ -71,7 +71,7 @@ export function collectBonus(type, state, x = 0, y = 0) {
     // screenclear is instant — no duration to track
 
   } else if (type === 'shrink') {
-    const prevRadius = state.player.radius;
+    const prevRadius = state.activeEffects.shrink?.prevRadius ?? state.player.radius;
     state.activeEffects.shrink = { remaining: cfg.duration, prevRadius };
     state.player.radius = Math.round(gameConfig.playerHitboxRadius * 0.45);
   }

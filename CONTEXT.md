@@ -41,7 +41,7 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 | 4 | `game.config.js` broke on Vercel | Autofix added `export default`; classic script can't have exports | Removed export, added comment warning, `window.gameConfig` only |
 | 5 | Player dot visible on start screen | Player rendered before overlay; glow bled through semi-transparent overlay | Player skipped in `render()` when `status === 'start'` |
 | 6 | `slowmoMultiplier` undefined | Missing from `resetState()` | Added `slowmoMultiplier: 1` to `resetState()` |
-| 7 | `getHitbox()` dual-state problem | `collision.js` called `getHitbox()` from `player.js` instead of reading `state.player` | Removed `getHitbox()`, `collision.js` reads `state.player` directly |
+| 8 | Double-shrink permanently shrinks player | Re-stacking shrink overwrote `prevRadius` with already-shrunk value | `collectBonus` now preserves original `prevRadius` on re-stack via `activeEffects.shrink?.prevRadius` |
 
 ---
 
