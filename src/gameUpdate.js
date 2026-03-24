@@ -59,7 +59,7 @@ export function gameUpdate(delta, state, accumulators) {
   const speedMult = getCurrentSpeedMultiplier(state.elapsed);
   const spawnInterval = getCurrentSpawnInterval(state.elapsed);
 
-  accumulators.spawn += delta;
+  accumulators.spawn += delta * state.slowmoMultiplier; // slowmo stretches spawn intervals too
   while (accumulators.spawn >= spawnInterval) {
     spawnObstacle(state, speedMult);
     accumulators.spawn -= spawnInterval;

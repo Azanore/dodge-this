@@ -173,7 +173,8 @@ Run: `npm test`
 - `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
 
 ### Session 13
-- `drawObstacle()` if/else chain replaced with `OBSTACLE_DRAW` map lookup in `renderer.js` — adding a new obstacle type now only requires one map entry
+- `drawObstacle()` if/else chain replaced with `OBSTACLE_DRAW` map lookup in `renderer.js`
+- Slowmo bonus now also slows spawn rate — `accumulators.spawn` advances at `slowmoMultiplier` rate in `gameUpdate.js`; fade-out already handles smooth recovery
 
 ### Session 12
 - Score zone "inside" feedback: subtle green fill + brighter/thicker outline when player is inside zone (`renderer.js`)
