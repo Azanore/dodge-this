@@ -190,13 +190,18 @@ export function drawTracker(ctx, obs, color) {
   ctx.restore();
 }
 
+// Maps obstacle type to its draw function — add new types here
+const OBSTACLE_DRAW = {
+  bullet: drawBullet,
+  shard: drawShard,
+  tracker: drawTracker,
+  ball: drawBall,
+};
+
 // Dispatches to the correct draw function per obstacle type
 function drawObstacle(ctx, obs) {
   const color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
-  if (obs.type === 'bullet') drawBullet(ctx, obs, color);
-  else if (obs.type === 'shard') drawShard(ctx, obs, color);
-  else if (obs.type === 'tracker') drawTracker(ctx, obs, color);
-  else drawBall(ctx, obs, color);
+  (OBSTACLE_DRAW[obs.type] ?? drawBall)(ctx, obs, color);
 }
 
 // Renders the start screen overlay with title, prompt, and personal best.

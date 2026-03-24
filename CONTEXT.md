@@ -172,6 +172,9 @@ Run: `npm test`
 - Score formula changed from `delta * multiplier` to `(delta/1000) * 10` — numbers now in hundreds not hundreds-of-thousands
 - `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
 
+### Session 13
+- `drawObstacle()` if/else chain replaced with `OBSTACLE_DRAW` map lookup in `renderer.js` — adding a new obstacle type now only requires one map entry
+
 ### Session 12
 - Score zone "inside" feedback: subtle green fill + brighter/thicker outline when player is inside zone (`renderer.js`)
 - Multiplier label floats above zone circle — self-teaches the mechanic to new players
