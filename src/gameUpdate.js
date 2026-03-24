@@ -10,7 +10,7 @@ import { triggerNearMiss, triggerScoreFloat } from './renderer.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { updateScoreZone } from './combo.js';
 import { triggerScoreBump } from './hud.js';
-import { playDeath, playMultiplierMax } from './audio.js'; // AUDIO
+import { playDeath, playMultiplierMax, tickNearMissCooldown } from './audio.js'; // AUDIO
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
@@ -78,6 +78,7 @@ export function gameUpdate(delta, state, accumulators) {
   if (state.status !== 'dead') {
     checkNearMisses(state, triggerNearMiss);
     playMultiplierMax(state.comboMultiplier, delta); // AUDIO
+    tickNearMissCooldown(delta); // AUDIO
   } else {
     playDeath(); // AUDIO
   }

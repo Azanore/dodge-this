@@ -16,9 +16,12 @@ const SOUNDS = {
 const buffers = {};
 let audioCtx = null;
 let musicSource = null;
+let musicGain = null;
 let musicPaused = false;
 let musicOffset = 0;
 let musicStartedAt = 0;
+
+const MUSIC_FADE_OUT = 0.3; // seconds
 
 // User preferences — persisted in localStorage
 export let sfxEnabled = localStorage.getItem('dodge_sfx') !== 'false';
@@ -33,7 +36,7 @@ export function setSfx(enabled) {
 export function setMusic(enabled) {
   musicEnabled = enabled;
   localStorage.setItem('dodge_music', enabled);
-  if (!enabled) stopMusic();
+  if (!enabled) fadeOutMusic();
   else if (audioCtx && !musicSource) startMusic();
 }
 
@@ -58,14 +61,17 @@ function play(key) {
   src.start();
 }
 
-// Starts music looping from the beginning
+// Starts music looping from the beginning, routed through a GainNode for fade control
 export function startMusic() {
   if (!musicEnabled || !audioCtx || !buffers.music) return;
   stopMusic();
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = 1;
+  musicGain.connect(audioCtx.destination);
   musicSource = audioCtx.createBufferSource();
   musicSource.buffer = buffers.music;
   musicSource.loop = true;
-  musicSource.connect(audioCtx.destination);
+  musicSource.connect(musicGain);
   musicSource.start();
   musicStartedAt = audioCtx.currentTime;
   musicOffset = 0;
@@ -81,13 +87,16 @@ export function pauseMusic() {
   musicPaused = true;
 }
 
-// Resumes music from where it paused
+// Resumes music from where it paused, routed through a fresh GainNode
 export function resumeMusic() {
   if (!audioCtx || !buffers.music || !musicPaused) return;
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = 1;
+  musicGain.connect(audioCtx.destination);
   musicSource = audioCtx.createBufferSource();
   musicSource.buffer = buffers.music;
   musicSource.loop = true;
-  musicSource.connect(audioCtx.destination);
+  musicSource.connect(musicGain);
   musicSource.start(0, musicOffset);
   musicStartedAt = audioCtx.currentTime - musicOffset;
   musicPaused = false;
@@ -98,15 +107,36 @@ export function stopMusic() {
   if (!musicSource) return;
   musicSource.stop();
   musicSource = null;
+  musicGain = null;
   musicPaused = false;
   musicOffset = 0;
+}
+
+// Fades music out over MUSIC_FADE_OUT seconds then stops — used when toggling music off
+function fadeOutMusic() {
+  if (!musicSource || !musicGain) return;
+  musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
+  musicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + MUSIC_FADE_OUT);
+  setTimeout(stopMusic, MUSIC_FADE_OUT * 1000);
 }
 
 export function playDeath() { play('death'); }
 export function playPickup() { play('pickup'); }
 export function playScoreBank() { play('scoreBank'); }
 export function playGameStart() { play('gameStart'); }
-export function playNearMiss() { play('nearMiss'); }
+
+// Global near-miss cooldown — prevents stacking when multiple obstacles are close simultaneously
+let nearMissCooldown = 0;
+const NEAR_MISS_GLOBAL_COOLDOWN = 300; // ms
+
+export function playNearMiss() {
+  if (nearMissCooldown > 0) return;
+  play('nearMiss');
+  nearMissCooldown = NEAR_MISS_GLOBAL_COOLDOWN;
+}
+
+// Ticks the near-miss cooldown — call each frame with delta
+export function tickNearMissCooldown(delta) { nearMissCooldown = Math.max(0, nearMissCooldown - delta); }
 export function playZoneAppear() { play('zoneAppear'); }
 
 // Guards against re-firing while multiplier stays at max or briefly dips below

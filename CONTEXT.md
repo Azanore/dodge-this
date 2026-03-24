@@ -175,6 +175,10 @@ Run: `npm test`
 ### Session 13
 - `drawObstacle()` if/else chain replaced with `OBSTACLE_DRAW` map lookup in `renderer.js`
 - Slowmo bonus now also slows spawn rate — `accumulators.spawn` advances at `slowmoMultiplier` rate in `gameUpdate.js`; fade-out already handles smooth recovery
+- Fixed double-shrink bug: `collectBonus` preserves original `prevRadius` on re-stack — `bonuses.js`
+- Suppressed near-miss detection during invincibility — `collision.js`
+- Near-miss sound global cooldown (300ms) — prevents stacking when multiple obstacles are close simultaneously — `audio.js`
+- Music toggle fades out over 300ms via GainNode instead of hard stopping — `audio.js`
 
 ### Session 12
 - Score zone "inside" feedback: subtle green fill + brighter/thicker outline when player is inside zone (`renderer.js`)
