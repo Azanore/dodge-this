@@ -36,8 +36,12 @@ export function setSfx(enabled) {
 export function setMusic(enabled) {
   musicEnabled = enabled;
   localStorage.setItem('dodge_music', enabled);
-  if (!enabled) fadeOutMusic();
-  // startMusic is intentionally not called here — resumeMusic/startMusic handle that at the right time
+  if (!enabled) {
+    fadeOutMusic();
+    musicPaused = false; // clear paused flag — resumeMusic won't restart a disabled track
+  } else if (!musicSource) {
+    musicPaused = true; // no source running — mark as paused so resumeMusic starts it on unpause
+  }
 }
 
 // Initializes AudioContext and loads all buffers — call on first user gesture
