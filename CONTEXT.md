@@ -72,7 +72,7 @@ See the Backlog section below.
 2. ~~Combo multiplier + Score Zone~~ — done session 6
 3. ~~Value tuning~~ — done session 7
 4. **Difficulty presets** — easy/normal/hard, only after gameplay is stable.
-5. **Sound effects** — death sting, bonus chime, ambient hum.
+5. ~~Sound effects~~ — done session 8 & 13. Volume slider deliberately excluded — OS/browser controls are sufficient for a game this size.
 6. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
 
 ---
@@ -85,7 +85,7 @@ Grouped by effort. All of these fit the current architecture without major rewri
 - (none remaining)
 
 ### Medium effort (worth a dedicated session)
-- **Sound effects** — death sting, bonus collect chime, background ambient hum. Needs a decision on asset format (Web Audio API synth vs. audio files).
+- ~~**Sound effects**~~ — done. Volume slider deliberately excluded — OS/browser controls are sufficient; a slider adds UI complexity for a problem that may not exist.
 - **Difficulty presets** — easy/normal/hard. Defer until gameplay is stable. Per-difficulty PB keys: `dodge_pb_easy`, `dodge_pb_normal`, `dodge_pb_hard`. Migrate existing `dodge_pb` to normal on first load.
 - **Achievements** — near-miss count, combo streaks, survival milestones. Implement last when all metrics are stable.
 
@@ -174,11 +174,13 @@ Run: `npm test`
 
 ### Session 13
 - `drawObstacle()` if/else chain replaced with `OBSTACLE_DRAW` map lookup in `renderer.js`
-- Slowmo bonus now also slows spawn rate — `accumulators.spawn` advances at `slowmoMultiplier` rate in `gameUpdate.js`; fade-out already handles smooth recovery
+- Slowmo bonus now also slows spawn rate — `accumulators.spawn` advances at `slowmoMultiplier` rate in `gameUpdate.js`
 - Fixed double-shrink bug: `collectBonus` preserves original `prevRadius` on re-stack — `bonuses.js`
 - Suppressed near-miss detection during invincibility — `collision.js`
-- Near-miss sound global cooldown (300ms) — prevents stacking when multiple obstacles are close simultaneously — `audio.js`
-- Music toggle fades out over 300ms via GainNode instead of hard stopping — `audio.js`
+- Near-miss sound global cooldown (300ms) — prevents stacking — `audio.js`
+- Music toggle fades out over 300ms via GainNode — `audio.js`
+- Fixed multiple music toggle/pause/resume state bugs — `audio.js`, `main.js`; `musicPaused` removed, logic now explicit: `pauseMusic` saves offset, `resumeMusic` restarts if enabled, `main.js` decides when to call each
+- Volume slider deliberately excluded — OS/browser controls are sufficient
 
 ### Session 12
 - Score zone "inside" feedback: subtle green fill + brighter/thicker outline when player is inside zone (`renderer.js`)
