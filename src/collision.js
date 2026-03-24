@@ -25,7 +25,9 @@ const NEAR_MISS_COOLDOWN = 600; // ms — matches nearMissText duration
 
 // Detects near-misses: obstacles within threshold gap but not overlapping the player.
 // Fires onNearMiss(x, y) and stamps obs.lastNearMissAt to enforce per-obstacle cooldown.
+// Suppressed during invincibility — no risk, no reward.
 export function checkNearMisses(state, onNearMiss) {
+  if (state.activeEffects.invincibility) return;
   const player = state.player;
   const threshold = gameConfig.nearMissThreshold;
   const now = Date.now();
