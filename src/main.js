@@ -107,8 +107,7 @@ function onStartAction(e) {
   document.getElementById('play-btn').removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   diffScreenEl.classList.remove('open');
-  initAudio().then(() => { startMusic(); }); // AUDIO
-  playGameStart(); // AUDIO
+  initAudio().then(() => { startMusic(); playGameStart(); }); // AUDIO
   state.status = 'grace';
   syncHelpBtn();
   loop.start();
