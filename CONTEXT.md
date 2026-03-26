@@ -71,7 +71,7 @@ See the Backlog section below.
 1. ~~Near-miss feedback~~ — done session 5
 2. ~~Combo multiplier + Score Zone~~ — done session 6
 3. ~~Value tuning~~ — done session 7
-4. **Difficulty presets** — easy/normal/hard, only after gameplay is stable.
+4. ~~**Difficulty presets**~~ — done session 14. Easy/normal/hard. Existing scores migrated to hard.
 5. ~~Sound effects~~ — done session 8 & 13. Volume slider deliberately excluded — OS/browser controls are sufficient for a game this size.
 6. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
 
@@ -171,6 +171,18 @@ Run: `npm test`
 - Score zone radius bumped from 60px to 90px
 - Score formula changed from `delta * multiplier` to `(delta/1000) * 10` — numbers now in hundreds not hundreds-of-thousands
 - `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
+
+### Session 14
+- Difficulty presets added: easy / normal / hard — same logarithmic curve shape, different ceiling and ramp
+- `game.config.js`: `difficulty` block replaced with `difficultyPresets` object (easy/normal/hard)
+- `difficulty.js`: `getPreset(difficulty)`, curve functions now take `difficulty` param
+- `GameState.js`: `resetState(difficulty)` — difficulty stored on state
+- `obstacles.js`: `spawnObstacle` reads `maxObstaclesOnScreen` from active preset via `state.difficulty`
+- `gameUpdate.js`: passes `state.difficulty` to curve functions
+- `gameOver.js`: per-difficulty PB keys (`dodge_pb_easy/normal/hard`), legacy `dodge_pb` migrated to `dodge_pb_hard`
+- `index.html`: difficulty selector HTML overlay (consistent with existing overlay pattern), shown on load
+- `main.js`: `activeDifficulty` var, difficulty buttons wired, PB display per difficulty, `resetState` uses active difficulty
+- `renderer.js`: `renderStartScreen` simplified — title/PB/prompt moved to HTML overlay
 
 ### Session 13
 - `drawObstacle()` if/else chain replaced with `OBSTACLE_DRAW` map lookup in `renderer.js`

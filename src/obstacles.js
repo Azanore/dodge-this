@@ -57,7 +57,8 @@ function velocityTowardInner(fromX, fromY, speed) {
 // Spawns one obstacle into the state obstacles array if under the cap
 // speedMultiplier comes from difficulty.js getCurrentSpeedMultiplier(elapsed)
 export function spawnObstacle(state, speedMultiplier = 1) {
-  if (state.obstacles.length >= gameConfig.difficulty.maxObstaclesOnScreen) return;
+  const preset = gameConfig.difficultyPresets[state.difficulty] ?? gameConfig.difficultyPresets.normal;
+  if (state.obstacles.length >= preset.maxObstaclesOnScreen) return;
 
   const pool = getEnabledTypes();
   if (pool.length === 0) return;

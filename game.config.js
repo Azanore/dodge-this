@@ -6,7 +6,6 @@ window.gameConfig = {
   playerHitboxRadius: 10,      // base player hitbox radius in pixels
   outerZoneScale: 1.3,         // outer zone is this multiple of inner zone on each axis
 
-  maxSpeedMultiplier: 3.5,     // hard cap on obstacle speed multiplier
   nearMissThreshold: 20,       // px gap between edges that counts as a near-miss
 
   comboMultiplierMax: 5.0,     // hard cap on combo multiplier
@@ -21,12 +20,33 @@ window.gameConfig = {
 
   slowmoFadeDuration: 1500,    // ms to ease slowmoMultiplier back to 1 after expiry
 
-  difficulty: {
-    speedScaleFactor: 0.5,     // controls how fast speed ramps up (logarithmic) — hits ~3.2x at 75s
-    spawnRateDecayRate: 0.05,  // controls how fast spawn interval shrinks — hits floor ~30s
-    spawnRateMin: 400,         // ms — spawn interval never drops below this
-    baseSpawnInterval: 1200,   // ms — starting spawn interval
-    maxObstaclesOnScreen: 25   // hard cap on simultaneous obstacles
+  // Difficulty presets — same logarithmic curve shape, different ceiling and ramp rate
+  // Existing scores (dodge_pb) are migrated to 'hard' on first load
+  difficultyPresets: {
+    easy: {
+      speedScaleFactor: 0.3,
+      spawnRateDecayRate: 0.03,
+      spawnRateMin: 700,
+      baseSpawnInterval: 1800,
+      maxObstaclesOnScreen: 12,
+      maxSpeedMultiplier: 2.0,
+    },
+    normal: {
+      speedScaleFactor: 0.4,
+      spawnRateDecayRate: 0.04,
+      spawnRateMin: 550,
+      baseSpawnInterval: 1500,
+      maxObstaclesOnScreen: 18,
+      maxSpeedMultiplier: 2.8,
+    },
+    hard: {
+      speedScaleFactor: 0.5,
+      spawnRateDecayRate: 0.05,
+      spawnRateMin: 400,
+      baseSpawnInterval: 1200,
+      maxObstaclesOnScreen: 25,
+      maxSpeedMultiplier: 3.5,
+    },
   },
 
   obstacleTypes: {

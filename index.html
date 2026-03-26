@@ -43,6 +43,21 @@
     #how-to-play { background: rgba(0,0,0,0.75); z-index: 30; }
     #pause-screen { background: rgba(0,0,0,0.6); }
     #game-over-screen { background: rgba(0,0,0,0.78); }
+    #difficulty-screen { background: rgba(0,0,0,0.92); z-index: 15; }
+
+    .diff-btn {
+      padding: 10px 0;
+      width: 180px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      font: 15px monospace;
+      cursor: pointer;
+      color: #fff;
+      background: rgba(255,255,255,0.05);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .diff-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); }
+    .diff-btn.selected { border-color: #00eeff; color: #00eeff; background: rgba(0,238,255,0.08); }
 
     .overlay-panel {
       display: flex;
@@ -146,6 +161,19 @@
   <canvas id="gameCanvas"></canvas>
 
   <button id="help-btn">?</button>
+
+  <div id="difficulty-screen" class="overlay open">
+    <div class="overlay-panel">
+      <div class="overlay-title" style="color:#00eeff;text-shadow:0 0 20px #00eeff;font-size:56px">DODGE</div>
+      <div id="diff-pb" class="overlay-pb" style="margin-bottom:8px"></div>
+      <div class="btn-row" style="flex-direction:column;gap:8px;margin-top:4px">
+        <button class="diff-btn" data-diff="easy">Easy</button>
+        <button class="diff-btn selected" data-diff="normal">Normal</button>
+        <button class="diff-btn" data-diff="hard">Hard</button>
+      </div>
+      <div class="overlay-label" style="margin-top:12px">click or press any key to begin</div>
+    </div>
+  </div>
 
   <div id="pause-screen" class="overlay">
     <div class="overlay-panel">

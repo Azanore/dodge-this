@@ -9,7 +9,7 @@ import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
-import { showGameOver } from './gameOver.js';
+import { showGameOver, getPB } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
@@ -25,7 +25,9 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-let state = resetState();
+let activeDifficulty = 'normal';
+
+let state = resetState(activeDifficulty);
 state.graceRemaining = gameConfig.gracePeriod;
 let lastDelta = 16;
 const accumulators = { spawn: 0, bonus: 0, scoreZone: 0 };
@@ -57,7 +59,7 @@ function renderFrame() {
 const loop = createGameLoop(update, renderFrame);
 
 function onRestart() {
-  state = resetState();
+  state = resetState(activeDifficulty);
   state.status = 'grace';
   state.graceRemaining = gameConfig.gracePeriod;
   accumulators.spawn = 0;
@@ -71,13 +73,36 @@ function onRestart() {
   loop.start();
 }
 
-// Start action — click or any key (except Escape) from 'start' state
+// Difficulty selector — shown on load, hidden once game starts
+const diffScreenEl = document.getElementById('difficulty-screen');
+const diffPbEl = document.getElementById('diff-pb');
+
+function updateDiffPB() {
+  const pb = getPB(activeDifficulty);
+  diffPbEl.textContent = pb.score > 0
+    ? `Best: ${Math.round(pb.score)} pts  ${(pb.elapsed / 1000).toFixed(1)}s`
+    : '';
+}
+updateDiffPB();
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    activeDifficulty = e.currentTarget.dataset.diff;
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b === e.currentTarget));
+    state = resetState(activeDifficulty);
+    state.graceRemaining = gameConfig.gracePeriod;
+    updateDiffPB();
+  });
+});
+
+// Start action — click canvas or any key (except Escape) from 'start' state
 function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
   if (howToPlayEl.classList.contains('open')) return;
   canvas.removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
+  diffScreenEl.classList.remove('open');
   initAudio().then(() => { startMusic(); }); // AUDIO
   playGameStart(); // AUDIO
   state.status = 'grace';

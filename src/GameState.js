@@ -2,18 +2,19 @@
 // Related: main.js, GameLoop.js, player.js, obstacles.js, bonuses.js, collision.js
 // Does not contain any logic — pure data only.
 
-// Returns a fresh initial game state
-export function resetState() {
+// Returns a fresh initial game state — difficulty is set by main.js before first run
+export function resetState(difficulty = 'normal') {
   return {
-    status: 'start',          // 'start' | 'grace' | 'active' | 'paused' | 'dead'
-    prevStatus: null,         // used to restore status after unpause
-    elapsed: 0,               // ms survived (starts counting from run begin)
+    status: 'start',
+    prevStatus: null,
+    difficulty,
+    elapsed: 0,
     graceRemaining: gameConfig.gracePeriod,
     obstacles: [],
-    bonuses: [],              // bonus pickups currently on the field
-    activeEffects: {},        // { slowmo: {remaining}, shrink: {remaining}, invincibility: {remaining} }
-    slowmoMultiplier: 1,      // speed reduction factor during slow-mo bonus
-    slowmoFadeRemaining: 0,   // ms remaining in slowmo fade-out (eases back to 1 after expiry)
+    bonuses: [],
+    activeEffects: {},
+    slowmoMultiplier: 1,
+    slowmoFadeRemaining: 0,
     player: {
       x: 0,
       y: 0,
@@ -21,7 +22,7 @@ export function resetState() {
     },
     personalBest: 0,
     score: 0,
-    pendingScore: 0,          // score accumulated during active multiplier — lost on death, banked at x1
+    pendingScore: 0,
     comboMultiplier: 1.0,
     scoreZone: { active: false }
   };

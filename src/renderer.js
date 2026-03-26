@@ -204,48 +204,15 @@ function drawObstacle(ctx, obs) {
   (OBSTACLE_DRAW[obs.type] ?? drawBall)(ctx, obs, color);
 }
 
-// Renders the start screen overlay with title, prompt, and personal best.
+// Renders the start screen overlay — title only; difficulty/PB shown in HTML overlay
 export function renderStartScreen(ctx) {
   const cw = ctx.canvas.width;
   const ch = ctx.canvas.height;
   const cx = cw / 2;
 
-  const rawPB = localStorage.getItem('dodge_pb');
-  let pb = null;
-  if (rawPB) {
-    try {
-      const parsed = JSON.parse(rawPB);
-      pb = typeof parsed === 'number' ? { score: parsed, elapsed: 0 } : parsed;
-    } catch { pb = null; }
-  }
-
   ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.92)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.0)'; // transparent — HTML overlay handles the UI
   ctx.fillRect(0, 0, cw, ch);
-
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  ctx.font = 'bold 72px monospace';
-  ctx.fillStyle = '#00eeff';
-  ctx.shadowColor = '#00eeff';
-  ctx.shadowBlur = 30;
-  ctx.fillText('DODGE', cx, ch * 0.38);
-
-  if (pb && pb.score > 0) {
-    ctx.font = '16px monospace';
-    ctx.fillStyle = '#888888';
-    ctx.shadowBlur = 0;
-    const elapsedStr = pb.elapsed > 0 ? `  ${(pb.elapsed / 1000).toFixed(1)}s` : '';
-    ctx.fillText(`Best: ${Math.round(pb.score)} pts${elapsedStr}`, cx, ch * 0.48);
-  }
-
-  ctx.font = '20px monospace';
-  ctx.fillStyle = '#cccccc';
-  ctx.shadowColor = '#cccccc';
-  ctx.shadowBlur = 8;
-  ctx.fillText('Click or press any key to begin', cx, pb && pb.score > 0 ? ch * 0.56 : ch * 0.54);
-
   ctx.restore();
 }
 
