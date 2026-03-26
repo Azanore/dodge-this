@@ -64,6 +64,12 @@ export function spawnObstacle(state, speedMultiplier = 1) {
   if (pool.length === 0) return;
 
   const type = pool[Math.floor(Math.random() * pool.length)];
+
+  // Trackers have their own cap — prevents them filling the screen and crowding out other types
+  if (type === 'tracker') {
+    const trackerCount = state.obstacles.filter(o => o.type === 'tracker').length;
+    if (trackerCount >= preset.maxTrackers) return;
+  }
   const cfg = gameConfig.obstacleTypes[type];
 
   // Per-spawn variance: random float in [0.85, 1.15]

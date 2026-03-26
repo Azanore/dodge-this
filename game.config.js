@@ -30,6 +30,7 @@ window.gameConfig = {
       baseSpawnInterval: 1800,
       maxObstaclesOnScreen: 12,
       maxSpeedMultiplier: 2.0,
+      maxTrackers: 1,
     },
     normal: {
       speedScaleFactor: 0.4,
@@ -38,6 +39,7 @@ window.gameConfig = {
       baseSpawnInterval: 1500,
       maxObstaclesOnScreen: 18,
       maxSpeedMultiplier: 2.8,
+      maxTrackers: 3,
     },
     hard: {
       speedScaleFactor: 0.5,
@@ -46,6 +48,7 @@ window.gameConfig = {
       baseSpawnInterval: 1200,
       maxObstaclesOnScreen: 25,
       maxSpeedMultiplier: 3.5,
+      maxTrackers: 5,
     },
   },
 
