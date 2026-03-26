@@ -79,9 +79,13 @@ const diffPbEl = document.getElementById('diff-pb');
 
 function updateDiffPB() {
   const pb = getPB(activeDifficulty);
-  diffPbEl.textContent = pb.score > 0
-    ? `Best: ${Math.round(pb.score)} pts  ${(pb.elapsed / 1000).toFixed(1)}s`
-    : '';
+  if (pb.score > 0) {
+    diffPbEl.textContent = `Best: ${Math.round(pb.score)} pts  ${(pb.elapsed / 1000).toFixed(1)}s`;
+    diffPbEl.style.visibility = 'visible';
+  } else {
+    diffPbEl.textContent = '\u00a0'; // non-breaking space — preserves height
+    diffPbEl.style.visibility = 'hidden';
+  }
 }
 updateDiffPB();
 
@@ -95,12 +99,12 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
   });
 });
 
-// Start action — click canvas or any key (except Escape) from 'start' state
+// Start action — Play button or any key (except Escape) from 'start' state
 function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
   if (howToPlayEl.classList.contains('open')) return;
-  canvas.removeEventListener('click', onStartAction);
+  document.getElementById('play-btn').removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   diffScreenEl.classList.remove('open');
   initAudio().then(() => { startMusic(); }); // AUDIO
@@ -110,7 +114,7 @@ function onStartAction(e) {
   loop.start();
 }
 
-canvas.addEventListener('click', onStartAction);
+document.getElementById('play-btn').addEventListener('click', onStartAction);
 window.addEventListener('keydown', onStartAction);
 
 // Pause / unpause via Escape

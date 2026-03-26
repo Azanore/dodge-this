@@ -165,13 +165,14 @@
   <div id="difficulty-screen" class="overlay open">
     <div class="overlay-panel">
       <div class="overlay-title" style="color:#00eeff;text-shadow:0 0 20px #00eeff;font-size:56px">DODGE</div>
-      <div id="diff-pb" class="overlay-pb" style="margin-bottom:8px"></div>
+      <div id="diff-pb" class="overlay-pb" style="margin-bottom:8px;min-height:1.2em"></div>
       <div class="btn-row" style="flex-direction:column;gap:8px;margin-top:4px">
         <button class="diff-btn" data-diff="easy">Easy</button>
         <button class="diff-btn selected" data-diff="normal">Normal</button>
         <button class="diff-btn" data-diff="hard">Hard</button>
       </div>
-      <div class="overlay-label" style="margin-top:12px">click or press any key to begin</div>
+      <button id="play-btn" class="overlay-btn primary" style="margin-top:12px">Play</button>
+      <div class="overlay-label">or press any key</div>
     </div>
   </div>
 
