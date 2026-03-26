@@ -89,8 +89,11 @@ function updateDiffPB() {
 }
 updateDiffPB();
 
+// Preload audio on first difficulty button interaction — buffers ready before Play is clicked
+let audioPreloaded = false;
 document.querySelectorAll('.diff-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
+    if (!audioPreloaded) { initAudio(); audioPreloaded = true; }
     activeDifficulty = e.currentTarget.dataset.diff;
     document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b === e.currentTarget));
     state = resetState(activeDifficulty);
