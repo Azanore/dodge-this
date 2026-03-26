@@ -141,6 +141,12 @@ export function renderHUD(ctx, state, delta) {
   ctx.textAlign = 'center';
   ctx.fillText(`${(state.elapsed / 1000).toFixed(1)}s`, cx, 66);
 
+  // Difficulty — top-left, same style as timer
+  ctx.font = TIMER_FONT;
+  ctx.fillStyle = '#555555';
+  ctx.textAlign = 'left';
+  ctx.fillText(state.difficulty.toUpperCase(), 14, 14);
+
   // Bonus pills — right of center, stacking downward, top-aligned with score
   const effects = Object.entries(state.activeEffects);
   if (effects.length > 0) {

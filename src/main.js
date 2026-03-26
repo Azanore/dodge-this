@@ -11,7 +11,7 @@ import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB } from './gameOver.js';
 import { initConfigPanel } from './configPanel.js';
-import { initAudio, startMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
+import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
 validateConfig(gameConfig);
 
@@ -151,7 +151,31 @@ const pauseScreenEl = document.getElementById('pause-screen');
 const sfxBtn = document.getElementById('sfx-btn');
 const musicBtn = document.getElementById('music-btn');
 
+// Returns to difficulty screen — resets state, stops loop and music, re-shows selector
+function goToMenu() {
+  loop.stop();
+  stopMusic(); // AUDIO
+  pauseScreenEl.classList.remove('open');
+  document.getElementById('game-over-screen').classList.remove('open');
+  state = resetState(activeDifficulty);
+  state.graceRemaining = gameConfig.gracePeriod;
+  accumulators.spawn = 0;
+  accumulators.bonus = 0;
+  accumulators.scoreZone = 0;
+  initRenderer();
+  recomputeZones();
+  updatePlayer(state);
+  updateDiffPB();
+  document.getElementById('play-btn').addEventListener('click', onStartAction);
+  window.addEventListener('keydown', onStartAction);
+  diffScreenEl.classList.add('open');
+  syncHelpBtn();
+  renderFrame();
+}
+
 document.getElementById('resume-btn').addEventListener('click', resumeGame);
+document.getElementById('pause-menu-btn').addEventListener('click', goToMenu);
+document.getElementById('go-menu-btn').addEventListener('click', goToMenu);
 
 // Syncs toggle button appearance to current enabled state
 function syncAudioBtns() {
