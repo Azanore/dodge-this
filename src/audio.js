@@ -39,8 +39,9 @@ export function setMusic(enabled) {
   if (!enabled) fadeOutMusic();
 }
 
-// Initializes AudioContext and loads all buffers — call on first user gesture
+// Initializes AudioContext and loads all buffers — call on first user gesture; no-op if already initialized
 export async function initAudio() {
+  if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   await Promise.all(
     Object.entries(SOUNDS).map(async ([key, path]) => {
@@ -99,8 +100,11 @@ export function resumeMusic() {
   musicStartedAt = audioCtx.currentTime - musicOffset;
 }
 
-// Stops music entirely
+let musicFadeTimer = null;
+
+// Stops music entirely — cancels any in-flight fade
 export function stopMusic() {
+  if (musicFadeTimer) { clearTimeout(musicFadeTimer); musicFadeTimer = null; }
   if (!musicSource) return;
   musicSource.stop();
   musicSource = null;
@@ -113,7 +117,7 @@ function fadeOutMusic() {
   if (!musicSource || !musicGain) return;
   musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
   musicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + MUSIC_FADE_OUT);
-  setTimeout(stopMusic, MUSIC_FADE_OUT * 1000);
+  musicFadeTimer = setTimeout(() => { musicFadeTimer = null; stopMusic(); }, MUSIC_FADE_OUT * 1000);
 }
 
 export function playDeath() { play('death'); }
