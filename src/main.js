@@ -147,34 +147,6 @@ function onStartAction(e) {
 document.getElementById('play-btn').addEventListener('click', onStartAction);
 window.addEventListener('keydown', onStartAction);
 
-// Pause / unpause via Escape
-window.addEventListener('keydown', (e) => {
-  if (e.key !== 'Escape') return;
-  if (document.getElementById('stats-screen').classList.contains('open')) {
-    document.getElementById('stats-screen').classList.remove('open');
-    return;
-  }
-  if (document.getElementById('leaderboard-screen').classList.contains('open')) {
-    document.getElementById('leaderboard-screen').classList.remove('open');
-    return;
-  }
-  if (state.status === 'dead' || state.status === 'start') return;
-  if (howToPlayEl.classList.contains('open')) return;
-  const panel = document.getElementById('config-panel');
-  if (panel && panel.style.display !== 'none') return;
-
-  if (state.status === 'active' || state.status === 'grace') {
-    state.prevStatus = state.status;
-    state.status = 'paused';
-    loop.stop();
-    pauseMusic(); // AUDIO
-    pauseScreenEl.classList.add('open');
-    syncHelpBtn();
-  } else if (state.status === 'paused') {
-    resumeGame();
-  }
-});
-
 function resumeGame() {
   state.status = state.prevStatus;
   state.prevStatus = null;
@@ -274,8 +246,27 @@ function syncHelpBtn() {
 
 helpBtn.addEventListener('click', () => { drawHtpIcons(); howToPlayEl.classList.add('open'); });
 howToPlayEl.addEventListener('click', (e) => { if (e.target === howToPlayEl) howToPlayEl.classList.remove('open'); });
+
+// KeydownRegistry — single handler for all global keyboard shortcuts
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && howToPlayEl.classList.contains('open')) howToPlayEl.classList.remove('open');
+  if (howToPlayEl.classList.contains('open')) { howToPlayEl.classList.remove('open'); return; }
+  if (lbScreen.classList.contains('open')) { lbScreen.classList.remove('open'); return; }
+  if (document.getElementById('stats-screen').classList.contains('open')) { document.getElementById('stats-screen').classList.remove('open'); return; }
+  const panel = document.getElementById('config-panel');
+  if (panel && panel.style.display !== 'none') return;
+  if (state.status === 'dead' || state.status === 'start') return;
+  if (e.key === 'Escape') {
+    if (state.status === 'active' || state.status === 'grace') {
+      state.prevStatus = state.status;
+      state.status = 'paused';
+      loop.stop();
+      pauseMusic(); // AUDIO
+      pauseScreenEl.classList.add('open');
+      syncHelpBtn();
+    } else if (state.status === 'paused') {
+      resumeGame();
+    }
+  }
 });
 
 renderFrame();
@@ -402,7 +393,3 @@ document.querySelectorAll('.lb-tab').forEach(tab => {
 });
 
 lbScreen.addEventListener('click', (e) => { if (e.target === lbScreen) lbScreen.classList.remove('open'); });
-
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && lbScreen.classList.contains('open')) lbScreen.classList.remove('open');
-});

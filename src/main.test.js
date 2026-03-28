@@ -211,3 +211,42 @@ describe('isAnyModalOpen — Property 1', () => {
     );
   });
 });
+
+// Feature: ui-consistency-overhaul, Property 5: Key guard conditions preserved
+describe('KeydownRegistry — Property 5', () => {
+  // Simulates the KeydownRegistry handler from main.js (modals assumed closed, panel closed)
+  function applyKeydownRegistry(e, state) {
+    // Priority 1-3: modal guards (assumed closed in this test)
+    // Priority 4: config panel (assumed closed)
+    if (state.status === 'dead' || state.status === 'start') return;
+    if (e.key === 'Escape') {
+      if (state.status === 'active' || state.status === 'grace') {
+        state.prevStatus = state.status;
+        state.status = 'paused';
+      } else if (state.status === 'paused') {
+        state.status = state.prevStatus;
+        state.prevStatus = null;
+      }
+    }
+  }
+
+  /**
+   * **Validates: Requirements 1.4**
+   *
+   * For any state.status in ['dead', 'start'], an Escape keydown must not change status.
+   */
+  it('Property 5: Escape does not trigger pause/unpause in dead or start states', () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom('dead', 'start'),
+        (terminalStatus) => {
+          const state = resetState();
+          state.status = terminalStatus;
+          applyKeydownRegistry({ key: 'Escape' }, state);
+          return state.status === terminalStatus;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});

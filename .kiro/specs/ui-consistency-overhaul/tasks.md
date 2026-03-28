@@ -36,17 +36,17 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 2: cleanup() removes all listeners and is safe to call repeatedly**
     - **Validates: Requirements 3.1, 3.3, 3.4**
 
-- [-] 4. Extract isAnyModalOpen helper
+- [x] 4. Extract isAnyModalOpen helper
   - Add `function isAnyModalOpen()` in `src/main.js` that checks `.open` on `#how-to-play`, `#leaderboard-screen`, and `#stats-screen`
   - Replace the three individual `classList.contains('open')` checks in `onStartAction` with a single `isAnyModalOpen()` call
   - Preserve the `e.key === 'Escape'` early return in `onStartAction` as a separate guard — do not fold it into `isAnyModalOpen()`
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [-] 4.1 Write property test for isAnyModalOpen
+  - [x] 4.1 Write property test for isAnyModalOpen
     - **Property 1: isAnyModalOpen reflects all overlay states**
     - **Validates: Requirements 2.1, 2.3**
 
-- [~] 5. Consolidate keydown listeners into KeydownRegistry
+- [-] 5. Consolidate keydown listeners into KeydownRegistry
   - Replace the four separate `window.addEventListener('keydown', ...)` calls in `src/main.js` (how-to-play close, leaderboard close, stats close, pause/unpause) with a single handler following the priority order in the design: how-to-play → leaderboard → stats → config-panel guard → dead/start guard → Escape pause/unpause → R restart
   - The `onStartAction` keydown listener remains separate (added/removed dynamically)
   - How-to-play Escape was previously an unconditional independent listener — priority 1 in the registry must replicate this: it fires before any state guards, regardless of `state.status`
