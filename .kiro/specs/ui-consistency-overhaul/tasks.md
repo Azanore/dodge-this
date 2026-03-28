@@ -32,7 +32,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - In `src/main.js`, import `cleanup` from `./gameOver.js` and call it at the top of `goToMenu()` before resetting state
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [~] 3.1 Write property test for cleanup() idempotency
+  - [-] 3.1 Write property test for cleanup() idempotency
     - **Property 2: cleanup() removes all listeners and is safe to call repeatedly**
     - **Validates: Requirements 3.1, 3.3, 3.4**
 
