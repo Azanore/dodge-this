@@ -10,7 +10,7 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB } from './gameOver.js';
-import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats } from './stats.js';
+import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard } from './stats.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
@@ -146,6 +146,10 @@ window.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (document.getElementById('stats-screen').classList.contains('open')) {
     document.getElementById('stats-screen').classList.remove('open');
+    return;
+  }
+  if (document.getElementById('leaderboard-screen').classList.contains('open')) {
+    document.getElementById('leaderboard-screen').classList.remove('open');
     return;
   }
   if (state.status === 'dead' || state.status === 'start') return;
@@ -348,4 +352,48 @@ document.getElementById('stats-screen').addEventListener('click', (e) => {
   if (e.target === document.getElementById('stats-screen')) {
     document.getElementById('stats-screen').classList.remove('open');
   }
+});
+
+// Leaderboard overlay
+const lbScreen = document.getElementById('leaderboard-screen');
+const lbList = document.getElementById('lb-list');
+let lbActiveDiff = 'easy';
+
+async function loadLeaderboard(difficulty) {
+  lbActiveDiff = difficulty;
+  document.querySelectorAll('.lb-tab').forEach(t => t.classList.toggle('selected', t.dataset.diff === difficulty));
+  lbList.textContent = 'Loading...';
+  try {
+    const rows = await fetchLeaderboard(difficulty);
+    if (!rows.length) { lbList.textContent = 'No runs yet for this difficulty.'; return; }
+    lbList.innerHTML = rows.map((r, i) => {
+      const name = r.profiles?.username ?? 'Anonymous';
+      const score = Math.round(r.score);
+      const time = (r.elapsed_ms / 1000).toFixed(1) + 's';
+      const rankColor = i === 0 ? '#ffe600' : i === 1 ? '#aaa' : i === 2 ? '#cd7f32' : '#555';
+      return `<div class="stats-row" style="margin-bottom:6px">
+        <span style="color:${rankColor};width:24px;text-align:right">#${i + 1}</span>
+        <span style="flex:1;color:#ddd;padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+        <span style="color:#00ff88">${score} pts</span>
+        <span style="color:#666;margin-left:10px">${time}</span>
+      </div>`;
+    }).join('');
+  } catch (_) {
+    lbList.textContent = 'Failed to load. Try again.';
+  }
+}
+
+document.getElementById('leaderboard-btn').addEventListener('click', () => {
+  lbScreen.classList.add('open');
+  loadLeaderboard(lbActiveDiff);
+});
+
+document.querySelectorAll('.lb-tab').forEach(tab => {
+  tab.addEventListener('click', () => loadLeaderboard(tab.dataset.diff));
+});
+
+lbScreen.addEventListener('click', (e) => { if (e.target === lbScreen) lbScreen.classList.remove('open'); });
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lbScreen.classList.contains('open')) lbScreen.classList.remove('open');
 });

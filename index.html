@@ -183,6 +183,7 @@
       <button id="play-btn" class="overlay-btn primary" style="margin-top:12px">Play</button>
       <div class="overlay-label">or press any key</div>
       <button id="stats-btn" class="overlay-btn" style="display:none;background:#222;margin-top:4px">Stats</button>
+      <button id="leaderboard-btn" class="overlay-btn" style="background:#222;margin-top:4px">Leaderboard</button>
       <button id="auth-btn" class="overlay-label" style="cursor:pointer;background:none;border:none;color:#888;font:12px monospace;margin-top:4px;transition:color 0.15s">Sign in with Google</button>
     </div>
   </div>
@@ -310,6 +311,19 @@
       <div class="stats-row"><span class="htp-label">Best Combo Score</span><span id="st-best-combo-score" class="htp-desc" style="color:#ffe600"></span></div>
 
       <div id="stats-message" style="font:12px monospace;color:#555;margin-top:12px;text-align:center;height:1.4em"></div>
+      <p class="htp-hint">click outside or press Escape to close</p>
+    </div>
+  </div>
+
+  <div id="leaderboard-screen" class="overlay">
+    <div class="htp-panel">
+      <h2>LEADERBOARD</h2>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
+        <button class="lb-tab diff-btn selected" data-diff="easy" style="width:90px;padding:6px 0;font-size:13px">Easy</button>
+        <button class="lb-tab diff-btn" data-diff="normal" style="width:90px;padding:6px 0;font-size:13px">Normal</button>
+        <button class="lb-tab diff-btn" data-diff="hard" style="width:90px;padding:6px 0;font-size:13px">Hard</button>
+      </div>
+      <div id="lb-list" style="font:12px monospace;color:#aaa;min-height:120px"></div>
       <p class="htp-hint">click outside or press Escape to close</p>
     </div>
   </div>

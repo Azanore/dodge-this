@@ -67,6 +67,18 @@ export async function insertRun(state) {
   }
 }
 
+// Fetches top 10 runs for a given difficulty, joined with profiles for username — throws on error
+export async function fetchLeaderboard(difficulty) {
+  const { data, error } = await supabase
+    .from('runs')
+    .select('score, elapsed_ms, profiles(username)')
+    .eq('difficulty', difficulty)
+    .order('score', { ascending: false })
+    .limit(10);
+  if (error) throw error;
+  return data;
+}
+
 // Queries runs table and returns aggregate stats — throws on fetch error
 export async function fetchAllTimeStats() {
   const { data, error } = await supabase.from('runs').select('*');
