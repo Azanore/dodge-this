@@ -60,7 +60,7 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 
 ### Deliberately not added
 - **Share button** — removed. `navigator.clipboard` requires HTTPS + user gesture; the textarea fallback was janky. No real value for a solo survival game.
-- **Backend leaderboard** — would require a server, auth, and moderation. Changes the game's nature. Local PB is enough.
+- **Backend leaderboard** — now planned. Supabase makes this viable without a custom server.
 - **Touch/mobile support** — the game is mouse-only by design. Adding touch would require rethinking the entire input model and zone layout.
 - **Sound** — not ruled out, but adds asset management complexity. Worth a dedicated session if added.
 
@@ -73,7 +73,115 @@ See the Backlog section below.
 3. ~~Value tuning~~ — done session 7
 4. ~~**Difficulty presets**~~ — done session 14. Easy/normal/hard. Existing scores migrated to hard.
 5. ~~Sound effects~~ — done session 8 & 13. Volume slider deliberately excluded — OS/browser controls are sufficient for a game this size.
-6. **Achievements** — depends on near-miss count, combo streaks, survival milestones all being stable first.
+6. **Statistics + Auth + Leaderboard + Achievements** — next major phase. Build order: Supabase setup → stats tracking → auth (Google OAuth) → leaderboard → achievements. Stats comes first because achievements are consumers of stats data.
+7. **Achievements** — after statistics and auth. Conditions evaluate against the runs table.
+
+---
+
+## UI conventions
+
+**Canvas vs HTML split — never mix these:**
+- Canvas = game world only: obstacles, player, zones, particles, HUD during active play
+- HTML/CSS = all menus and overlays: start screen, pause, game over, modals, stats, leaderboard, auth, achievements
+- This was a deliberate migration in session 12. Every new UI surface must follow the HTML overlay pattern.
+
+**HTML overlay pattern (follow exactly):**
+- Structure matches existing overlays: `#pause-screen`, `#game-over-screen`, `#how-to-play`
+- Dark semi-transparent backdrop, centered content box, monospace font, neon glow colors from game palette (`#00eeff`, `#00ff88`, `#ff4444`, `#ffe600`, etc.)
+- Opened by adding `.open` class, closed by removing it — no `display` toggling directly
+
+**Interaction consistency:**
+- Escape closes any open overlay (already wired globally in main.js — new overlays must hook into this)
+- Backdrop click closes modals (established in how-to-play)
+- Keyboard shortcuts documented in the overlay itself where applicable
+- No new global key listeners without checking for conflicts with existing ones (Escape, R, P, ?)
+
+**New overlays checklist:**
+- Does Escape close it?
+- Does backdrop click close it?
+- Is the game loop paused while it's open if needed?
+- Does it restore previous state correctly on close?
+
+---
+
+## Backend design (Supabase)
+
+**Supabase project:** `dodge-this` — ref `akhizydlqrfeeevwyflp`, region EU Central, free tier
+**Client file:** `src/supabase.js` — imports from CDN (`@supabase/supabase-js@2`), exports `supabase` client
+**Anon key type:** publishable key (`sb_publishable_...`) — safe to expose in frontend, RLS enforces security
+**Google OAuth:** configured in Supabase Auth → Providers. Redirect URI: `https://akhizydlqrfeeevwyflp.supabase.co/auth/v1/callback`.
+**⚠️ BEFORE GOING LIVE:** Google OAuth is currently in test mode — only emails listed under "Audience → Test users" in [Google Auth Platform](https://console.cloud.google.com/auth) can log in. To allow all users: go to Google Auth Platform → "Audience" → click "Publish app" → confirm. No review required for basic OAuth. Do this before deploying to production.
+**Profile trigger:** `handle_new_user()` fires on `auth.users` insert, creates `profiles` row with Google `full_name` and `avatar_url` from `raw_user_meta_data`. Confirmed working.
+**Supabase CDN import pattern:** `import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'` — no build step, works in ES modules directly. Do not use npm import path in browser modules.
+**RLS note:** all 4 tables have RLS enabled. Supabase dashboard always has full admin access regardless of RLS policies.
+
+**Auth:** Google OAuth only. Guest play works without login — stats just don't persist. Players prompted to sign in after a run. Supabase links Google identity to a `profiles` row automatically via a DB trigger on `auth.users`.
+
+**Database — 4 tables:**
+
+`profiles` — one row per user, auto-created on first login
+- `id` uuid (references auth.users.id)
+- `username` text nullable (defaults to Google display name)
+- `avatar_url` text nullable (from Google)
+- `created_at` timestamptz
+
+`runs` — one row per completed game (authenticated players only)
+- `id` bigint
+- `user_id` uuid (references profiles.id)
+- `score` numeric
+- `elapsed_ms` integer
+- `difficulty` text ('easy' | 'normal' | 'hard')
+- `near_misses` integer
+- `max_combo` numeric
+- `bonuses_collected` integer
+- `played_at` timestamptz
+
+`achievements` — static definitions, seeded once
+- `id` integer
+- `key` text unique (e.g. 'veteran', 'minuteman')
+- `name` text
+- `description` text
+
+`user_achievements` — which user unlocked what
+- `id` bigint
+- `user_id` uuid (references profiles.id)
+- `achievement_key` text (references achievements.key)
+- `unlocked_at` timestamptz
+- unique constraint on (user_id, achievement_key)
+
+**RLS:** enabled on all tables. Users read/write own rows only. Leaderboard and profiles are public read. Supabase dashboard retains full admin access regardless of RLS.
+
+**Stats:** derived from `runs` table via aggregate queries — no separate stats table needed.
+
+**Leaderboard:** public read, all-time, per difficulty. Query: `SELECT * FROM runs ORDER BY score DESC LIMIT 20` filtered by difficulty.
+
+**Guest → login:** no retroactive sync. Guest runs are local-only (localStorage PB preserved). Authenticated runs go to DB from login onwards.
+
+**Offline during run:** write happens on run end only. If insert fails (offline), run is silently dropped — one lost run is acceptable for a game this size.
+
+**Achievement evaluation:** client-side on run end. Checks conditions against aggregated stats, writes unlocked achievements to `user_achievements`. Not cheat-proof but acceptable for this game.
+
+---
+
+## Achievement definitions
+
+**Milestone (cumulative, progress bar with tiers):**
+- **Veteran** — Play 1 / 5 / 10 / 25 / 50 / 100 games
+- **Survivor** — Accumulate 5 / 15 / 30 / 60 / 120 total minutes played
+- **Collector** — Collect 10 / 50 / 150 / 300 total bonuses
+- **Ghost** — Accumulate 25 / 100 / 300 / 750 total near-misses
+- **Hard Boiled** — Complete 5 / 15 / 30 / 50 games on Hard
+- **Combo Chaser** — Reach 3x / 4x / 5x multiplier (tracks personal best combo)
+
+**Single-run (binary, unlock once):**
+- **First Blood** — Complete your first run (survive at least 5s)
+- **Minuteman** — Survive 60s in a single run
+- **Untouchable** — Survive 30s without a single near-miss
+- **Danger Zone** — Get 15 near-misses in a single run
+- **Max Power** — Hit 5x combo multiplier in a single run
+- **Hoarder** — Collect 6 bonuses in a single run
+- **Hard Debut** — Survive 30s on Hard in a single run
+- **Pacifist** — Survive 45s without collecting any bonus
 
 ---
 
@@ -87,7 +195,7 @@ Grouped by effort. All of these fit the current architecture without major rewri
 ### Medium effort (worth a dedicated session)
 - ~~**Sound effects**~~ — done. Volume slider deliberately excluded — OS/browser controls are sufficient; a slider adds UI complexity for a problem that may not exist.
 - **Difficulty presets** — easy/normal/hard. Defer until gameplay is stable. Per-difficulty PB keys: `dodge_pb_easy`, `dodge_pb_normal`, `dodge_pb_hard`. Migrate existing `dodge_pb` to normal on first load.
-- **Achievements** — near-miss count, combo streaks, survival milestones. Implement last when all metrics are stable.
+- **Achievements** — after statistics. Implement last when all metrics are stable. Conditions become simple reads against the stats store.
 
 ### Larger scope (plan carefully before starting)
 - **Touch/mobile** — the game is mouse-only by design. Adding touch requires rethinking input, zone sizing for small screens, and the entire feel. Not a small change.
@@ -123,6 +231,15 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 15 — Backend setup
+- Created new Supabase project `dodge-this` (ref: `akhizydlqrfeeevwyflp`, EU Central)
+- Created 4 tables: `profiles`, `runs`, `achievements`, `user_achievements` — all with RLS enabled
+- Seeded 34 achievement rows (6 milestone groups × tiers + 8 single-run)
+- Wired Google OAuth via Supabase Auth Providers — Client ID + Secret from Google Cloud Console
+- DB trigger `handle_new_user()` auto-creates profile row on first Google login — confirmed working
+- Created `src/supabase.js` — Supabase client using CDN import, publishable anon key
+- Decided: Google-only auth, guest play local-only, no retroactive sync on login, fire-and-forget on offline run insert
 
 ### Session 1
 - Fixed bugs 1–7 (see table above)
@@ -168,7 +285,7 @@ Run: `npm test`
 - `triggerScoreBump()` fires on bank — score number scales up 18% with brighter glow for 220ms
 - HUD redesigned: score large white, `x2.3` green inline, `+47` mint inline — all on one line; timer below
 - Multiplier always visible: dimmed at x1.0, full glow when active
-- Score zone radius bumped from 60px to 90px
+- Score zone radius bumped from 60px to 110px (changelog previously said 90px — actual value in game.config.js is 110px)
 - Score formula changed from `delta * multiplier` to `(delta/1000) * 10` — numbers now in hundreds not hundreds-of-thousands
 - `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
 

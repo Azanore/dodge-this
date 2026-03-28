@@ -13,6 +13,8 @@ inclusion: always
 - File names indicate single purpose
 
 **Code Organization**:
+- Prefer early returns over nested conditionals — keeps functions flat and readable
+- Modules are composable units — no circular dependencies, no cross-module state mutation
 - Config variables at the top with comments
 - Extract magic numbers into named constants
 - Keep functions focused (target <20 lines)
