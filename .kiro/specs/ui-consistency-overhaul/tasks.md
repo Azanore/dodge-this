@@ -62,10 +62,10 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - Remove any direct `helpBtn.style.display` assignments that exist outside `syncHelpBtn`
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [-] 7. Checkpoint — ensure all tests pass
+- [x] 7. Checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 8. Adopt .open class pattern for run-stats-panel
+- [-] 8. Adopt .open class pattern for run-stats-panel
   - In `index.html`, add CSS rules: `#run-stats-panel { display: none; }` and `#run-stats-panel.open { display: block; }`
   - Remove the `style="display:none"` inline attribute from `#run-stats-panel` in `index.html`
   - In `src/main.js`, replace the toggle handler's `panel.style.display` assignments with `panel.classList.toggle('open')` and update the toggle text to read from `panel.classList.contains('open')`

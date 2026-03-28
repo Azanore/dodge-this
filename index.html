@@ -167,6 +167,9 @@
       gap: 12px;
       margin-bottom: 8px;
     }
+
+    #run-stats-panel { display: none; }
+    #run-stats-panel.open { display: block; }
   </style>
 </head>
 <body>
@@ -214,7 +217,7 @@
       <div class="overlay-label">or press R</div>
       <button id="go-menu-btn" class="overlay-btn" style="background:#222;margin-top:4px">Menu</button>
       <button id="run-stats-toggle" class="overlay-label" style="cursor:pointer;margin-top:8px;background:none;border:none;color:#666;font:14px monospace">▶ Run Stats</button>
-      <div id="run-stats-panel" style="display:none;background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 20px;font:12px monospace;color:#aaa;text-align:left;min-width:200px">
+      <div id="run-stats-panel" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 20px;font:12px monospace;color:#aaa;text-align:left;min-width:200px">
         <div style="display:flex;justify-content:space-between;gap:24px"><span>Score</span><span id="rs-score" style="color:#fff"></span></div>
         <div style="display:flex;justify-content:space-between;gap:24px"><span>Time</span><span id="rs-time" style="color:#fff"></span></div>
         <div style="display:flex;justify-content:space-between;gap:24px"><span>Difficulty</span><span id="rs-difficulty" style="color:#fff"></span></div>

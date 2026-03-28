@@ -61,7 +61,7 @@ function update(delta) {
       // Collapse panel on each new game-over open
       const panel = document.getElementById('run-stats-panel');
       const toggle = document.getElementById('run-stats-toggle');
-      panel.style.display = 'none';
+      panel.classList.remove('open');
       toggle.textContent = '▶ Run Stats';
     }, 450);
   }
@@ -276,9 +276,8 @@ syncHelpBtn();
 document.getElementById('run-stats-toggle').addEventListener('click', () => {
   const panel = document.getElementById('run-stats-panel');
   const toggle = document.getElementById('run-stats-toggle');
-  const expanded = panel.style.display !== 'none';
-  panel.style.display = expanded ? 'none' : 'block';
-  toggle.textContent = expanded ? '▶ Run Stats' : '▼ Run Stats';
+  panel.classList.toggle('open');
+  toggle.textContent = panel.classList.contains('open') ? '▼ Run Stats' : '▶ Run Stats';
 });
 
 initConfigPanel(loop, onRestart, () => state.status);
