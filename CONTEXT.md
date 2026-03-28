@@ -74,8 +74,8 @@ See the Backlog section below.
 4. ~~**Difficulty presets**~~ — done session 14. Easy/normal/hard. Existing scores migrated to hard.
 5. ~~Sound effects~~ — done session 8 & 13. Volume slider deliberately excluded — OS/browser controls are sufficient for a game this size.
 6. ~~**Statistics + Auth**~~ — done sessions 15–17. Stats tracking, Google OAuth sign in/out, run persistence, all-time stats overlay.
-7. **Leaderboard** — next. Public per-difficulty top scores from the `runs` table.
-8. **Achievements** — after leaderboard. Conditions evaluate against the runs table.
+7. ~~**Leaderboard**~~ — done session 18. Public per-difficulty top scores from the `runs` table.
+8. **Achievements** — next. Conditions evaluate against the runs table.
 
 ---
 
@@ -232,6 +232,13 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 18 — Leaderboard
+- `fetchLeaderboard(difficulty)` added to `src/stats.js` — queries top 10 runs joined with `profiles` for username, ordered by score desc
+- `#leaderboard-btn` added to difficulty screen (public, no auth required)
+- `#leaderboard-screen` overlay added — Easy/Normal/Hard tabs, each fetches and renders top 10 on click
+- Rows show rank (gold/silver/bronze for top 3), username, score in pts, elapsed time
+- Escape and backdrop click close the overlay; wired into existing Escape handler in `main.js`
 
 ### Session 17 — Google OAuth auth + stats polish
 - Added `#auth-btn` to difficulty screen — "Sign in with Google" / "Name — Sign out" toggle
