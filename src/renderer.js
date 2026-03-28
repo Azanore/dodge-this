@@ -19,7 +19,7 @@ const OBSTACLE_COLORS = {
 };
 
 // Per-type bonus pickup colors (matches bonuses.js)
-const BONUS_COLORS = {
+export const BONUS_COLORS = {
   slowmo: '#0088ff',
   invincibility: '#ffe600',
   screenclear: '#ff4dff',

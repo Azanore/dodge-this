@@ -2,14 +2,6 @@
 // Related: GameState.js, renderer.js, difficulty.js
 // Does not handle game logic — pure canvas drawing from state.
 
-// Per-type colors matching bonuses.js
-const BONUS_COLORS = {
-  slowmo: '#0088ff',
-  invincibility: '#ffe600',
-  screenclear: '#ff4dff',
-  shrink: '#00ff99'
-};
-
 const SCORE_FONT = '28px monospace';
 const TIMER_FONT = '12px monospace';
 const MULT_FONT = '14px monospace';
@@ -24,6 +16,7 @@ const PILL_RADIUS = 4;
 const PILL_OFFSET_X = 90;  // distance right of center
 
 import { playScoreBank } from './audio.js'; // AUDIO
+import { BONUS_COLORS } from './renderer.js';
 
 // Score bump animation — longer, bolder, color flash on bank
 const BUMP_DURATION = 380;

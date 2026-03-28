@@ -6,17 +6,17 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
 
 ## Tasks
 
-- [-] 1. Remove renderStartScreen dead code
+- [x] 1. Remove renderStartScreen dead code
   - Delete `renderStartScreen` from `src/renderer.js`
   - Remove `renderStartScreen` from the named import in `src/main.js`
   - Update `renderFrame` in `src/main.js`: remove the `renderStartScreen(ctx)` call, keep `render(ctx, state, lastDelta)` for `status === 'start'`
   - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [-] 1.1 Write property test for renderFrame start-status behavior
+  - [x] 1.1 Write property test for renderFrame start-status behavior
     - **Property 7: render() is called for start status**
     - **Validates: Requirements 6.3, 6.4**
 
-- [~] 2. Deduplicate BONUS_COLORS
+- [-] 2. Deduplicate BONUS_COLORS
   - Add `export` to the `BONUS_COLORS` const in `src/renderer.js`
   - In `src/hud.js`, remove the local `BONUS_COLORS` const and add `import { BONUS_COLORS } from './renderer.js'`
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
