@@ -89,7 +89,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - Verify no other overlay has a conflicting z-index that breaks the ordering
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [~] 10.1 Write property test for z-index ordering
+  - [-] 10.1 Write property test for z-index ordering
     - **Property 6: z-index ordering is correct across all overlays**
     - **Validates: Requirements 9.2, 9.3, 9.4**
 
