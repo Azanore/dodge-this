@@ -45,6 +45,7 @@
     #game-over-screen { background: rgba(0,0,0,0.78); }
     #difficulty-screen { background: rgba(0,0,0,0.92); z-index: 15; }
     #stats-screen { background: rgba(0,0,0,0.75); z-index: 30; }
+    #stats-screen .htp-panel { width: min(320px, calc(100vw - 48px)); }
 
     .diff-btn {
       padding: 10px 0;
@@ -160,7 +161,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 24px;
+      gap: 12px;
       margin-bottom: 8px;
     }
   </style>
@@ -308,7 +309,7 @@
       <div class="stats-row"><span class="htp-label">Highest Combo</span><span id="st-highest-combo" class="htp-desc" style="color:#ffe600"></span></div>
       <div class="stats-row"><span class="htp-label">Best Combo Score</span><span id="st-best-combo-score" class="htp-desc" style="color:#ffe600"></span></div>
 
-      <div id="stats-message" style="font:12px monospace;color:#555;margin-top:12px;text-align:center"></div>
+      <div id="stats-message" style="font:12px monospace;color:#555;margin-top:12px;text-align:center;height:1.4em"></div>
       <p class="htp-hint">click outside or press Escape to close</p>
     </div>
   </div>
