@@ -46,18 +46,18 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 1: isAnyModalOpen reflects all overlay states**
     - **Validates: Requirements 2.1, 2.3**
 
-- [-] 5. Consolidate keydown listeners into KeydownRegistry
+- [x] 5. Consolidate keydown listeners into KeydownRegistry
   - Replace the four separate `window.addEventListener('keydown', ...)` calls in `src/main.js` (how-to-play close, leaderboard close, stats close, pause/unpause) with a single handler following the priority order in the design: how-to-play → leaderboard → stats → config-panel guard → dead/start guard → Escape pause/unpause → R restart
   - The `onStartAction` keydown listener remains separate (added/removed dynamically)
   - How-to-play Escape was previously an unconditional independent listener — priority 1 in the registry must replicate this: it fires before any state guards, regardless of `state.status`
   - Remove the now-redundant individual keydown listeners
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [~] 5.1 Write property test for key guard conditions
+  - [x] 5.1 Write property test for key guard conditions
     - **Property 5: Key guard conditions preserved**
     - **Validates: Requirements 1.4**
 
-- [~] 6. Formalize syncHelpBtn call sites
+- [-] 6. Formalize syncHelpBtn call sites
   - Audit all locations in `src/main.js` where `state.status` is mutated; confirm `syncHelpBtn()` is called at each one (start, pause, resume, restart, go-to-menu, death)
   - Remove any direct `helpBtn.style.display` assignments that exist outside `syncHelpBtn`
   - _Requirements: 4.1, 4.2, 4.3_
