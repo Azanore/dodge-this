@@ -242,23 +242,22 @@ howToPlayEl.addEventListener('click', (e) => { if (e.target === howToPlayEl) how
 
 // KeydownRegistry — single handler for all global keyboard shortcuts
 window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
   if (howToPlayEl.classList.contains('open')) { howToPlayEl.classList.remove('open'); return; }
   if (lbScreen.classList.contains('open')) { lbScreen.classList.remove('open'); return; }
   if (document.getElementById('stats-screen').classList.contains('open')) { document.getElementById('stats-screen').classList.remove('open'); return; }
   const panel = document.getElementById('config-panel');
   if (panel && panel.style.display !== 'none') return;
   if (state.status === 'dead' || state.status === 'start') return;
-  if (e.key === 'Escape') {
-    if (state.status === 'active' || state.status === 'grace') {
-      state.prevStatus = state.status;
-      state.status = 'paused';
-      loop.stop();
-      pauseMusic(); // AUDIO
-      pauseScreenEl.classList.add('open');
-      syncHelpBtn();
-    } else if (state.status === 'paused') {
-      resumeGame();
-    }
+  if (state.status === 'active' || state.status === 'grace') {
+    state.prevStatus = state.status;
+    state.status = 'paused';
+    loop.stop();
+    pauseMusic(); // AUDIO
+    pauseScreenEl.classList.add('open');
+    syncHelpBtn();
+  } else if (state.status === 'paused') {
+    resumeGame();
   }
 });
 
