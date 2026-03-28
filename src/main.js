@@ -10,7 +10,8 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB } from './gameOver.js';
-import { resetRunStats, insertRun, getRunStats } from './stats.js';
+import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats } from './stats.js';
+import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
@@ -138,6 +139,10 @@ window.addEventListener('keydown', onStartAction);
 // Pause / unpause via Escape
 window.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
+  if (document.getElementById('stats-screen').classList.contains('open')) {
+    document.getElementById('stats-screen').classList.remove('open');
+    return;
+  }
   if (state.status === 'dead' || state.status === 'start') return;
   if (howToPlayEl.classList.contains('open')) return;
   const panel = document.getElementById('config-panel');
@@ -269,3 +274,51 @@ document.getElementById('run-stats-toggle').addEventListener('click', () => {
 });
 
 initConfigPanel(loop, onRestart, () => state.status);
+
+// Stats button — show only for authenticated players
+supabase.auth.onAuthStateChange((_event, session) => {
+  document.getElementById('stats-btn').style.display = session ? 'inline-block' : 'none';
+});
+
+// All-time stats overlay — open, fetch, populate
+document.getElementById('stats-btn').addEventListener('click', async () => {
+  const screen = document.getElementById('stats-screen');
+  screen.classList.add('open');
+  const msg = document.getElementById('stats-message');
+  msg.textContent = '';
+  try {
+    const s = await fetchAllTimeStats();
+    if (s.totalRuns === 0) {
+      msg.textContent = 'No stats yet — play a run first.';
+      ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-score', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-highest-combo', 'st-best-combo-score'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+    } else {
+      document.getElementById('st-total-runs').textContent = s.totalRuns;
+      document.getElementById('st-best-easy').textContent = s.bestScoreEasy > 0 ? `${Math.round(s.bestScoreEasy)} pts` : '—';
+      document.getElementById('st-best-normal').textContent = s.bestScoreNormal > 0 ? `${Math.round(s.bestScoreNormal)} pts` : '—';
+      document.getElementById('st-best-hard').textContent = s.bestScoreHard > 0 ? `${Math.round(s.bestScoreHard)} pts` : '—';
+      document.getElementById('st-avg-score').textContent = `${Math.round(s.avgScore)} pts`;
+      document.getElementById('st-avg-time').textContent = `${(s.avgElapsedMs / 1000).toFixed(1)}s`;
+      document.getElementById('st-total-time').textContent = `${(s.totalElapsedMs / 1000).toFixed(0)}s`;
+      document.getElementById('st-near-misses').textContent = s.totalNearMisses;
+      document.getElementById('st-bonuses').textContent = s.totalBonuses;
+      document.getElementById('st-highest-combo').textContent = `x${s.highestCombo.toFixed(1)}`;
+      document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
+    }
+  } catch (_) {
+    msg.textContent = 'Failed to load stats. Try again.';
+  }
+});
+
+// All-time stats overlay — close button
+document.getElementById('stats-close-btn').addEventListener('click', () => {
+  document.getElementById('stats-screen').classList.remove('open');
+});
+
+// All-time stats overlay — backdrop click
+document.getElementById('stats-screen').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('stats-screen')) {
+    document.getElementById('stats-screen').classList.remove('open');
+  }
+});

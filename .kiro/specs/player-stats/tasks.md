@@ -54,14 +54,14 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
 - [x] 4. Checkpoint — ensure all tests pass
   - Run `npm test` and confirm no regressions; ask the user if questions arise.
 
-- [-] 5. Add all-time stats overlay HTML/CSS to `index.html` and Stats button to difficulty screen
+- [x] 5. Add all-time stats overlay HTML/CSS to `index.html` and Stats button to difficulty screen
   - Add `#stats-screen` overlay (`.overlay` pattern) with `#stats-panel` content box
   - Overlay displays all aggregate fields from `fetchAllTimeStats()` return shape
   - Add `#stats-btn` button inside `#difficulty-screen .overlay-panel`, hidden by default (`display:none`)
   - Style follows existing overlay pattern
   - _Requirements: 4.1, 4.8, 5.1_
 
-- [~] 6. Wire all-time overlay open/close and Stats button auth visibility in `main.js`
+- [-] 6. Wire all-time overlay open/close and Stats button auth visibility in `main.js`
   - Import `fetchAllTimeStats` and `supabase` in `main.js`
   - Wire `supabase.auth.onAuthStateChange`: show/hide `#stats-btn` based on session presence
   - Wire `#stats-btn` click: open `#stats-screen`, call `fetchAllTimeStats()`, populate fields; show "no stats" if empty; show error message if fetch throws
@@ -71,7 +71,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
   - Call `insertRun(state)` inside the death timeout in `main.js` (fire-and-forget)
   - _Requirements: 2.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.1, 5.2, 5.3_
 
-  - [~] 6.1 Write unit tests for all-time overlay and Stats button (Property 6)
+  - [-] 6.1 Write unit tests for all-time overlay and Stats button (Property 6)
     - **Property 6: Stats button visibility matches auth state** — `fc.boolean()` for isAuthenticated, verify `display` matches
     - All-time overlay opens on Stats button click
     - Overlay closes on Escape; closes on backdrop click
