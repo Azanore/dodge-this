@@ -91,11 +91,24 @@ See the Backlog section below.
 - Dark semi-transparent backdrop, centered content box, monospace font, neon glow colors from game palette (`#00eeff`, `#00ff88`, `#ff4444`, `#ffe600`, etc.)
 - Opened by adding `.open` class, closed by removing it — no `display` toggling directly
 
+**Overlay backdrop scale (intentional, don't change without reason):**
+- `#difficulty-screen` → `rgba(0,0,0,0.92)` — title screen, nearly opaque, canvas behind is irrelevant
+- `#game-over-screen` → `rgba(0,0,0,0.78)` — game is over, heavy dim
+- `#how-to-play`, `#stats-screen`, `#leaderboard-screen` → `rgba(0,0,0,0.75)` — informational panels, same treatment
+- `#pause-screen` → `rgba(0,0,0,0.60)` — lightest, game world intentionally still visible behind it
+
+**Backdrop click and Escape:**
+- `#how-to-play`, `#stats-screen`, `#leaderboard-screen` — both backdrop click and Escape close them
+- `#pause-screen`, `#game-over-screen`, `#difficulty-screen` — no backdrop click (accidental dismissal would have meaningful consequences); Escape handles pause/unpause only
+- All Escape handling is in the single `KeydownRegistry` in `main.js` (priority order: how-to-play → leaderboard → stats → config guard → dead/start guard → Escape pause/unpause)
+
+**Start screen key to begin:** Space only (not "any key" — too broad, caused Tab to accidentally dismiss modals and start the game)
+
 **Interaction consistency:**
-- Escape closes any open overlay (already wired globally in main.js — new overlays must hook into this)
-- Backdrop click closes modals (established in how-to-play)
+- Escape closes any open overlay (already wired globally in `KeydownRegistry` in main.js — new overlays must hook into this)
+- Backdrop click closes informational modals only
 - Keyboard shortcuts documented in the overlay itself where applicable
-- No new global key listeners without checking for conflicts with existing ones (Escape, R, P, ?)
+- No new global key listeners without checking for conflicts with existing ones (Escape, R, Space, ?)
 
 **New overlays checklist:**
 - Does Escape close it?
@@ -232,6 +245,12 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 20 — Post-overhaul polish & consistency fixes
+- Fixed Tab key accidentally dismissing modals and starting the game — `onStartAction` now uses allowlist (`e.key !== ' '`) instead of blocklist (`e.key === 'Escape'`)
+- Updated hint text from "or press any key" to "or press Space"
+- Added `rgba(0,0,0,0.75)` backdrop to `#stats-screen` and `#leaderboard-screen` — now consistent with `#how-to-play`
+- Documented overlay backdrop scale and interaction rules in CONTEXT.md
 
 ### Session 19 — UI consistency overhaul
 - Removed `renderStartScreen` dead code from `renderer.js` and `main.js`
