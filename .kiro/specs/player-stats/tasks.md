@@ -37,7 +37,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
   - In `bonuses.js`: import `onBonusCollected` from `stats.js`; call it inside `collectBonus()`
   - _Requirements: 1.2, 1.3, 1.4, 1.5_
 
-- [-] 3. Add per-run stats panel HTML/CSS to `index.html` and wire toggle in `main.js`
+- [x] 3. Add per-run stats panel HTML/CSS to `index.html` and wire toggle in `main.js`
   - Append toggle button `#run-stats-toggle` and collapsible `#run-stats-panel` inside `#game-over-screen .overlay-panel`
   - Panel displays: score, time survived, difficulty, near-misses, bonuses collected, max combo, combo score
   - Panel collapsed (`display:none`) by default; toggle button shows `▶ Run Stats` / `▼ Run Stats`
@@ -45,13 +45,13 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
   - In `main.js`: populate panel values inside `showGameOver` timeout (after `insertRun`); wire toggle click handler
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-  - [-] 3.1 Write unit tests for per-run panel toggle behavior (Property 7)
+  - [x] 3.1 Write unit tests for per-run panel toggle behavior (Property 7)
     - **Property 7: Per-run panel toggle is a round-trip** — arbitrary initial state, toggle twice, verify same state
     - Panel collapsed by default when game-over screen opens
     - Toggle expands panel; second toggle collapses it
     - _Requirements: 3.2, 3.3, 3.4_
 
-- [~] 4. Checkpoint — ensure all tests pass
+- [-] 4. Checkpoint — ensure all tests pass
   - Run `npm test` and confirm no regressions; ask the user if questions arise.
 
 - [~] 5. Add all-time stats overlay HTML/CSS to `index.html` and Stats button to difficulty screen
