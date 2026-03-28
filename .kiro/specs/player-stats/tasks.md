@@ -79,5 +79,5 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
     - Shows error message when fetch fails
     - _Requirements: 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.1, 5.2, 5.3_
 
-- [-] 7. Final checkpoint — ensure all tests pass
+- [x] 7. Final checkpoint — ensure all tests pass
   - Run `npm test` and confirm no regressions; ask the user if questions arise.

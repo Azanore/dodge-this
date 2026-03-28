@@ -275,9 +275,31 @@ document.getElementById('run-stats-toggle').addEventListener('click', () => {
 
 initConfigPanel(loop, onRestart, () => state.status);
 
-// Stats button — show only for authenticated players
+// Auth button — sign in/out; Stats button — show only when authenticated
+const authBtn = document.getElementById('auth-btn');
+
 supabase.auth.onAuthStateChange((_event, session) => {
   document.getElementById('stats-btn').style.display = session ? 'inline-block' : 'none';
+  if (session?.user) {
+    const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Signed in';
+    authBtn.textContent = `${name} — Sign out`;
+    authBtn.style.color = '#888';
+  } else {
+    authBtn.textContent = 'Sign in with Google';
+    authBtn.style.color = '#555';
+  }
+});
+
+authBtn.addEventListener('click', async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    await supabase.auth.signOut();
+  } else {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+  }
 });
 
 // All-time stats overlay — open, fetch, populate
