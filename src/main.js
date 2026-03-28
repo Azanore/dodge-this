@@ -27,7 +27,9 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-let activeDifficulty = 'normal';
+// Persist last selected difficulty across sessions
+const DIFF_KEY = 'dodge_difficulty';
+let activeDifficulty = localStorage.getItem(DIFF_KEY) ?? 'normal';
 
 let state = resetState(activeDifficulty);
 state.graceRemaining = gameConfig.gracePeriod;
@@ -109,9 +111,12 @@ updateDiffPB();
 // Preload audio on first difficulty button interaction — buffers ready before Play is clicked
 let audioPreloaded = false;
 document.querySelectorAll('.diff-btn').forEach(btn => {
+  // Sync selected state to persisted difficulty on load
+  btn.classList.toggle('selected', btn.dataset.diff === activeDifficulty);
   btn.addEventListener('click', (e) => {
     if (!audioPreloaded) { initAudio(); audioPreloaded = true; }
     activeDifficulty = e.currentTarget.dataset.diff;
+    localStorage.setItem(DIFF_KEY, activeDifficulty);
     document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('selected', b === e.currentTarget));
     state = resetState(activeDifficulty);
     state.graceRemaining = gameConfig.gracePeriod;

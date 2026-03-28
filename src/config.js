@@ -95,8 +95,6 @@ export function validateConfig(cfg) {
   validateKey(cfg, 'gracePeriod', 'number');
   validateKey(cfg, 'playerHitboxRadius', 'number');
   validateKey(cfg, 'outerZoneScale', 'number');
-  validateKey(cfg, 'maxSpeedMultiplier', 'number');
-  validateDifficulty(cfg);
   validateObstacleTypes(cfg);
   validateBonusTypes(cfg);
   return cfg;
