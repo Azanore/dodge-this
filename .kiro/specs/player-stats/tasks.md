@@ -6,14 +6,14 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
 
 ## Tasks
 
-- [-] 1. Create `src/stats.js` with counter state and exported interface
+- [x] 1. Create `src/stats.js` with counter state and exported interface
   - Define module-level `nearMisses`, `bonusesCollected`, `maxCombo`, `comboScore` variables
   - Implement `resetRunStats()`, `onNearMiss()`, `onBonusCollected()`, `onComboUpdate(multiplier)`, `onComboBank(amount)`
   - Implement `insertRun(state)`: call `supabase.auth.getUser()`, skip if no user, insert run record, swallow errors
   - Implement `fetchAllTimeStats()`: select all runs (RLS filters by user), compute aggregates client-side, throw on fetch error
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 6.1–6.8_
 
-  - [-] 1.1 Write property tests for counter functions (Properties 1–5)
+  - [x] 1.1 Write property tests for counter functions (Properties 1–5)
     - **Property 1: nearMisses increments by exactly 1** — `fc.integer({ min: 0, max: 50 })` call count, verify final value
     - **Property 2: bonusesCollected increments by exactly 1** — same pattern
     - **Property 3: maxCombo tracks the running maximum** — `fc.array(fc.float({ min: 1.0, max: 5.0 }), { minLength: 1 })`, verify equals `Math.max(...arr)`
@@ -21,7 +21,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
     - **Property 5: resetRunStats zeroes all counters** — arbitrary call sequence then reset, verify all at initial values
     - _Requirements: 1.1–1.6_
 
-  - [~] 1.2 Write unit tests for `insertRun` and `fetchAllTimeStats`
+  - [x] 1.2 Write unit tests for `insertRun` and `fetchAllTimeStats`
     - Mock `supabase` — authenticated user triggers insert with correct payload shape
     - Mock `supabase` — guest (null user) skips insert
     - Mock `supabase` — insert rejects, verify no throw
@@ -29,7 +29,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
     - Mock `supabase` — `fetchAllTimeStats` fetch throws, verify error propagates
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [~] 2. Wire `stats.js` hooks into `gameUpdate.js` and `bonuses.js`
+- [-] 2. Wire `stats.js` hooks into `gameUpdate.js` and `bonuses.js`
   - In `gameUpdate.js`: import `onNearMiss`, `onComboUpdate`, `onComboBank` from `stats.js`
   - Pass `onNearMiss` alongside `triggerNearMiss` in the `checkNearMisses` call (wrap both in a single callback)
   - Call `onComboUpdate(state.comboMultiplier)` each frame when `comboMultiplier > 1.0` (at the same site as the existing check)

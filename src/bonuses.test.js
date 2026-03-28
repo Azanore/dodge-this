@@ -2,8 +2,13 @@
 // Related: bonuses.js, collision.js
 // Tests Properties 9, 10, 11 from design.md
 
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, beforeEach, vi } from 'vitest';
 import * as fc from 'fast-check';
+
+vi.mock('./supabase.js', () => ({
+  supabase: { auth: { getUser: vi.fn() }, from: vi.fn() }
+}));
+
 import { collectBonus, updateEffects, trySpawnBonus } from './bonuses.js';
 import { checkPlayerBonusPickups } from './collision.js';
 import { recomputeZones } from './zones.js';
