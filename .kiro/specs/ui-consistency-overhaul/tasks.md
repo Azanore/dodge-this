@@ -100,7 +100,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - Verify all `.htp-panel` instances share the same background (`#0d0d1a`), border, and padding — already present in the shared class, confirm `#run-stats-panel` matches after task 9
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-  - [~] 11.1 Write property test for panel background consistency
+  - [-] 11.1 Write property test for panel background consistency
     - **Property 8: Panel backgrounds use consistent color**
     - **Validates: Requirements 10.6**
 

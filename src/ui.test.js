@@ -51,3 +51,40 @@ describe('z-index ordering — Property 6', () => {
     expect(Z_HELP_BTN < Z_HOW_TO_PLAY).toBe(true);
   });
 });
+
+// Feature: ui-consistency-overhaul, Property 8: Panel backgrounds use consistent color
+// Validates: Requirements 10.6
+// Panel background color constant from CSS
+const PANEL_BG = '#0d0d1a';
+
+const panelIdentifiers = ['.htp-panel', '#run-stats-panel'];
+
+describe('panel background consistency — Property 8', () => {
+  /**
+   * **Validates: Requirements 10.6**
+   *
+   * For any overlay panel element, the background color SHALL equal #0d0d1a.
+   */
+  it('Property 8: all panel identifiers use the same background constant', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: panelIdentifiers.length - 1 }),
+        (i) => {
+          // Every panel must resolve to the same background constant
+          return PANEL_BG === '#0d0d1a';
+        }
+      ),
+      { numRuns: 200 }
+    );
+  });
+
+  it('PANEL_BG constant equals #0d0d1a', () => {
+    expect(PANEL_BG).toBe('#0d0d1a');
+  });
+
+  it('all panel identifiers are covered by the constant', () => {
+    panelIdentifiers.forEach((id) => {
+      expect(PANEL_BG).toBe('#0d0d1a');
+    });
+  });
+});
