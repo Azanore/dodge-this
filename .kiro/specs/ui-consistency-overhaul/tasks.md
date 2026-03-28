@@ -93,18 +93,18 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 6: z-index ordering is correct across all overlays**
     - **Validates: Requirements 9.2, 9.3, 9.4**
 
-- [-] 11. Visual polish — buttons, panels, hover states
+- [x] 11. Visual polish — buttons, panels, hover states
   - Update `.overlay-btn` in `index.html` to add a visible border (`border: 1px solid rgba(255,255,255,0.15)`) and consistent hover state (neon-tinted background instead of plain opacity)
   - Update `.overlay-btn.primary` to use cyan border/glow (`border-color: #00eeff; box-shadow: 0 0 8px rgba(0,238,255,0.3)`) instead of plain `#2255cc` fill
   - Verify `.diff-btn.selected` and `.lb-tab.selected` use the same treatment (cyan border + `rgba(0,238,255,0.08)` background) — already present, confirm no divergence
   - Verify all `.htp-panel` instances share the same background (`#0d0d1a`), border, and padding — already present in the shared class, confirm `#run-stats-panel` matches after task 9
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-  - [-] 11.1 Write property test for panel background consistency
+  - [x] 11.1 Write property test for panel background consistency
     - **Property 8: Panel backgrounds use consistent color**
     - **Validates: Requirements 10.6**
 
-- [~] 12. Final checkpoint — ensure all tests pass
+- [-] 12. Final checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

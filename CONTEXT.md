@@ -233,6 +233,19 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 19 — UI consistency overhaul
+- Removed `renderStartScreen` dead code from `renderer.js` and `main.js`
+- Exported `BONUS_COLORS` from `renderer.js`, removed duplicate from `hud.js`
+- Fixed listener leak in `gameOver.js` — promoted listeners to module-level, exported `cleanup()`
+- Extracted `isAnyModalOpen` helper in `main.js`
+- Consolidated keydown listeners into single `KeydownRegistry` in `main.js`
+- Formalized `syncHelpBtn` call sites
+- Adopted `.open` class pattern for `run-stats-panel`
+- Extracted inline styles to CSS classes in `index.html`
+- Fixed z-index scale: `difficulty-screen: 10`, `overlay: 20`, `help-btn: 25`, `how-to-play: 30`
+- Applied visual polish to overlay buttons (border, cyan primary glow, neon hover states)
+- Added 8 property-based tests covering all correctness properties (Properties 1–8)
+
 ### Session 18 — Leaderboard
 - `fetchLeaderboard(difficulty)` added to `src/stats.js` — initially queried top 10 runs joined with profiles, replaced with Supabase RPC `get_leaderboard(diff)` using `DISTINCT ON (user_id)` to show one entry per player (personal best only)
 - `#leaderboard-btn` added to difficulty screen (public, no auth required)
