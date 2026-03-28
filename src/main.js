@@ -367,7 +367,7 @@ async function loadLeaderboard(difficulty) {
     const rows = await fetchLeaderboard(difficulty);
     if (!rows.length) { lbList.textContent = 'No runs yet for this difficulty.'; return; }
     lbList.innerHTML = rows.map((r, i) => {
-      const name = r.profiles?.username ?? 'Anonymous';
+      const name = r.username ?? 'Anonymous';
       const score = Math.round(r.score);
       const time = (r.elapsed_ms / 1000).toFixed(1) + 's';
       const rankColor = i === 0 ? '#ffe600' : i === 1 ? '#aaa' : i === 2 ? '#cd7f32' : '#555';

@@ -67,14 +67,9 @@ export async function insertRun(state) {
   }
 }
 
-// Fetches top 10 runs for a given difficulty, joined with profiles for username — throws on error
+// Fetches top 10 best scores per player for a given difficulty via RPC — throws on error
 export async function fetchLeaderboard(difficulty) {
-  const { data, error } = await supabase
-    .from('runs')
-    .select('score, elapsed_ms, profiles(username)')
-    .eq('difficulty', difficulty)
-    .order('score', { ascending: false })
-    .limit(10);
+  const { data, error } = await supabase.rpc('get_leaderboard', { diff: difficulty });
   if (error) throw error;
   return data;
 }
