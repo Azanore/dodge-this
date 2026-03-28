@@ -72,7 +72,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - In the `update` function's death handler, replace `panel.style.display = 'none'` with `panel.classList.remove('open')`
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [~] 8.1 Write property test for run-stats-panel toggle
+  - [-] 8.1 Write property test for run-stats-panel toggle
     - **Property 3: run-stats-panel toggle uses .open class exclusively**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 

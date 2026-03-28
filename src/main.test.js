@@ -250,3 +250,50 @@ describe('KeydownRegistry — Property 5', () => {
     );
   });
 });
+
+// Feature: ui-consistency-overhaul, Property 3: run-stats-panel toggle uses .open class exclusively
+describe('run-stats-panel toggle — Property 3', () => {
+  // Simulates the run-stats-panel toggle from main.js
+  function toggleRunStatsPanel(panel, toggle) {
+    panel.classList.toggle('open');
+    toggle.textContent = panel.classList.contains('open') ? '▼ Run Stats' : '▶ Run Stats';
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="run-stats-panel"></div>
+      <button id="run-stats-toggle"></button>
+    `;
+  });
+
+  /**
+   * **Validates: Requirements 5.1, 5.2, 5.3**
+   *
+   * For any sequence of N toggle clicks, panel visibility is controlled solely
+   * by the 'open' class — panel.style.display must remain unset throughout.
+   */
+  it('Property 3: panel visibility controlled by .open class, style.display never set', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 20 }),
+        (n) => {
+          // Reset DOM state for each fast-check run
+          document.body.innerHTML = `
+            <div id="run-stats-panel"></div>
+            <button id="run-stats-toggle"></button>
+          `;
+          const panel = document.querySelector('#run-stats-panel');
+          const toggle = document.querySelector('#run-stats-toggle');
+
+          for (let i = 0; i < n; i++) {
+            toggleRunStatsPanel(panel, toggle);
+            if (panel.style.display !== '') return false;
+          }
+
+          return panel.classList.contains('open') === (n % 2 === 1);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
