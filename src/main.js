@@ -8,7 +8,7 @@ import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
-import { render, renderStartScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
+import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB } from './gameOver.js';
 import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard } from './stats.js';
 import { supabase } from './supabase.js';
@@ -69,7 +69,7 @@ function update(delta) {
 
 function renderFrame() {
   if (state.status === 'dead' && !isShaking()) return;
-  if (state.status === 'start') { render(ctx, state, lastDelta); renderStartScreen(ctx); return; }
+  if (state.status === 'start') { render(ctx, state, lastDelta); return; }
   if (state.status === 'paused') return;
   render(ctx, state, lastDelta);
 }

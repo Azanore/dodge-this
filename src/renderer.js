@@ -204,19 +204,6 @@ function drawObstacle(ctx, obs) {
   (OBSTACLE_DRAW[obs.type] ?? drawBall)(ctx, obs, color);
 }
 
-// Renders the start screen overlay — title only; difficulty/PB shown in HTML overlay
-export function renderStartScreen(ctx) {
-  const cw = ctx.canvas.width;
-  const ch = ctx.canvas.height;
-  const cx = cw / 2;
-
-  ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.0)'; // transparent — HTML overlay handles the UI
-  ctx.fillRect(0, 0, cw, ch);
-  ctx.restore();
-}
-
-
 export function render(ctx, state, delta) {
   const cw = ctx.canvas.width;
   const ch = ctx.canvas.height;
