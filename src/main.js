@@ -281,7 +281,7 @@ const authBtn = document.getElementById('auth-btn');
 supabase.auth.onAuthStateChange((_event, session) => {
   // Clean OAuth token fragment from URL after redirect
   if (window.location.hash.includes('access_token')) {
-    history.replaceState(null, '', window.location.pathname);
+    history.replaceState(null, '', window.location.origin + window.location.pathname);
   }
   document.getElementById('stats-btn').style.display = session ? 'inline-block' : 'none';
   if (session?.user) {
@@ -301,7 +301,7 @@ authBtn.addEventListener('click', async () => {
   } else {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href }
+      options: { redirectTo: window.location.origin }
     });
   }
 });
