@@ -84,16 +84,16 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - Move `#run-stats-panel` layout styles (background, border, border-radius, padding, font, color, min-width) to a CSS rule in the stylesheet; remove them from the inline `style` attribute
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [-] 10. Fix z-index scale
+- [x] 10. Fix z-index scale
   - In `index.html` stylesheet, set explicit z-index values: `#difficulty-screen` → 10, `.overlay` base → 20, `#help-btn` → 25, `#how-to-play` → 30
   - Verify no other overlay has a conflicting z-index that breaks the ordering
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [-] 10.1 Write property test for z-index ordering
+  - [x] 10.1 Write property test for z-index ordering
     - **Property 6: z-index ordering is correct across all overlays**
     - **Validates: Requirements 9.2, 9.3, 9.4**
 
-- [~] 11. Visual polish — buttons, panels, hover states
+- [-] 11. Visual polish — buttons, panels, hover states
   - Update `.overlay-btn` in `index.html` to add a visible border (`border: 1px solid rgba(255,255,255,0.15)`) and consistent hover state (neon-tinted background instead of plain opacity)
   - Update `.overlay-btn.primary` to use cyan border/glow (`border-color: #00eeff; box-shadow: 0 0 8px rgba(0,238,255,0.3)`) instead of plain `#2255cc` fill
   - Verify `.diff-btn.selected` and `.lb-tab.selected` use the same treatment (cyan border + `rgba(0,238,255,0.08)` background) — already present, confirm no divergence

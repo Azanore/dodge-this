@@ -88,15 +88,16 @@
       margin-top: 8px;
       padding: 12px 0;
       width: 180px;
-      border: none;
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 8px;
       font: 16px monospace;
       cursor: pointer;
       color: #fff;
-      transition: opacity 0.15s;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .overlay-btn:hover { opacity: 0.85; }
-    .overlay-btn.primary { background: #2255cc; }
+    .overlay-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); }
+    .overlay-btn.primary { background: rgba(0,238,255,0.12); border-color: #00eeff; box-shadow: 0 0 8px rgba(0,238,255,0.3); }
+    .overlay-btn.primary:hover { background: rgba(0,238,255,0.22); border-color: #00eeff; }
 
     .btn-row {
       display: flex;
