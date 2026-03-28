@@ -234,11 +234,15 @@ Run: `npm test`
 ## Changelog
 
 ### Session 18 — Leaderboard
-- `fetchLeaderboard(difficulty)` added to `src/stats.js` — queries top 10 runs joined with `profiles` for username, ordered by score desc
+- `fetchLeaderboard(difficulty)` added to `src/stats.js` — initially queried top 10 runs joined with profiles, replaced with Supabase RPC `get_leaderboard(diff)` using `DISTINCT ON (user_id)` to show one entry per player (personal best only)
 - `#leaderboard-btn` added to difficulty screen (public, no auth required)
 - `#leaderboard-screen` overlay added — Easy/Normal/Hard tabs, each fetches and renders top 10 on click
 - Rows show rank (gold/silver/bronze for top 3), username, score in pts, elapsed time
 - Escape and backdrop click close the overlay; wired into existing Escape handler in `main.js`
+- Fixed leaderboard tabs bleeding into difficulty selector — removed `.diff-btn` class from `.lb-tab`, tabs are now fully isolated
+- Fixed loading flash — "Loading..." only shown after 150ms delay, cancelled if data arrives first
+- Fixed stats-btn layout shift — switched from `display:none/inline-block` to `visibility:hidden/visible` so slot is always reserved
+- Redesigned main menu: difficulty buttons now horizontal row, better vertical spacing, Leaderboard above Stats (both full-width stacked), auth at bottom
 
 ### Session 17 — Google OAuth auth + stats polish
 - Added `#auth-btn` to difficulty screen — "Sign in with Google" / "Name — Sign out" toggle
