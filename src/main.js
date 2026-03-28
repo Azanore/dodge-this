@@ -124,13 +124,17 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
   });
 });
 
+// Returns true if any modal overlay is currently open
+function isAnyModalOpen() {
+  return ['#how-to-play', '#leaderboard-screen', '#stats-screen']
+    .some(id => document.querySelector(id).classList.contains('open'));
+}
+
 // Start action — Play button or any key (except Escape) from 'start' state
 function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
-  if (howToPlayEl.classList.contains('open')) return;
-  if (document.getElementById('leaderboard-screen').classList.contains('open')) return;
-  if (document.getElementById('stats-screen').classList.contains('open')) return;
+  if (isAnyModalOpen()) return;
   document.getElementById('play-btn').removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   diffScreenEl.classList.remove('open');

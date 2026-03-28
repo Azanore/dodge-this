@@ -25,18 +25,18 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 4: BONUS_COLORS identity across modules**
     - **Validates: Requirements 7.4**
 
-- [-] 3. Fix listener leak in gameOver.js
+- [x] 3. Fix listener leak in gameOver.js
   - Promote `_onClickRestart` and `_onKey` to module-level variables (initialized to `null`)
   - Rewrite `showGameOver` to assign those variables and register listeners using them
   - Export a `cleanup()` function that removes both listeners and nulls the variables; guard with null checks so double-call is safe
   - In `src/main.js`, import `cleanup` from `./gameOver.js` and call it at the top of `goToMenu()` before resetting state
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [-] 3.1 Write property test for cleanup() idempotency
+  - [x] 3.1 Write property test for cleanup() idempotency
     - **Property 2: cleanup() removes all listeners and is safe to call repeatedly**
     - **Validates: Requirements 3.1, 3.3, 3.4**
 
-- [~] 4. Extract isAnyModalOpen helper
+- [-] 4. Extract isAnyModalOpen helper
   - Add `function isAnyModalOpen()` in `src/main.js` that checks `.open` on `#how-to-play`, `#leaderboard-screen`, and `#stats-screen`
   - Replace the three individual `classList.contains('open')` checks in `onStartAction` with a single `isAnyModalOpen()` call
   - Preserve the `e.key === 'Escape'` early return in `onStartAction` as a separate guard — do not fold it into `isAnyModalOpen()`
