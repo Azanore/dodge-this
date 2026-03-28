@@ -7,8 +7,6 @@ import { toggleHitboxes } from './renderer.js';
 // Slider definitions: [key path, min, max, step]
 const SLIDERS = [
   { label: 'Grace Period (ms)', path: ['gracePeriod'], min: 0, max: 10000, step: 100 },
-  { label: 'Max Obstacles', path: ['difficulty', 'maxObstaclesOnScreen'], min: 1, max: 100, step: 1 },
-  { label: 'Max Speed Mult', path: ['maxSpeedMultiplier'], min: 1, max: 10, step: 0.1 },
 ];
 
 // Read a nested config value by path array
