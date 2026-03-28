@@ -76,7 +76,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 3: run-stats-panel toggle uses .open class exclusively**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 
-- [-] 9. Extract inline styles to CSS classes in index.html
+- [x] 9. Extract inline styles to CSS classes in index.html
   - Add `.overlay-secondary-btn` class (`background:#222`) and apply it to Leaderboard, Stats, Menu, and Go-to-menu buttons (replacing `style="background:#222"`)
   - Add `.diff-btn-row` class (`display:flex;gap:8px;margin-bottom:8px`) and apply it to the difficulty button container (replacing the inline `style` on that `.btn-row`)
   - Add `.auth-link` class with the full inline style from `#auth-btn` and apply it (removing the inline `style` attribute)
@@ -84,7 +84,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - Move `#run-stats-panel` layout styles (background, border, border-radius, padding, font, color, min-width) to a CSS rule in the stylesheet; remove them from the inline `style` attribute
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [~] 10. Fix z-index scale
+- [-] 10. Fix z-index scale
   - In `index.html` stylesheet, set explicit z-index values: `#difficulty-screen` → 10, `.overlay` base → 20, `#help-btn` → 25, `#how-to-play` → 30
   - Verify no other overlay has a conflicting z-index that breaks the ordering
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
