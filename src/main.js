@@ -51,18 +51,11 @@ function update(delta) {
       showGameOver(state, onRestart);
       insertRun(state);
       const { nearMisses, bonusesCollected, maxCombo, comboScore } = getRunStats();
-      document.getElementById('rs-score').textContent = `${Math.round(state.score)} pts`;
-      document.getElementById('rs-time').textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
       document.getElementById('rs-difficulty').textContent = state.difficulty;
       document.getElementById('rs-near-misses').textContent = nearMisses;
       document.getElementById('rs-bonuses').textContent = bonusesCollected;
       document.getElementById('rs-max-combo').textContent = `x${maxCombo.toFixed(1)}`;
       document.getElementById('rs-combo-score').textContent = Math.round(comboScore);
-      // Collapse panel on each new game-over open
-      const panel = document.getElementById('run-stats-panel');
-      const toggle = document.getElementById('run-stats-toggle');
-      panel.classList.remove('open');
-      toggle.textContent = '▶ Run Stats';
     }, 450);
   }
 }
@@ -271,14 +264,6 @@ window.addEventListener('keydown', (e) => {
 
 renderFrame();
 syncHelpBtn();
-
-// Per-run stats panel toggle
-document.getElementById('run-stats-toggle').addEventListener('click', () => {
-  const panel = document.getElementById('run-stats-panel');
-  const toggle = document.getElementById('run-stats-toggle');
-  panel.classList.toggle('open');
-  toggle.textContent = panel.classList.contains('open') ? '▼ Run Stats' : '▶ Run Stats';
-});
 
 initConfigPanel(loop, onRestart, () => state.status);
 
