@@ -232,6 +232,15 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 16 — player-stats feature
+- `src/stats.js` module added: `resetRunStats`, `onNearMiss`, `onBonusCollected`, `onComboUpdate`, `onComboBank`, `getRunStats`, `insertRun`, `fetchAllTimeStats`
+- Per-run stats panel on game-over screen (`#run-stats-panel`, `#run-stats-toggle`) — collapsed by default, toggle expands/collapses
+- All-time stats overlay (`#stats-screen`) for authenticated players — opens via `#stats-btn` on difficulty screen, closes on Escape or backdrop click
+- `#stats-btn` visibility wired to `supabase.auth.onAuthStateChange` — shown only when logged in
+- `insertRun(state)` called fire-and-forget on death; `resetRunStats()` called on restart
+- Hooks wired: `onNearMiss` in `gameUpdate.js`, `onBonusCollected` in `bonuses.js`, `onComboUpdate`/`onComboBank` in `gameUpdate.js`
+- 20 tests in `stats.test.js`: 7 PBT properties (Properties 1–5, 6, 7) + 13 unit tests — all passing
+
 ### Session 15 — Backend setup
 - Created new Supabase project `dodge-this` (ref: `akhizydlqrfeeevwyflp`, EU Central)
 - Created 4 tables: `profiles`, `runs`, `achievements`, `user_achievements` — all with RLS enabled
