@@ -362,9 +362,10 @@ let lbActiveDiff = 'easy';
 async function loadLeaderboard(difficulty) {
   lbActiveDiff = difficulty;
   document.querySelectorAll('.lb-tab').forEach(t => t.classList.toggle('selected', t.dataset.diff === difficulty));
-  lbList.textContent = 'Loading...';
+  let loadingTimer = setTimeout(() => { lbList.textContent = 'Loading...'; }, 150);
   try {
     const rows = await fetchLeaderboard(difficulty);
+    clearTimeout(loadingTimer);
     if (!rows.length) { lbList.textContent = 'No runs yet for this difficulty.'; return; }
     lbList.innerHTML = rows.map((r, i) => {
       const name = r.username ?? 'Anonymous';
@@ -379,6 +380,7 @@ async function loadLeaderboard(difficulty) {
       </div>`;
     }).join('');
   } catch (_) {
+    clearTimeout(loadingTimer);
     lbList.textContent = 'Failed to load. Try again.';
   }
 }
