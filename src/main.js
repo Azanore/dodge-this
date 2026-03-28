@@ -129,6 +129,8 @@ function onStartAction(e) {
   if (state.status !== 'start') return;
   if (e.type === 'keydown' && e.key === 'Escape') return;
   if (howToPlayEl.classList.contains('open')) return;
+  if (document.getElementById('leaderboard-screen').classList.contains('open')) return;
+  if (document.getElementById('stats-screen').classList.contains('open')) return;
   document.getElementById('play-btn').removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);
   diffScreenEl.classList.remove('open');
