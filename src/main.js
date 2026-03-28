@@ -10,6 +10,7 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, renderStartScreen, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB } from './gameOver.js';
+import { resetRunStats, insertRun, getRunStats } from './stats.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
@@ -45,6 +46,20 @@ function update(delta) {
       loop.stop();
       syncHelpBtn();
       showGameOver(state, onRestart);
+      insertRun(state);
+      const { nearMisses, bonusesCollected, maxCombo, comboScore } = getRunStats();
+      document.getElementById('rs-score').textContent = `${Math.round(state.score)} pts`;
+      document.getElementById('rs-time').textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
+      document.getElementById('rs-difficulty').textContent = state.difficulty;
+      document.getElementById('rs-near-misses').textContent = nearMisses;
+      document.getElementById('rs-bonuses').textContent = bonusesCollected;
+      document.getElementById('rs-max-combo').textContent = `x${maxCombo.toFixed(1)}`;
+      document.getElementById('rs-combo-score').textContent = Math.round(comboScore);
+      // Collapse panel on each new game-over open
+      const panel = document.getElementById('run-stats-panel');
+      const toggle = document.getElementById('run-stats-toggle');
+      panel.style.display = 'none';
+      toggle.textContent = '▶ Run Stats';
     }, 450);
   }
 }
@@ -59,6 +74,7 @@ function renderFrame() {
 const loop = createGameLoop(update, renderFrame);
 
 function onRestart() {
+  resetRunStats();
   state = resetState(activeDifficulty);
   state.status = 'grace';
   state.graceRemaining = gameConfig.gracePeriod;
@@ -242,5 +258,14 @@ window.addEventListener('keydown', (e) => {
 
 renderFrame();
 syncHelpBtn();
+
+// Per-run stats panel toggle
+document.getElementById('run-stats-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('run-stats-panel');
+  const toggle = document.getElementById('run-stats-toggle');
+  const expanded = panel.style.display !== 'none';
+  panel.style.display = expanded ? 'none' : 'block';
+  toggle.textContent = expanded ? '▶ Run Stats' : '▼ Run Stats';
+});
 
 initConfigPanel(loop, onRestart, () => state.status);

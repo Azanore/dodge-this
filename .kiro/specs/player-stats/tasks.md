@@ -29,7 +29,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
     - Mock `supabase` — `fetchAllTimeStats` fetch throws, verify error propagates
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [-] 2. Wire `stats.js` hooks into `gameUpdate.js` and `bonuses.js`
+- [x] 2. Wire `stats.js` hooks into `gameUpdate.js` and `bonuses.js`
   - In `gameUpdate.js`: import `onNearMiss`, `onComboUpdate`, `onComboBank` from `stats.js`
   - Pass `onNearMiss` alongside `triggerNearMiss` in the `checkNearMisses` call (wrap both in a single callback)
   - Call `onComboUpdate(state.comboMultiplier)` each frame when `comboMultiplier > 1.0` (at the same site as the existing check)
@@ -37,7 +37,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
   - In `bonuses.js`: import `onBonusCollected` from `stats.js`; call it inside `collectBonus()`
   - _Requirements: 1.2, 1.3, 1.4, 1.5_
 
-- [~] 3. Add per-run stats panel HTML/CSS to `index.html` and wire toggle in `main.js`
+- [-] 3. Add per-run stats panel HTML/CSS to `index.html` and wire toggle in `main.js`
   - Append toggle button `#run-stats-toggle` and collapsible `#run-stats-panel` inside `#game-over-screen .overlay-panel`
   - Panel displays: score, time survived, difficulty, near-misses, bonuses collected, max combo, combo score
   - Panel collapsed (`display:none`) by default; toggle button shows `▶ Run Stats` / `▼ Run Stats`
@@ -45,7 +45,7 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
   - In `main.js`: populate panel values inside `showGameOver` timeout (after `insertRun`); wire toggle click handler
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-  - [~] 3.1 Write unit tests for per-run panel toggle behavior (Property 7)
+  - [-] 3.1 Write unit tests for per-run panel toggle behavior (Property 7)
     - **Property 7: Per-run panel toggle is a round-trip** — arbitrary initial state, toggle twice, verify same state
     - Panel collapsed by default when game-over screen opens
     - Toggle expands panel; second toggle collapses it

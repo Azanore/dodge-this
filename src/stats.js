@@ -37,6 +37,11 @@ export function onComboBank(amount) {
   comboScore += amount;
 }
 
+// Returns current run counter values — used by main.js to populate the per-run panel
+export function getRunStats() {
+  return { nearMisses, bonusesCollected, maxCombo, comboScore };
+}
+
 // Checks auth, inserts run record if authenticated — fire-and-forget, swallows errors
 export async function insertRun(state) {
   const { data } = await supabase.auth.getUser();

@@ -241,3 +241,67 @@ describe('fetchAllTimeStats', () => {
     await expect(fetchAllTimeStats()).rejects.toThrow('fetch failed');
   });
 });
+
+// ─── Per-Run Panel Toggle Tests ───────────────────────────────────────────────
+
+describe('per-run panel toggle', () => {
+  // Sets up minimal DOM with toggle button and panel
+  function setupDOM(initialDisplay = 'none') {
+    document.body.innerHTML = `
+      <button id="run-stats-toggle">▶ Run Stats</button>
+      <div id="run-stats-panel" style="display:${initialDisplay}"></div>
+    `;
+    return {
+      panel: document.getElementById('run-stats-panel'),
+      toggle: document.getElementById('run-stats-toggle')
+    };
+  }
+
+  // Simulates the toggle logic from main.js
+  function doToggle(panel, toggle) {
+    const expanded = panel.style.display !== 'none';
+    panel.style.display = expanded ? 'none' : 'block';
+    toggle.textContent = expanded ? '▶ Run Stats' : '▼ Run Stats';
+  }
+
+  it('panel is collapsed by default', () => {
+    const { panel } = setupDOM('none');
+    expect(panel.style.display).toBe('none');
+  });
+
+  it('toggle expands panel', () => {
+    const { panel, toggle } = setupDOM('none');
+    doToggle(panel, toggle);
+    expect(panel.style.display).toBe('block');
+    expect(toggle.textContent).toBe('▼ Run Stats');
+  });
+
+  it('second toggle collapses panel', () => {
+    const { panel, toggle } = setupDOM('none');
+    doToggle(panel, toggle);
+    doToggle(panel, toggle);
+    expect(panel.style.display).toBe('none');
+    expect(toggle.textContent).toBe('▶ Run Stats');
+  });
+
+  /**
+   * **Feature: player-stats, Property 7: Per-run panel toggle is a round-trip**
+   * Validates: Requirements 3.3, 3.4
+   */
+  it('Property 7: toggle twice returns panel to original state', () => {
+    fc.assert(
+      fc.property(
+        fc.boolean(),
+        (startExpanded) => {
+          const initialDisplay = startExpanded ? 'block' : 'none';
+          const { panel, toggle } = setupDOM(initialDisplay);
+          const before = panel.style.display;
+          doToggle(panel, toggle);
+          doToggle(panel, toggle);
+          expect(panel.style.display).toBe(before);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});

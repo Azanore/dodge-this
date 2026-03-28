@@ -198,6 +198,16 @@
       <button id="restart-btn" class="overlay-btn primary">Restart</button>
       <div class="overlay-label">or press R</div>
       <button id="go-menu-btn" class="overlay-btn" style="background:#222;margin-top:4px">Menu</button>
+      <button id="run-stats-toggle" class="overlay-label" style="cursor:pointer;margin-top:8px;background:none;border:none;color:#666;font:14px monospace">▶ Run Stats</button>
+      <div id="run-stats-panel" style="display:none;background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 20px;font:12px monospace;color:#aaa;text-align:left;min-width:200px">
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Score</span><span id="rs-score" style="color:#fff"></span></div>
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Time</span><span id="rs-time" style="color:#fff"></span></div>
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Difficulty</span><span id="rs-difficulty" style="color:#fff"></span></div>
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Near Misses</span><span id="rs-near-misses" style="color:#00eeff"></span></div>
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Bonuses</span><span id="rs-bonuses" style="color:#00ff88"></span></div>
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Max Combo</span><span id="rs-max-combo" style="color:#ffe600"></span></div>
+        <div style="display:flex;justify-content:space-between;gap:24px"><span>Combo Score</span><span id="rs-combo-score" style="color:#ffe600"></span></div>
+      </div>
     </div>
   </div>
 
