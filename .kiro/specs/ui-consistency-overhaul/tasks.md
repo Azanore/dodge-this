@@ -57,12 +57,12 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 5: Key guard conditions preserved**
     - **Validates: Requirements 1.4**
 
-- [-] 6. Formalize syncHelpBtn call sites
+- [x] 6. Formalize syncHelpBtn call sites
   - Audit all locations in `src/main.js` where `state.status` is mutated; confirm `syncHelpBtn()` is called at each one (start, pause, resume, restart, go-to-menu, death)
   - Remove any direct `helpBtn.style.display` assignments that exist outside `syncHelpBtn`
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [~] 7. Checkpoint — ensure all tests pass
+- [-] 7. Checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [~] 8. Adopt .open class pattern for run-stats-panel
