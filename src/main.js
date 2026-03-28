@@ -279,6 +279,10 @@ initConfigPanel(loop, onRestart, () => state.status);
 const authBtn = document.getElementById('auth-btn');
 
 supabase.auth.onAuthStateChange((_event, session) => {
+  // Clean OAuth token fragment from URL after redirect
+  if (window.location.hash.includes('access_token')) {
+    history.replaceState(null, '', window.location.pathname);
+  }
   document.getElementById('stats-btn').style.display = session ? 'inline-block' : 'none';
   if (session?.user) {
     const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Signed in';
