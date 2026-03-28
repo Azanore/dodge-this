@@ -73,8 +73,9 @@ See the Backlog section below.
 3. ~~Value tuning~~ — done session 7
 4. ~~**Difficulty presets**~~ — done session 14. Easy/normal/hard. Existing scores migrated to hard.
 5. ~~Sound effects~~ — done session 8 & 13. Volume slider deliberately excluded — OS/browser controls are sufficient for a game this size.
-6. **Statistics + Auth + Leaderboard + Achievements** — next major phase. Build order: Supabase setup → stats tracking → auth (Google OAuth) → leaderboard → achievements. Stats comes first because achievements are consumers of stats data.
-7. **Achievements** — after statistics and auth. Conditions evaluate against the runs table.
+6. ~~**Statistics + Auth**~~ — done sessions 15–17. Stats tracking, Google OAuth sign in/out, run persistence, all-time stats overlay.
+7. **Leaderboard** — next. Public per-difficulty top scores from the `runs` table.
+8. **Achievements** — after leaderboard. Conditions evaluate against the runs table.
 
 ---
 
@@ -231,6 +232,20 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 17 — Google OAuth auth + stats polish
+- Added `#auth-btn` to difficulty screen — "Sign in with Google" / "Name — Sign out" toggle
+- Wired `supabase.auth.signInWithOAuth({ provider: 'google' })` and `supabase.auth.signOut()`
+- `onAuthStateChange` drives both `#stats-btn` visibility and `#auth-btn` label/color
+- Fixed OAuth redirect loop: use `window.location.origin` as `redirectTo`, clean `access_token` hash via `history.replaceState` after callback
+- Fixed `insertRun` 403: added `user_id: data.user.id` to insert payload (RLS requires it)
+- Added 5s minimum run threshold to `insertRun` — runs under 5s are not recorded
+- Persisted last selected difficulty to `localStorage` (`dodge_difficulty` key) — restored on page load
+- Fixed stale config warnings: removed `maxSpeedMultiplier` and `difficulty` checks from `validateConfig` (moved to `difficultyPresets` in session 14)
+- Fixed stale config panel crash: removed `difficulty.maxObstaclesOnScreen` and `maxSpeedMultiplier` sliders from `configPanel.js`
+- Fixed stats counter leak: `resetRunStats()` now called in `goToMenu()` as well as `onRestart()`
+- Stats overlay restyled to match how-to-play panel (`.htp-panel`, section headers, backdrop)
+- `#stats-message` given fixed height to prevent layout shift on "no stats" message
 
 ### Session 16 — player-stats feature
 - `src/stats.js` module added: `resetRunStats`, `onNearMiss`, `onBonusCollected`, `onComboUpdate`, `onComboBank`, `getRunStats`, `insertRun`, `fetchAllTimeStats`
