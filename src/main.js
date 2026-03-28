@@ -9,7 +9,7 @@ import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
-import { showGameOver, getPB } from './gameOver.js';
+import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
 import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard } from './stats.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
@@ -187,6 +187,7 @@ const musicBtn = document.getElementById('music-btn');
 
 // Returns to difficulty screen — resets state, stops loop and music, re-shows selector
 function goToMenu() {
+  cleanupGameOver();
   loop.stop();
   stopMusic(); // AUDIO
   resetRunStats();

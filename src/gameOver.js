@@ -47,6 +47,9 @@ export function updatePB(score, elapsed, difficulty) {
 // Reads PB for a given difficulty — used by start screen
 export function getPB(difficulty) { return readPB(difficulty); }
 
+let _onClickRestart = null;
+let _onKey = null;
+
 // Shows the game over HTML overlay, populates stats, wires restart
 export function showGameOver(state, onRestart) {
   const { pb, isNewBest } = updatePB(state.score, state.elapsed, state.difficulty);
@@ -67,15 +70,21 @@ export function showGameOver(state, onRestart) {
 
   el.classList.add('open');
 
-  function cleanup() {
-    el.classList.remove('open');
-    document.getElementById('restart-btn').removeEventListener('click', onClickRestart);
-    window.removeEventListener('keydown', onKey);
+  _onClickRestart = () => { el.classList.remove('open'); cleanup(); onRestart(); };
+  _onKey = (e) => { if (e.key === 'r' || e.key === 'R') { el.classList.remove('open'); cleanup(); onRestart(); } };
+
+  document.getElementById('restart-btn').addEventListener('click', _onClickRestart);
+  window.addEventListener('keydown', _onKey);
+}
+
+// Removes registered listeners — safe to call multiple times
+export function cleanup() {
+  if (_onClickRestart) {
+    document.getElementById('restart-btn').removeEventListener('click', _onClickRestart);
+    _onClickRestart = null;
   }
-
-  function onClickRestart() { cleanup(); onRestart(); }
-  function onKey(e) { if (e.key === 'r' || e.key === 'R') { cleanup(); onRestart(); } }
-
-  document.getElementById('restart-btn').addEventListener('click', onClickRestart);
-  window.addEventListener('keydown', onKey);
+  if (_onKey) {
+    window.removeEventListener('keydown', _onKey);
+    _onKey = null;
+  }
 }

@@ -16,16 +16,16 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 7: render() is called for start status**
     - **Validates: Requirements 6.3, 6.4**
 
-- [-] 2. Deduplicate BONUS_COLORS
+- [x] 2. Deduplicate BONUS_COLORS
   - Add `export` to the `BONUS_COLORS` const in `src/renderer.js`
   - In `src/hud.js`, remove the local `BONUS_COLORS` const and add `import { BONUS_COLORS } from './renderer.js'`
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [-] 2.1 Write property test for BONUS_COLORS identity
+  - [x] 2.1 Write property test for BONUS_COLORS identity
     - **Property 4: BONUS_COLORS identity across modules**
     - **Validates: Requirements 7.4**
 
-- [~] 3. Fix listener leak in gameOver.js
+- [-] 3. Fix listener leak in gameOver.js
   - Promote `_onClickRestart` and `_onKey` to module-level variables (initialized to `null`)
   - Rewrite `showGameOver` to assign those variables and register listeners using them
   - Export a `cleanup()` function that removes both listeners and nulls the variables; guard with null checks so double-call is safe
