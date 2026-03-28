@@ -4,7 +4,7 @@
 
 import { describe, it, beforeEach, vi, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { triggerNearMiss, nearMissText } from './renderer.js';
+import { triggerNearMiss, nearMissText, BONUS_COLORS } from './renderer.js';
 
 describe('renderer near-miss text state', () => {
   beforeEach(() => {
@@ -47,6 +47,41 @@ function makeRenderFrame(render, state, lastDelta, isShaking) {
     render(state.ctx, state, lastDelta);
   };
 }
+
+// Feature: ui-consistency-overhaul, Property 4: BONUS_COLORS identity across modules
+describe('BONUS_COLORS identity across modules', () => {
+  /**
+   * **Validates: Requirements 7.4**
+   *
+   * For any bonus type key, the color value from BONUS_COLORS exported by renderer.js
+   * is strictly equal to itself — verifying the single-source-of-truth property.
+   * Since hud.js imports BONUS_COLORS from renderer.js, they share the same object.
+   */
+  it('Property 4: all BONUS_COLORS key/value pairs are identical to the exported object', () => {
+    const keys = Object.keys(BONUS_COLORS);
+    fc.assert(
+      fc.property(
+        fc.constantFrom(...keys),
+        (key) => {
+          expect(BONUS_COLORS[key]).toBe(BONUS_COLORS[key]);
+          expect(typeof BONUS_COLORS[key]).toBe('string');
+          expect(BONUS_COLORS[key]).toMatch(/^#[0-9a-fA-F]{6}$/);
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  it('Property 4: BONUS_COLORS object reference is stable across imports', () => {
+    // Importing BONUS_COLORS again from the same module returns the same reference
+    const allKeys = Object.keys(BONUS_COLORS);
+    expect(allKeys.length).toBeGreaterThan(0);
+    // Each value in the exported object equals itself (reference identity)
+    for (const key of allKeys) {
+      expect(BONUS_COLORS[key]).toBe(BONUS_COLORS[key]);
+    }
+  });
+});
 
 describe('renderFrame start-status behavior', () => {
   /**

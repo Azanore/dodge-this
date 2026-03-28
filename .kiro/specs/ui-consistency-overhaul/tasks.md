@@ -21,7 +21,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - In `src/hud.js`, remove the local `BONUS_COLORS` const and add `import { BONUS_COLORS } from './renderer.js'`
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [~] 2.1 Write property test for BONUS_COLORS identity
+  - [-] 2.1 Write property test for BONUS_COLORS identity
     - **Property 4: BONUS_COLORS identity across modules**
     - **Validates: Requirements 7.4**
 
