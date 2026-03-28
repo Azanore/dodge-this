@@ -168,8 +168,12 @@
       margin-bottom: 8px;
     }
 
-    #run-stats-panel { display: none; }
+    #run-stats-panel { display: none; background: #0d0d1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 20px; font: 12px monospace; color: #aaa; text-align: left; min-width: 200px; }
     #run-stats-panel.open { display: block; }
+
+    .overlay-secondary-btn { background: #222; }
+    .diff-btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .auth-link { cursor: pointer; background: none; border: none; color: #888; font: 12px monospace; margin-top: 8px; transition: color 0.15s; }
   </style>
 </head>
 <body>
@@ -181,16 +185,16 @@
     <div class="overlay-panel">
       <div class="overlay-title" style="color:#00eeff;text-shadow:0 0 20px #00eeff;font-size:56px;margin-bottom:4px">DODGE</div>
       <div id="diff-pb" class="overlay-pb" style="min-height:1.2em;margin-bottom:16px"></div>
-      <div class="btn-row" style="gap:8px;margin-bottom:8px">
+      <div class="diff-btn-row">
         <button class="diff-btn" data-diff="easy" style="width:100px;padding:8px 0">Easy</button>
         <button class="diff-btn" data-diff="normal" style="width:100px;padding:8px 0">Normal</button>
         <button class="diff-btn" data-diff="hard" style="width:100px;padding:8px 0">Hard</button>
       </div>
       <button id="play-btn" class="overlay-btn primary" style="margin-top:4px">Play</button>
       <div class="overlay-label" style="margin-bottom:16px">or press any key</div>
-      <button id="leaderboard-btn" class="overlay-btn" style="background:#222">Leaderboard</button>
-      <button id="stats-btn" class="overlay-btn" style="visibility:hidden;background:#222">Stats</button>
-      <button id="auth-btn" class="overlay-label" style="cursor:pointer;background:none;border:none;color:#888;font:12px monospace;margin-top:8px;transition:color 0.15s">Sign in with Google</button>
+      <button id="leaderboard-btn" class="overlay-btn overlay-secondary-btn">Leaderboard</button>
+      <button id="stats-btn" class="overlay-btn overlay-secondary-btn" style="visibility:hidden">Stats</button>
+      <button id="auth-btn" class="auth-link">Sign in with Google</button>
     </div>
   </div>
 
@@ -203,7 +207,7 @@
         <button id="sfx-btn" class="toggle-btn">SFX: ON</button>
         <button id="music-btn" class="toggle-btn">MUSIC: ON</button>
       </div>
-      <button id="pause-menu-btn" class="overlay-btn" style="background:#222;margin-top:4px">Menu</button>
+      <button id="pause-menu-btn" class="overlay-btn overlay-secondary-btn" style="margin-top:4px">Menu</button>
     </div>
   </div>
 
@@ -215,9 +219,9 @@
       <div id="go-pb" class="overlay-pb"></div>
       <button id="restart-btn" class="overlay-btn primary">Restart</button>
       <div class="overlay-label">or press R</div>
-      <button id="go-menu-btn" class="overlay-btn" style="background:#222;margin-top:4px">Menu</button>
+      <button id="go-menu-btn" class="overlay-btn overlay-secondary-btn" style="margin-top:4px">Menu</button>
       <button id="run-stats-toggle" class="overlay-label" style="cursor:pointer;margin-top:8px;background:none;border:none;color:#666;font:14px monospace">▶ Run Stats</button>
-      <div id="run-stats-panel" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 20px;font:12px monospace;color:#aaa;text-align:left;min-width:200px">
+      <div id="run-stats-panel">
         <div style="display:flex;justify-content:space-between;gap:24px"><span>Score</span><span id="rs-score" style="color:#fff"></span></div>
         <div style="display:flex;justify-content:space-between;gap:24px"><span>Time</span><span id="rs-time" style="color:#fff"></span></div>
         <div style="display:flex;justify-content:space-between;gap:24px"><span>Difficulty</span><span id="rs-difficulty" style="color:#fff"></span></div>

@@ -65,18 +65,18 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
 - [x] 7. Checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 8. Adopt .open class pattern for run-stats-panel
+- [x] 8. Adopt .open class pattern for run-stats-panel
   - In `index.html`, add CSS rules: `#run-stats-panel { display: none; }` and `#run-stats-panel.open { display: block; }`
   - Remove the `style="display:none"` inline attribute from `#run-stats-panel` in `index.html`
   - In `src/main.js`, replace the toggle handler's `panel.style.display` assignments with `panel.classList.toggle('open')` and update the toggle text to read from `panel.classList.contains('open')`
   - In the `update` function's death handler, replace `panel.style.display = 'none'` with `panel.classList.remove('open')`
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [-] 8.1 Write property test for run-stats-panel toggle
+  - [x] 8.1 Write property test for run-stats-panel toggle
     - **Property 3: run-stats-panel toggle uses .open class exclusively**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 
-- [~] 9. Extract inline styles to CSS classes in index.html
+- [-] 9. Extract inline styles to CSS classes in index.html
   - Add `.overlay-secondary-btn` class (`background:#222`) and apply it to Leaderboard, Stats, Menu, and Go-to-menu buttons (replacing `style="background:#222"`)
   - Add `.diff-btn-row` class (`display:flex;gap:8px;margin-bottom:8px`) and apply it to the difficulty button container (replacing the inline `style` on that `.btn-row`)
   - Add `.auth-link` class with the full inline style from `#auth-btn` and apply it (removing the inline `style` attribute)
