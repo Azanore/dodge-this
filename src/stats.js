@@ -44,10 +44,12 @@ export function getRunStats() {
 
 // Checks auth, inserts run record if authenticated — fire-and-forget, swallows errors
 export async function insertRun(state) {
+  if (state.elapsed < 5000) return;
   const { data } = await supabase.auth.getUser();
   if (!data?.user) return;
 
   const payload = {
+    user_id: data.user.id,
     score: Math.round(state.score),
     elapsed_ms: Math.round(state.elapsed),
     difficulty: state.difficulty,
