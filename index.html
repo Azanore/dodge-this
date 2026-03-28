@@ -46,6 +46,8 @@
     #difficulty-screen { background: rgba(0,0,0,0.92); z-index: 15; }
     #auth-btn:hover { color: #ccc !important; }
     #stats-screen .htp-panel { width: min(320px, calc(100vw - 48px)); }
+    .lb-tab { width:90px; padding:6px 0; font-size:13px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:monospace; cursor:pointer; color:#fff; background:rgba(255,255,255,0.05); transition:background 0.15s,border-color 0.15s; }
+    .lb-tab:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.4); }
     .lb-tab.selected { border-color: #00eeff !important; color: #00eeff !important; background: rgba(0,238,255,0.08) !important; }
 
     .diff-btn {
@@ -320,9 +322,9 @@
     <div class="htp-panel">
       <h2>LEADERBOARD</h2>
       <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
-        <button class="lb-tab selected" data-diff="easy" style="width:90px;padding:6px 0;font-size:13px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-family:monospace;cursor:pointer;color:#00eeff;background:rgba(0,238,255,0.08);border-color:#00eeff;transition:background 0.15s,border-color 0.15s">Easy</button>
-        <button class="lb-tab" data-diff="normal" style="width:90px;padding:6px 0;font-size:13px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-family:monospace;cursor:pointer;color:#fff;background:rgba(255,255,255,0.05);transition:background 0.15s,border-color 0.15s">Normal</button>
-        <button class="lb-tab" data-diff="hard" style="width:90px;padding:6px 0;font-size:13px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-family:monospace;cursor:pointer;color:#fff;background:rgba(255,255,255,0.05);transition:background 0.15s,border-color 0.15s">Hard</button>
+        <button class="lb-tab selected" data-diff="easy">Easy</button>
+        <button class="lb-tab" data-diff="normal">Normal</button>
+        <button class="lb-tab" data-diff="hard">Hard</button>
       </div>
       <div id="lb-list" style="font:12px monospace;color:#aaa;min-height:120px"></div>
       <p class="htp-hint">click outside or press Escape to close</p>
