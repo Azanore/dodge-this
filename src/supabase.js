@@ -1,5 +1,5 @@
 // Supabase client — auth and database access.
-// Related: src/auth.js, src/stats.js
+// Related: main.js, stats.js
 // Uses the publishable anon key — safe to expose in frontend code. RLS enforces data security.
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';

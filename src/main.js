@@ -183,6 +183,7 @@ const musicBtn = document.getElementById('music-btn');
 function goToMenu() {
   loop.stop();
   stopMusic(); // AUDIO
+  resetRunStats();
   pauseScreenEl.classList.remove('open');
   document.getElementById('game-over-screen').classList.remove('open');
   state = resetState(activeDifficulty);
