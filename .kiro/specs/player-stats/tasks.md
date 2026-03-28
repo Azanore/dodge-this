@@ -51,10 +51,10 @@ Implement a two-layer stats system: a `src/stats.js` module tracking four in-run
     - Toggle expands panel; second toggle collapses it
     - _Requirements: 3.2, 3.3, 3.4_
 
-- [-] 4. Checkpoint — ensure all tests pass
+- [x] 4. Checkpoint — ensure all tests pass
   - Run `npm test` and confirm no regressions; ask the user if questions arise.
 
-- [~] 5. Add all-time stats overlay HTML/CSS to `index.html` and Stats button to difficulty screen
+- [-] 5. Add all-time stats overlay HTML/CSS to `index.html` and Stats button to difficulty screen
   - Add `#stats-screen` overlay (`.overlay` pattern) with `#stats-panel` content box
   - Overlay displays all aggregate fields from `fetchAllTimeStats()` return shape
   - Add `#stats-btn` button inside `#difficulty-screen .overlay-panel`, hidden by default (`display:none`)
