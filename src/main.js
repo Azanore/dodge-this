@@ -133,7 +133,7 @@ function isAnyModalOpen() {
 // Start action — Play button or any key (except Escape) from 'start' state
 function onStartAction(e) {
   if (state.status !== 'start') return;
-  if (e.type === 'keydown' && e.key === 'Escape') return;
+  if (e.type === 'keydown' && e.key !== ' ') return;
   if (isAnyModalOpen()) return;
   document.getElementById('play-btn').removeEventListener('click', onStartAction);
   window.removeEventListener('keydown', onStartAction);

@@ -104,7 +104,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
     - **Property 8: Panel backgrounds use consistent color**
     - **Validates: Requirements 10.6**
 
-- [-] 12. Final checkpoint — ensure all tests pass
+- [x] 12. Final checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
