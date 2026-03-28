@@ -156,6 +156,13 @@
       color: #555;
       margin-top: 16px;
     }
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -281,24 +288,28 @@
   </div>
 
   <div id="stats-screen" class="overlay">
-    <div class="overlay-panel">
-      <div class="overlay-title" style="color:#00eeff;text-shadow:0 0 20px #00eeff;font-size:36px">STATS</div>
-      <div id="stats-content" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:16px 24px;font:12px monospace;color:#aaa;text-align:left;min-width:260px">
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Total Runs</span><span id="st-total-runs" style="color:#fff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Best (Easy)</span><span id="st-best-easy" style="color:#00ff88"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Best (Normal)</span><span id="st-best-normal" style="color:#00ff88"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Best (Hard)</span><span id="st-best-hard" style="color:#00ff88"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Avg Score</span><span id="st-avg-score" style="color:#fff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Avg Time</span><span id="st-avg-time" style="color:#fff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Total Time</span><span id="st-total-time" style="color:#fff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Near Misses</span><span id="st-near-misses" style="color:#00eeff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Bonuses</span><span id="st-bonuses" style="color:#00ff88"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Highest Combo</span><span id="st-highest-combo" style="color:#ffe600"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:32px"><span>Best Combo Score</span><span id="st-best-combo-score" style="color:#ffe600"></span></div>
-      </div>
-      <div id="stats-message" style="font:13px monospace;color:#666;margin-top:4px"></div>
-      <button id="stats-close-btn" class="overlay-btn" style="background:#222;margin-top:8px">Close</button>
-      <div class="overlay-label">or press Esc</div>
+    <div class="htp-panel">
+      <h2>YOUR STATS</h2>
+
+      <div class="htp-section">Runs</div>
+      <div class="stats-row"><span class="htp-label">Total Runs</span><span id="st-total-runs" class="htp-desc"></span></div>
+      <div class="stats-row"><span class="htp-label">Avg Score</span><span id="st-avg-score" class="htp-desc"></span></div>
+      <div class="stats-row"><span class="htp-label">Avg Time</span><span id="st-avg-time" class="htp-desc"></span></div>
+      <div class="stats-row"><span class="htp-label">Total Time</span><span id="st-total-time" class="htp-desc"></span></div>
+
+      <div class="htp-section">Best Score</div>
+      <div class="stats-row"><span class="htp-label">Easy</span><span id="st-best-easy" class="htp-desc" style="color:#00ff88"></span></div>
+      <div class="stats-row"><span class="htp-label">Normal</span><span id="st-best-normal" class="htp-desc" style="color:#00ff88"></span></div>
+      <div class="stats-row"><span class="htp-label">Hard</span><span id="st-best-hard" class="htp-desc" style="color:#00ff88"></span></div>
+
+      <div class="htp-section">Highlights</div>
+      <div class="stats-row"><span class="htp-label">Near Misses</span><span id="st-near-misses" class="htp-desc" style="color:#00eeff"></span></div>
+      <div class="stats-row"><span class="htp-label">Bonuses Collected</span><span id="st-bonuses" class="htp-desc" style="color:#00ff88"></span></div>
+      <div class="stats-row"><span class="htp-label">Highest Combo</span><span id="st-highest-combo" class="htp-desc" style="color:#ffe600"></span></div>
+      <div class="stats-row"><span class="htp-label">Best Combo Score</span><span id="st-best-combo-score" class="htp-desc" style="color:#ffe600"></span></div>
+
+      <div id="stats-message" style="font:12px monospace;color:#555;margin-top:12px;text-align:center"></div>
+      <p class="htp-hint">click outside or press Escape to close</p>
     </div>
   </div>
 

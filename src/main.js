@@ -333,12 +333,7 @@ document.getElementById('stats-btn').addEventListener('click', async () => {
   }
 });
 
-// All-time stats overlay — close button
-document.getElementById('stats-close-btn').addEventListener('click', () => {
-  document.getElementById('stats-screen').classList.remove('open');
-});
-
-// All-time stats overlay — backdrop click
+// All-time stats overlay — backdrop click (matches how-to-play pattern)
 document.getElementById('stats-screen').addEventListener('click', (e) => {
   if (e.target === document.getElementById('stats-screen')) {
     document.getElementById('stats-screen').classList.remove('open');
