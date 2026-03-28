@@ -42,7 +42,7 @@ Structural cleanup across `index.html`, `src/main.js`, `src/gameOver.js`, `src/r
   - Preserve the `e.key === 'Escape'` early return in `onStartAction` as a separate guard — do not fold it into `isAnyModalOpen()`
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [~] 4.1 Write property test for isAnyModalOpen
+  - [-] 4.1 Write property test for isAnyModalOpen
     - **Property 1: isAnyModalOpen reflects all overlay states**
     - **Validates: Requirements 2.1, 2.3**
 

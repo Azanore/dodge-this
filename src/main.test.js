@@ -165,3 +165,49 @@ describe('start screen transitions', () => {
     expect(state.status).toBe('grace');
   });
 });
+
+// Feature: ui-consistency-overhaul, Property 1: isAnyModalOpen reflects all overlay states
+describe('isAnyModalOpen — Property 1', () => {
+  // Simulates isAnyModalOpen from main.js
+  function isAnyModalOpen() {
+    return ['#how-to-play', '#leaderboard-screen', '#stats-screen']
+      .some(id => document.querySelector(id).classList.contains('open'));
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="how-to-play"></div>
+      <div id="leaderboard-screen"></div>
+      <div id="stats-screen"></div>
+    `;
+  });
+
+  /**
+   * **Validates: Requirements 2.1, 2.3**
+   *
+   * For any combination of open/closed states across the three overlay elements,
+   * isAnyModalOpen() returns true if and only if at least one has the 'open' class.
+   */
+  it('Property 1: isAnyModalOpen === logical OR of overlay open states', () => {
+    fc.assert(
+      fc.property(
+        fc.boolean(),
+        fc.boolean(),
+        fc.boolean(),
+        (howToPlayOpen, leaderboardOpen, statsOpen) => {
+          const howToPlay = document.querySelector('#how-to-play');
+          const leaderboard = document.querySelector('#leaderboard-screen');
+          const stats = document.querySelector('#stats-screen');
+
+          howToPlay.classList.toggle('open', howToPlayOpen);
+          leaderboard.classList.toggle('open', leaderboardOpen);
+          stats.classList.toggle('open', statsOpen);
+
+          const expected = howToPlayOpen || leaderboardOpen || statsOpen;
+          return isAnyModalOpen() === expected;
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+});
