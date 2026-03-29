@@ -4,20 +4,12 @@
 
 import { innerZone } from './zones.js';
 import { clearAll } from './obstacles.js';
-import { triggerBonusFlash } from './renderer.js';
+import { triggerBonusFlash, BONUS_COLORS } from './renderer.js';
 import { playPickup } from './audio.js'; // AUDIO
 import { onBonusCollected } from './stats.js';
 
 // Fixed hitbox radius for all bonus pickups
 const PICKUP_RADIUS = 12;
-
-// Per-type colors for rendering
-const BONUS_COLORS = {
-  slowmo: '#0088ff',
-  invincibility: '#ffe600',
-  screenclear: '#ff4dff',
-  shrink: '#00ff99'
-};
 
 // Builds a weighted pool of enabled bonus type keys from config
 function getEnabledPool() {

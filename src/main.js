@@ -36,6 +36,7 @@ let state = resetState(activeDifficulty);
 state.graceRemaining = gameConfig.gracePeriod;
 let lastDelta = 16;
 const accumulators = { spawn: 0, bonus: 0, scoreZone: 0 };
+let deathTimer = null;
 
 initRenderer();
 recomputeZones();
@@ -46,7 +47,8 @@ function update(delta) {
   const result = gameUpdate(delta, state, accumulators, queueToasts);
   if (result === 'dead') {
     triggerShake();
-    setTimeout(async () => {
+    deathTimer = setTimeout(async () => {
+      deathTimer = null;
       loop.stop();
       syncHelpBtn();
       showGameOver(state, onRestart);
@@ -77,13 +79,17 @@ function renderFrame() {
 
 const loop = createGameLoop(update, renderFrame);
 
-// Fetches unlocked achievements and caches them on state for mid-run checks
+// Fetches unlocked achievements and caches them on state for mid-run checks.
+// Seeds from localStorage immediately so mid-run checks are never blind on slow connections.
 async function refreshUnlockedCache() {
+  const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
+  state._unlockedAchievements = new Set(cached);
   const keys = await fetchUnlockedAchievements();
   state._unlockedAchievements = new Set(keys);
 }
 
 function onRestart() {
+  if (deathTimer) { clearTimeout(deathTimer); deathTimer = null; }
   resetMidRunTracking();
   resetRunStats();
   state = resetState(activeDifficulty);
@@ -172,6 +178,7 @@ const musicBtn = document.getElementById('music-btn');
 
 // Returns to difficulty screen — resets state, stops loop and music, re-shows selector
 function goToMenu() {
+  if (deathTimer) { clearTimeout(deathTimer); deathTimer = null; }
   clearToastQueue();
   cleanupGameOver();
   loop.stop();

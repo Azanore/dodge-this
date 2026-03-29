@@ -82,12 +82,12 @@ export function triggerScoreFloat(amount, x, y) {
 
 // Spawns a flash ring at (x, y) with the bonus color
 export function triggerBonusFlash(x, y, color) {
-  flashes.push({ x, y, color, remaining: FLASH_DURATION });
+  flashes.push({ x, y, color, remaining: FLASH_DURATION, duration: FLASH_DURATION });
 }
 
 // Spawns a near-miss white ring and resets the "CLOSE!" text timer
 export function triggerNearMiss(x, y) {
-  flashes.push({ x, y, color: '#ffffff', remaining: NEAR_MISS_FLASH_DURATION });
+  flashes.push({ x, y, color: '#ffffff', remaining: NEAR_MISS_FLASH_DURATION, duration: NEAR_MISS_FLASH_DURATION });
   nearMissText.remaining = 600;
   playNearMiss(); // AUDIO
 }
@@ -327,7 +327,7 @@ export function render(ctx, state, delta) {
     const f = flashes[i];
     f.remaining -= delta;
     if (f.remaining <= 0) { flashes.splice(i, 1); continue; }
-    const t = 1 - f.remaining / FLASH_DURATION; // 0→1 as flash ages
+    const t = 1 - f.remaining / f.duration; // 0→1 as flash ages
     const radius = 12 + t * 40;
     const alpha = (1 - t) * 0.8;
     ctx.save();
