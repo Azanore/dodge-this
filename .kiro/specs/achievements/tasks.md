@@ -6,7 +6,7 @@ Implement the achievements system across four files: `src/achievements.js` (new 
 
 ## Tasks
 
-- [-] 1. Add achievement definitions, overlay renderer, and toast system (`src/achievements.js`)
+- [x] 1. Add achievement definitions, overlay renderer, and toast system (`src/achievements.js`)
   - Create `src/achievements.js` exporting `ACHIEVEMENTS` array (30 items) with the shape: `{ key, group, name, description, type, icon, color }`
   - Include all 23 milestone tiers (veteran ×6, survivor ×5, collector ×4, ghost ×4, hard_boiled ×4) and 7 single-run achievements
   - Export `renderAchievementsOverlay(unlockedSet)` — populates `#ach-list` with two sections ("Milestones" / "Single Run"), full opacity for unlocked keys, `opacity: 0.35` for locked
@@ -26,18 +26,18 @@ Implement the achievements system across four files: `src/achievements.js` (new 
     - **Property 10: clearToastQueue removes all pending toasts**
     - **Validates: Requirements 8.7, 8.8**
 
-  - [-] 1.4 Write property test for toast queue processes sequentially
+  - [x] 1.4 Write property test for toast queue processes sequentially
     - **Property 11: Toast queue processes sequentially**
     - **Validates: Requirements 8.5**
 
-- [~] 2. Add `#achievements-screen` overlay, `#achievements-btn`, and `#toast-container` to `index.html`
+- [x] 2. Add `#achievements-screen` overlay, `#achievements-btn`, and `#toast-container` to `index.html`
   - Add `#achievements-btn` button after `#stats-btn`, before `#auth-btn`, with `visibility:hidden` default — same `.overlay-btn overlay-secondary-btn` style
   - Add `#achievements-screen` overlay div (`.overlay`, `rgba(0,0,0,0.75)` backdrop) with `.htp-panel` child containing `<h2>ACHIEVEMENTS</h2>`, `#ach-list` div, and hint text
   - Add `#toast-container` fixed div — `bottom: 72px, right: 24px`, z-index 50, NOT an overlay, no backdrop — always in DOM, empty when idle
   - Add CSS for `#toast-container`, `.achievement-toast`, `.achievement-toast.visible`, `.toast-icon`, `.toast-title`, `.toast-desc` — slide-in/out via `transform: translateX` transition
   - _Requirements: 1.1, 2.1, 2.8, 8.2, 8.3, 8.6, 8.10_
 
-- [~] 3. Add `evaluateAchievements` and `fetchUnlockedAchievements` to `src/stats.js`
+- [-] 3. Add `evaluateAchievements` and `fetchUnlockedAchievements` to `src/stats.js`
   - Export `fetchUnlockedAchievements()` — queries `user_achievements` for authenticated user, returns `string[]` of keys; returns `[]` if not authenticated or on error
   - Export `evaluateAchievements(state)` — guards on `elapsed < 5000` and unauthenticated (return `[]`); calls `insertRun(state)`, then `fetchAllTimeStats()`, then `fetchUnlockedAchievements()`; builds `newKeys[]` from all 30 conditions; inserts each new key to `user_achievements` individually in try/catch; returns `newKeys`
   - Import `ACHIEVEMENTS` from `./achievements.js` to drive condition evaluation

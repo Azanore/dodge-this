@@ -3,6 +3,7 @@
 // Does not mutate GameState — counters are ephemeral module-level variables.
 
 import { supabase } from './supabase.js';
+import { ACHIEVEMENTS } from './achievements.js';
 
 let nearMisses = 0;
 let bonusesCollected = 0;
@@ -111,4 +112,87 @@ export async function fetchAllTimeStats() {
     avgElapsedMs,
     hardRunsCount
   };
+}
+
+// Queries user_achievements for the authenticated user — returns array of unlocked keys, or [] if not authenticated/error
+export async function fetchUnlockedAchievements() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  try {
+    const { data, error } = await supabase.from('user_achievements').select('achievement_key').eq('user_id', user.id);
+    if (error) return [];
+    return (data ?? []).map(r => r.achievement_key);
+  } catch (_) {
+    return [];
+  }
+}
+
+// Evaluates all 30 achievement conditions after a run. Calls insertRun internally.
+// Returns array of newly-unlocked achievement keys, or [] if not eligible.
+export async function evaluateAchievements(state) {
+  if (state.elapsed < 5000) return [];
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  try {
+    await insertRun(state);
+    const stats = await fetchAllTimeStats();
+    const alreadyUnlocked = new Set(await fetchUnlockedAchievements());
+    const { nearMisses, bonusesCollected } = getRunStats();
+
+    const earned = [];
+
+    // Milestone: veteran (totalRuns)
+    const veteranThresholds = [1, 5, 10, 25, 50, 100];
+    veteranThresholds.forEach((t, i) => {
+      if (stats.totalRuns >= t) earned.push(`veteran_${i + 1}`);
+    });
+
+    // Milestone: survivor (totalElapsedMs)
+    const survivorThresholds = [300000, 900000, 1800000, 3600000, 7200000];
+    survivorThresholds.forEach((t, i) => {
+      if (stats.totalElapsedMs >= t) earned.push(`survivor_${i + 1}`);
+    });
+
+    // Milestone: collector (totalBonuses)
+    const collectorThresholds = [10, 50, 150, 300];
+    collectorThresholds.forEach((t, i) => {
+      if (stats.totalBonuses >= t) earned.push(`collector_${i + 1}`);
+    });
+
+    // Milestone: ghost (totalNearMisses)
+    const ghostThresholds = [25, 100, 300, 750];
+    ghostThresholds.forEach((t, i) => {
+      if (stats.totalNearMisses >= t) earned.push(`ghost_${i + 1}`);
+    });
+
+    // Milestone: hard_boiled (hardRunsCount)
+    const hardBoiledThresholds = [5, 15, 30, 50];
+    hardBoiledThresholds.forEach((t, i) => {
+      if (stats.hardRunsCount >= t) earned.push(`hard_boiled_${i + 1}`);
+    });
+
+    // Single-run achievements
+    if (stats.totalRuns >= 1) earned.push('first_blood');
+    if (state.elapsed >= 60000) earned.push('minuteman');
+    if (state.elapsed >= 30000 && nearMisses === 0) earned.push('untouchable');
+    if (nearMisses >= 15) earned.push('danger_zone');
+    if (bonusesCollected >= 6) earned.push('hoarder');
+    if (state.difficulty === 'hard' && state.elapsed >= 30000) earned.push('hard_debut');
+    if (state.elapsed >= 45000 && bonusesCollected === 0) earned.push('pacifist');
+
+    const newKeys = earned.filter(k => !alreadyUnlocked.has(k));
+
+    for (const key of newKeys) {
+      try {
+        await supabase.from('user_achievements').insert({ user_id: user.id, achievement_key: key });
+      } catch (_) {
+        // silently discard individual insert failures
+      }
+    }
+
+    return newKeys;
+  } catch (_) {
+    return [];
+  }
 }
