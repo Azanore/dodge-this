@@ -10,7 +10,7 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
-import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements } from './stats.js';
+import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements, resetMyAchievements } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
@@ -369,6 +369,12 @@ document.getElementById('achievements-screen').addEventListener('click', (e) => 
   if (e.target === document.getElementById('achievements-screen')) {
     document.getElementById('achievements-screen').classList.remove('open');
   }
+});
+
+// Reset achievements button — deletes all user_achievements rows for the current user
+document.getElementById('reset-achievements-btn').addEventListener('click', async () => {
+  await resetMyAchievements();
+  renderAchievementsOverlay(new Set(), null);
 });
 
 // Leaderboard overlay

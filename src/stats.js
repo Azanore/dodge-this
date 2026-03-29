@@ -120,6 +120,17 @@ export async function fetchAllTimeStats() {
   };
 }
 
+// Deletes all user_achievements rows for the authenticated user — for testing only
+export async function resetMyAchievements() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  try {
+    await supabase.from('user_achievements').delete().eq('user_id', user.id);
+  } catch (_) {
+    // silently discard
+  }
+}
+
 // Queries user_achievements for the authenticated user — returns array of unlocked keys, or [] if not authenticated/error
 export async function fetchUnlockedAchievements() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -199,5 +210,16 @@ export async function evaluateAchievements(state) {
     return newKeys.filter(k => !midRunFired.has(k));
   } catch (_) {
     return [];
+  }
+}
+
+// Deletes all user_achievements rows for the authenticated user — for testing only
+export async function resetMyAchievements() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  try {
+    await supabase.from('user_achievements').delete().eq('user_id', user.id);
+  } catch (_) {
+    // silently discard
   }
 }
