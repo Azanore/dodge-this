@@ -252,6 +252,7 @@ Run: `npm test`
 - Fixed first-run unlocked cache — `refreshUnlockedCache()` now called in `onAuthStateChange` when session exists, so the very first run of a session correctly filters already-unlocked achievements from mid-run checks
 - Fixed duplicate `resetMyAchievements` declaration in `stats.js` (leftover from failed append)
 - Fixed missing RLS DELETE policy on `user_achievements` — added `user_achievements_own_delete` policy so the reset button actually deletes rows
+- Fixed achievements overlay layout shift on open — switched from replacing `#ach-list` with "Loading..." to rendering from `localStorage` cache (`dodge_unlocked_achievements`) instantly; DB fetch happens silently in background and re-renders if changed; cache updated on unlock, reset, and sign-out
 - Added "Reset my achievements" button to achievements overlay (bottom right, subtle red) — calls `resetMyAchievements()` and re-renders overlay
 - Toast duration bumped: 1500ms → 2500ms visible time
 - Progress counter styling improved: now uses achievement's neon color at 80% opacity instead of dim grey
