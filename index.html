@@ -179,12 +179,39 @@
     .toast-title { font-size: 13px; font-weight: bold; }
     .toast-desc { font-size: 11px; color: #888; margin-top: 2px; }
     .ach-progress { font-size: 11px; margin-left: 6px; opacity: 0.8; }
+
+    /* In-game overlays — difficulty and username */
+    #ingame-difficulty {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      font: bold 14px monospace;
+      color: #aaa;
+      text-shadow: 0 0 8px rgba(170,170,170,0.5);
+      z-index: 15;
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    #ingame-username {
+      position: fixed;
+      bottom: 14px;
+      left: 14px;
+      font: 12px monospace;
+      color: #666;
+      z-index: 15;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
 
   <button id="help-btn">?</button>
+
+  <!-- In-game overlays — difficulty and username -->
+  <div id="ingame-difficulty"></div>
+  <div id="ingame-username"></div>
 
   <div id="toast-container"></div>
 
@@ -212,10 +239,11 @@
     <div class="overlay-panel">
       <div class="overlay-title" style="color:#fff;text-shadow:0 0 20px #fff">PAUSED</div>
       <!-- POLISH: pause stats — remove this div to revert -->
-      <div id="pause-stats" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 20px;font:12px monospace;color:#aaa;min-width:200px;text-align:left;margin-bottom:4px">
+      <div id="pause-stats" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 20px;font:12px monospace;color:#aaa;min-width:200px;text-align:left;margin-bottom:4px">
         <div class="htp-section" style="margin-top:0">This run</div>
-        <div class="stats-row"><span class="htp-label">Score</span><span id="ps-score" class="htp-desc" style="color:#fff"></span></div>
         <div class="stats-row"><span class="htp-label">Time</span><span id="ps-time" class="htp-desc" style="color:#aaa"></span></div>
+        <div class="stats-row"><span class="htp-label">Difficulty</span><span id="ps-difficulty" class="htp-desc" style="color:#fff"></span></div>
+        <div class="stats-row"><span class="htp-label">Score</span><span id="ps-score" class="htp-desc" style="color:#fff"></span></div>
         <div class="stats-row"><span class="htp-label">Near Misses</span><span id="ps-near-misses" class="htp-desc" style="color:#00eeff"></span></div>
         <div class="stats-row"><span class="htp-label">Bonuses</span><span id="ps-bonuses" class="htp-desc" style="color:#00ff88"></span></div>
         <div class="stats-row"><span class="htp-label">Combo Score</span><span id="ps-combo-score" class="htp-desc" style="color:#ffe600"></span></div>

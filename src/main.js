@@ -106,6 +106,9 @@ function onRestart() {
   syncHelpBtn();
   startMusic(); // AUDIO — restart music from beginning on each new game
   refreshUnlockedCache();
+  // POLISH: in-game difficulty overlay — populate and show; remove these lines to revert
+  const diffEl = document.getElementById('ingame-difficulty');
+  if (diffEl) { diffEl.textContent = activeDifficulty; diffEl.style.display = 'block'; }
   loop.start();
 }
 
@@ -210,6 +213,11 @@ function goToMenu() {
   window.addEventListener('keydown', onStartAction);
   diffScreenEl.classList.add('open');
   syncHelpBtn();
+  // POLISH: in-game overlays — hide when returning to menu; remove these lines to revert
+  const diffEl = document.getElementById('ingame-difficulty');
+  const userEl = document.getElementById('ingame-username');
+  if (diffEl) diffEl.style.display = 'none';
+  if (userEl) userEl.style.display = 'none';
   renderFrame();
 }
 
@@ -292,13 +300,15 @@ window.addEventListener('keydown', (e) => {
     pauseMusic(); // AUDIO
     // POLISH: pause stats — populate current run info; remove these lines to revert
     const { nearMisses: pauseNM, bonusesCollected: pauseB, comboScore: pauseCS } = getRunStats();
-    const psScore = document.getElementById('ps-score');
     const psTime = document.getElementById('ps-time');
+    const psDiff = document.getElementById('ps-difficulty');
+    const psScore = document.getElementById('ps-score');
     const psNM = document.getElementById('ps-near-misses');
     const psB = document.getElementById('ps-bonuses');
     const psCS = document.getElementById('ps-combo-score');
-    if (psScore) psScore.textContent = `${Math.floor(state.score)} pts`;
     if (psTime) psTime.textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
+    if (psDiff) psDiff.textContent = state.difficulty;
+    if (psScore) psScore.textContent = `${Math.floor(state.score)} pts`;
     if (psNM) psNM.textContent = pauseNM;
     if (psB) psB.textContent = pauseB;
     if (psCS) psCS.textContent = Math.round(pauseCS);
@@ -324,6 +334,17 @@ supabase.auth.onAuthStateChange((_event, session) => {
   }
   document.getElementById('stats-btn').style.visibility = session ? 'visible' : 'hidden';
   document.getElementById('achievements-btn').style.visibility = session ? 'visible' : 'hidden';
+  // POLISH: in-game username overlay — show when authenticated; remove this block to revert
+  const userEl = document.getElementById('ingame-username');
+  if (userEl) {
+    if (session?.user) {
+      const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Player';
+      userEl.textContent = name;
+      userEl.style.display = 'block';
+    } else {
+      userEl.style.display = 'none';
+    }
+  }
   if (session?.user) {
     const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Signed in';
     authBtn.textContent = `${name} — Sign out`;
