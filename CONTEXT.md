@@ -146,8 +146,8 @@ See the Backlog section below.
 - `elapsed_ms` integer
 - `difficulty` text ('easy' | 'normal' | 'hard')
 - `near_misses` integer
-- `max_combo` numeric
 - `bonuses_collected` integer
+- `combo_score` numeric
 - `played_at` timestamptz
 
 `achievements` — static definitions, seeded once
@@ -246,11 +246,21 @@ Run: `npm test`
 
 ## Changelog
 
-### Session 20 — Post-overhaul polish & consistency fixes
+### Session 20 — Post-overhaul polish, bug fixes & stats cleanup
 - Fixed Tab key accidentally dismissing modals and starting the game — `onStartAction` now uses allowlist (`e.key !== ' '`) instead of blocklist (`e.key === 'Escape'`)
 - Updated hint text from "or press any key" to "or press Space"
 - Added `rgba(0,0,0,0.75)` backdrop to `#stats-screen` and `#leaderboard-screen` — now consistent with `#how-to-play`
+- Fixed KeydownRegistry firing on any key — added `if (e.key !== 'Escape') return` as first line; removed redundant inner Escape check
+- Fixed `initAudio` recreating AudioContext on repeated calls — now no-op if already initialized
+- Fixed `fadeOutMusic` race condition — `stopMusic` now cancels any in-flight fade timer before stopping
+- Game-over screen redesigned: always-visible stats panel (no toggle), read→reflect→act order (stats above buttons), removed Score/Time duplication
+- Removed `max_combo` column from `runs` table in Supabase — dropped via migration
+- Removed `max_combo` from `stats.js` (insert payload, aggregation, return value), `gameUpdate.js` (onComboUpdate call), `main.js` (destructuring, DOM population), `index.html` (game-over panel, stats screen)
+- Removed `Highest Combo` from stats overlay; kept `Best Combo Score` (meaningful) and `Max Combo` display in game-over panel removed
+- Stats overlay: replaced single `Avg Score` with per-difficulty breakdown (Easy / Normal / Hard) — mixed-difficulty average was misleading
 - Documented overlay backdrop scale and interaction rules in CONTEXT.md
+
+**Database — `runs` table columns (current):** `id`, `user_id`, `score`, `elapsed_ms`, `difficulty`, `near_misses`, `bonuses_collected`, `combo_score`, `played_at` (`max_combo` removed)
 
 ### Session 19 — UI consistency overhaul
 - Removed `renderStartScreen` dead code from `renderer.js` and `main.js`
