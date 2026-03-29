@@ -123,8 +123,7 @@ See the Backlog section below.
 **Supabase project:** `dodge-this` — ref `akhizydlqrfeeevwyflp`, region EU Central, free tier
 **Client file:** `src/supabase.js` — imports from CDN (`@supabase/supabase-js@2`), exports `supabase` client
 **Anon key type:** publishable key (`sb_publishable_...`) — safe to expose in frontend, RLS enforces security
-**Google OAuth:** configured in Supabase Auth → Providers. Redirect URI: `https://akhizydlqrfeeevwyflp.supabase.co/auth/v1/callback`.
-**⚠️ BEFORE GOING LIVE:** Google OAuth is currently in test mode — only emails listed under "Audience → Test users" in [Google Auth Platform](https://console.cloud.google.com/auth) can log in. To allow all users: go to Google Auth Platform → "Audience" → click "Publish app" → confirm. No review required for basic OAuth. Do this before deploying to production.
+**Google OAuth:** configured in Supabase Auth → Providers. Redirect URI: `https://akhizydlqrfeeevwyflp.supabase.co/auth/v1/callback`. Published — all users can sign in.
 **Profile trigger:** `handle_new_user()` fires on `auth.users` insert, creates `profiles` row with Google `full_name` and `avatar_url` from `raw_user_meta_data`. Confirmed working.
 **Supabase CDN import pattern:** `import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'` — no build step, works in ES modules directly. Do not use npm import path in browser modules.
 **RLS note:** all 4 tables have RLS enabled. Supabase dashboard always has full admin access regardless of RLS policies.
@@ -246,6 +245,11 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 29 — Category D: design tuning
+- `scoreZoneRadius` 110 → 90px — less dominant on smaller screens, still generous enough for zone play
+- `nearMissThreshold` 20 → 26px — wider detection window at high speeds, more rewarding without feeling cheap
+- #19 (tracker permanence cue) deliberately skipped — players learn through play, how-to-play modal covers it explicitly
+
 ### Session 28 — Category C: stats aggregation RPC
 - Created `get_user_stats(p_user_id uuid)` Postgres function — `SECURITY DEFINER`, `STABLE`, aggregates all stats server-side in a single query; returns one row with all fields matching the previous `fetchAllTimeStats` return shape
 - Granted `execute` to `authenticated` role only
@@ -254,13 +258,13 @@ Run: `npm test`
 - Updated `evaluateAchievements` property tests (Properties 3–5) and `achievements.test.js` stats integration tests to mock `supabase.rpc` with `rpcRowFromRuns` helper
 - Security advisors clean — only pre-existing leaked password warning (irrelevant, Google OAuth only)
 
-
+### Session 27 — Category B: security and production cleanup
 - Removed "Reset my achievements" button from `index.html` and its event listener from `main.js` — dev artifact with no place in production; `resetMyAchievements()` in `stats.js` stays for console use
 - Removed `resetMyAchievements` from `main.js` import
 - Replaced leaderboard `innerHTML` string builder in `main.js` with DOM construction using `textContent` for `username` — eliminates XSS risk from user-supplied display names; rank/score/time remain as literals (derived from numbers, safe)
 - Google OAuth published (test mode removed) — all users can now sign in
 
-
+### Session 26 — Category A cleanup
 - Removed dead `export const state` from `GameState.js` — never imported anywhere
 - Removed stale `difficulty` block and `maxSpeedMultiplier` from `config.js` DEFAULTS (pre-presets shape, never validated); removed orphaned `validateDifficulty` function; added comment pointing to `difficultyPresets`
 - Renamed misleading constants in `combo.test.js` from `INTERVAL/DURATION/RADIUS/...` to `TEST_INTERVAL/TEST_DURATION/TEST_RADIUS/...` with a clarifying comment — they are test-only overrides, not real game values
@@ -437,7 +441,7 @@ Run: `npm test`
 - `triggerScoreBump()` fires on bank — score number scales up 18% with brighter glow for 220ms
 - HUD redesigned: score large white, `x2.3` green inline, `+47` mint inline — all on one line; timer below
 - Multiplier always visible: dimmed at x1.0, full glow when active
-- Score zone radius bumped from 60px to 110px (changelog previously said 90px — actual value in game.config.js is 110px)
+- Score zone radius bumped from 60px to 110px (later tuned to 90px in session 29)
 - Score formula changed from `delta * multiplier` to `(delta/1000) * 10` — numbers now in hundreds not hundreds-of-thousands
 - `scoreZoneRadius` moved to `game.config.js` (was already there, confirmed correct)
 
@@ -486,7 +490,7 @@ Run: `npm test`
 - `accumulators.scoreZone` added to `main.js`, reset on restart
 - HUD updated: score primary (top-left large), elapsed secondary (small below), multiplier top-right hidden at 1.0
 - Game over and start screen updated to show score in points
-- `nearMissThreshold` reduced from 40px to 20px for tighter near-miss detection
+- `nearMissThreshold` reduced from 40px to 20px for tighter near-miss detection (later tuned to 26px in session 29)
 - 6 property-based tests in `combo.test.js`, 4 in `collision.test.js`
 - Values to watch: `scoreZoneInterval`, `scoreZoneDuration`, `comboFastDecayRate` — may need tuning after play-testing with tracker
 
