@@ -52,6 +52,11 @@ function update(delta) {
       showGameOver(state, onRestart);
       const newKeys = await evaluateAchievements(state);
       queueToasts(newKeys);
+      // Update unlocked cache so next overlay open is instant
+      if (newKeys.length) {
+        const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
+        localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([...new Set([...cached, ...newKeys])]));
+      }
       const { nearMisses, bonusesCollected, comboScore } = getRunStats();
       document.getElementById('rs-difficulty').textContent = state.difficulty;
       document.getElementById('rs-near-misses').textContent = nearMisses;
@@ -296,6 +301,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     authBtn.textContent = 'Sign in with Google';
     authBtn.style.color = '#888';
     state._unlockedAchievements = new Set();
+    localStorage.removeItem(ACH_CACHE_KEY);
   }
 });
 
@@ -351,20 +357,24 @@ document.getElementById('stats-screen').addEventListener('click', (e) => {
 });
 
 // Achievements overlay — open, fetch, populate
+// Renders from localStorage cache immediately, then refreshes from DB in background
+const ACH_CACHE_KEY = 'dodge_unlocked_achievements';
+
 document.getElementById('achievements-btn').addEventListener('click', async () => {
   const achScreen = document.getElementById('achievements-screen');
   achScreen.classList.add('open');
-  const achLoading = document.getElementById('ach-loading');
-  let loadingTimer = setTimeout(() => { achLoading.textContent = 'Loading...'; }, 150);
+
+  // Render from cache immediately — no layout shift
+  const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
+  renderAchievementsOverlay(new Set(cached), null);
+
+  // Fetch fresh data in background and re-render silently
   try {
     const [keys, stats] = await Promise.all([fetchUnlockedAchievements(), fetchAllTimeStats().catch(() => null)]);
-    clearTimeout(loadingTimer);
-    achLoading.textContent = '';
+    localStorage.setItem(ACH_CACHE_KEY, JSON.stringify(keys));
     renderAchievementsOverlay(new Set(keys), stats);
   } catch (_) {
-    clearTimeout(loadingTimer);
-    achLoading.textContent = '';
-    renderAchievementsOverlay(new Set(), null);
+    // cache render stays — no error shown
   }
 });
 
@@ -378,6 +388,7 @@ document.getElementById('achievements-screen').addEventListener('click', (e) => 
 // Reset achievements button — deletes all user_achievements rows for the current user
 document.getElementById('reset-achievements-btn').addEventListener('click', async () => {
   await resetMyAchievements();
+  localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([]));
   renderAchievementsOverlay(new Set(), null);
 });
 
