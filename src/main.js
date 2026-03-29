@@ -11,7 +11,7 @@ import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
 import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements } from './stats.js';
-import { renderAchievementsOverlay, queueToasts, clearToastQueue } from './achievements.js';
+import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
@@ -43,7 +43,7 @@ updatePlayer(state);
 
 function update(delta) {
   lastDelta = delta;
-  const result = gameUpdate(delta, state, accumulators);
+  const result = gameUpdate(delta, state, accumulators, queueToasts);
   if (result === 'dead') {
     triggerShake();
     setTimeout(async () => {
@@ -70,8 +70,14 @@ function renderFrame() {
 
 const loop = createGameLoop(update, renderFrame);
 
+// Fetches unlocked achievements and caches them on state for mid-run checks
+async function refreshUnlockedCache() {
+  const keys = await fetchUnlockedAchievements();
+  state._unlockedAchievements = new Set(keys);
+}
+
 function onRestart() {
-  clearToastQueue();
+  resetMidRunTracking();
   resetRunStats();
   state = resetState(activeDifficulty);
   state.status = 'grace';
@@ -84,6 +90,7 @@ function onRestart() {
   updatePlayer(state);
   syncHelpBtn();
   startMusic(); // AUDIO — restart music from beginning on each new game
+  refreshUnlockedCache();
   loop.start();
 }
 
@@ -348,12 +355,12 @@ document.getElementById('achievements-btn').addEventListener('click', async () =
   const achList = document.getElementById('ach-list');
   let loadingTimer = setTimeout(() => { achList.textContent = 'Loading...'; }, 150);
   try {
-    const keys = await fetchUnlockedAchievements();
+    const [keys, stats] = await Promise.all([fetchUnlockedAchievements(), fetchAllTimeStats().catch(() => null)]);
     clearTimeout(loadingTimer);
-    renderAchievementsOverlay(new Set(keys));
+    renderAchievementsOverlay(new Set(keys), stats);
   } catch (_) {
     clearTimeout(loadingTimer);
-    renderAchievementsOverlay(new Set());
+    renderAchievementsOverlay(new Set(), null);
   }
 });
 

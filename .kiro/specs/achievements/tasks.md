@@ -102,7 +102,7 @@ Implement the achievements system across four files: `src/achievements.js` (new 
 - [x] 7. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 8. Commit and push
+- [x] 8. Commit and push
   - Run: `git add . ; git commit -m "feat: achievements system" ; git push origin master`
 
 ## Notes

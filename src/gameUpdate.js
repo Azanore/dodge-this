@@ -7,17 +7,20 @@ import { spawnObstacle, updateObstacles } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
 import { triggerNearMiss, triggerScoreFloat } from './renderer.js';
-import { onNearMiss, onComboBank } from './stats.js';
+import { onNearMiss, onComboBank, getRunStats } from './stats.js';
+import { checkMidRunAchievements } from './achievements.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { updateScoreZone } from './combo.js';
 import { triggerScoreBump } from './hud.js';
+
 import { playDeath, playMultiplierMax, tickNearMissCooldown } from './audio.js'; // AUDIO
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
 
 // Called each frame — mutates state, returns 'dead' if player just died (so caller can react)
-export function gameUpdate(delta, state, accumulators) {
+// onAchievement(keys): optional callback fired when mid-run achievements trigger
+export function gameUpdate(delta, state, accumulators, onAchievement) {
   if (state.status === 'dead') return null;
   if (state.status === 'start') return null;
   if (state.status === 'paused') return null;
@@ -38,6 +41,14 @@ export function gameUpdate(delta, state, accumulators) {
 
   // active
   state.elapsed += delta;
+
+  // Mid-run achievement check — pure, synchronous, no DB
+  if (onAchievement) {
+    const { nearMisses, bonusesCollected } = getRunStats();
+    const keys = checkMidRunAchievements(state, nearMisses, bonusesCollected, state._unlockedAchievements ?? new Set());
+    if (keys.length) onAchievement(keys);
+  }
+
   updateScoreZone(delta, state, accumulators);
 
   const baseTick = (delta / 1000) * 10;

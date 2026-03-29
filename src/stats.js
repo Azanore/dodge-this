@@ -179,14 +179,8 @@ export async function evaluateAchievements(state) {
       if (stats.hardRunsCount >= t) earned.push(`hard_boiled_${i + 1}`);
     });
 
-    // Single-run achievements
+    // Single-run achievements (post-run only — mid-run ones handled by checkMidRunAchievements)
     if (stats.totalRuns >= 1) earned.push('first_blood');
-    if (state.elapsed >= 60000) earned.push('minuteman');
-    if (state.elapsed >= 30000 && nearMisses === 0) earned.push('untouchable');
-    if (nearMisses >= 15) earned.push('danger_zone');
-    if (bonusesCollected >= 6) earned.push('hoarder');
-    if (state.difficulty === 'hard' && state.elapsed >= 30000) earned.push('hard_debut');
-    if (state.elapsed >= 45000 && bonusesCollected === 0) earned.push('pacifist');
 
     const newKeys = earned.filter(k => !alreadyUnlocked.has(k));
 

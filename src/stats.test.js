@@ -545,21 +545,15 @@ describe('evaluateAchievements', () => {
     ), { numRuns: 100 });
   });
 
-  // Feature: achievements, Property 5: Single-run achievement correctness
-  it('Property 5: single-run keys match conditions exactly', async () => {
-    const singleRunKeys = ['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist'];
+  // Feature: achievements, Property 5: Single-run achievement correctness (post-run only)
+  // minuteman/untouchable/danger_zone/hoarder/hard_debut/pacifist moved to checkMidRunAchievements
+  it('Property 5: evaluateAchievements only returns first_blood from single-run keys', async () => {
+    const midRunKeys = new Set(['minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist']);
 
     await fc.assert(fc.asyncProperty(
-      fc.integer({ min: 5000, max: 120000 }),       // elapsed
-      fc.constantFrom('easy', 'normal', 'hard'),    // difficulty
-      fc.integer({ min: 0, max: 20 }),              // nearMisses
-      fc.integer({ min: 0, max: 10 }),              // bonusesCollected
-      async (elapsed, difficulty, nearMissCount, bonusCount) => {
-        resetRunStats();
-        for (let i = 0; i < nearMissCount; i++) onNearMiss();
-        for (let i = 0; i < bonusCount; i++) onBonusCollected();
-
-        // Mock: 1 run exists (so totalRuns=1 after insertRun)
+      fc.integer({ min: 5000, max: 120000 }),
+      fc.constantFrom('easy', 'normal', 'hard'),
+      async (elapsed, difficulty) => {
         const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
         supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
         supabase.from.mockImplementation((table) => {
@@ -575,21 +569,8 @@ describe('evaluateAchievements', () => {
 
         const state = { elapsed, difficulty, score: 100 };
         const result = await evaluateAchievements(state);
-        const resultSingleRun = new Set(result.filter(k => singleRunKeys.includes(k)));
-
-        // Compute expected
-        const expected = new Set();
-        expected.add('first_blood'); // totalRuns >= 1 always
-        if (elapsed >= 60000) expected.add('minuteman');
-        if (elapsed >= 30000 && nearMissCount === 0) expected.add('untouchable');
-        if (nearMissCount >= 15) expected.add('danger_zone');
-        if (bonusCount >= 6) expected.add('hoarder');
-        if (difficulty === 'hard' && elapsed >= 30000) expected.add('hard_debut');
-        if (elapsed >= 45000 && bonusCount === 0) expected.add('pacifist');
-
-        for (const k of expected) { if (!resultSingleRun.has(k)) return false; }
-        for (const k of resultSingleRun) { if (!expected.has(k)) return false; }
-        return true;
+        // No mid-run keys should appear in post-run results
+        return result.every(k => !midRunKeys.has(k));
       }
     ), { numRuns: 100 });
   });
