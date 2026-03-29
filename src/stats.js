@@ -66,9 +66,11 @@ export async function fetchLeaderboard(difficulty) {
   return data;
 }
 
-// Queries runs table and returns aggregate stats — throws on fetch error
+// Queries runs table and returns aggregate stats for the logged-in user — throws on fetch error
 export async function fetchAllTimeStats() {
-  const { data, error } = await supabase.from('runs').select('*');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { data, error } = await supabase.from('runs').select('*').eq('user_id', user.id);
   if (error) throw error;
 
   const runs = data;
