@@ -245,6 +245,27 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 31 — Polish pass
+- Difficulty descriptions: grey subtitle under difficulty buttons ("forgiving ramp, gentle chaos" / "balanced challenge" / "chaos from the start") — `index.html` + `main.js`; remove `DIFF_DESCRIPTIONS` map and `updateDiffDesc()` call to revert
+- Score delta on game-over: when not a new best, shows "−X pts from best" inline — `gameOver.js`; remove `deltaStr` to revert
+- Tracker spawn warning: trackers spawn with `pending: 500ms` — invisible, non-collidable, renders as a pulsing purple ring until materialized — `obstacles.js`, `collision.js`, `renderer.js`; remove `pending` field and related blocks to revert
+- Multiplier decay color: HUD multiplier shifts green→amber→red as it decays toward 1x — `hud.js`; replace `multColor` with `ZONE_COLOR` to revert
+- Player rank on leaderboard: `fetchLeaderboard` now returns `{ rows, playerRank }` via new `get_player_rank` Supabase RPC; rank shown below the list when authenticated — `stats.js`, `main.js`; requires `get_player_rank` SQL function in Supabase (see below); remove `playerRank` block to revert
+- Grace period ring: fading cyan ring around player during grace period, shrinks as grace expires — `renderer.js`; remove the grace ring block to revert
+- Pause stats: current score, time, and multiplier shown on pause screen — `index.html`, `main.js`; remove `#pause-stats` div and population line to revert
+
+**`get_player_rank` SQL (run in Supabase SQL editor):**
+```sql
+create or replace function get_player_rank(p_user_id uuid, p_difficulty text)
+returns integer language sql security definer stable as $$
+  select rank::integer from (
+    select user_id, rank() over (order by max(score) desc) as rank
+    from runs where difficulty = p_difficulty group by user_id
+  ) ranked where user_id = p_user_id;
+$$;
+grant execute on function get_player_rank(uuid, text) to authenticated, anon;
+```
+
 ### Session 30 — Bug fixes (audit pass)
 - Fixed near-miss flash animation: `t` was calculated against hardcoded `FLASH_DURATION` for all flashes, but near-miss flashes use `NEAR_MISS_FLASH_DURATION = 220ms` — ring spawned already mid-animation and disappeared before timer expired; fix stores `duration` on each flash object and uses `f.remaining / f.duration`
 - Fixed death timeout race: 450ms shake delay before `loop.stop()` + `showGameOver()` could be interrupted by player pressing R; `loop.stop()` would then kill the freshly-restarted run; fix uses cancellable `deathTimer` cleared in `onRestart()` and `goToMenu()`
