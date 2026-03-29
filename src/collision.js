@@ -14,6 +14,7 @@ export function checkPlayerObstacles(state) {
   if (state.activeEffects.invincibility) return;
   const player = state.player;
   for (const obs of state.obstacles) {
+    if (obs.pending > 0) continue; // POLISH: tracker spawn warning — skip pending obstacles
     if (circlesOverlap(player, obs)) {
       state.status = 'dead';
       return;
@@ -32,6 +33,7 @@ export function checkNearMisses(state, onNearMiss, now) {
   const player = state.player;
   const threshold = gameConfig.nearMissThreshold;
   for (const obs of state.obstacles) {
+    if (obs.pending > 0) continue; // POLISH: tracker spawn warning
     const dx = obs.x - player.x;
     const dy = obs.y - player.y;
     const gap = Math.sqrt(dx * dx + dy * dy) - obs.radius - player.radius;

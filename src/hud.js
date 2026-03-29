@@ -96,6 +96,16 @@ export function renderHUD(ctx, state, delta) {
   // Multiplier + pending — centered below score
   const isCombo = state.comboMultiplier > 1.0;
   const multStr = `x${state.comboMultiplier.toFixed(1)}`;
+  // POLISH: multiplier decay color — shifts green→amber→red as multiplier drops; remove the multColor lines and use ZONE_COLOR directly to revert
+  const decayT = (state.comboMultiplier - 1.0) / (gameConfig.comboMultiplierMax - 1.0); // 1=max, 0=1x
+  const multColor = isCombo
+    ? decayT > 0.5
+      ? ZONE_COLOR
+      : decayT > 0.2
+        ? '#ffaa44'
+        : '#ff4444'
+    : ZONE_COLOR;
+
   ctx.font = MULT_FONT;
   ctx.textBaseline = 'top';
 
@@ -112,8 +122,8 @@ export function renderHUD(ctx, state, delta) {
   const rowY = 46;
 
   ctx.textAlign = 'left';
-  ctx.fillStyle = ZONE_COLOR;
-  ctx.shadowColor = ZONE_COLOR;
+  ctx.fillStyle = multColor; // POLISH: multiplier decay color
+  ctx.shadowColor = multColor; // POLISH: multiplier decay color
   ctx.shadowBlur = isCombo ? 8 : 0;
   ctx.globalAlpha = isCombo ? 1.0 : 0.35;
   ctx.fillText(multStr, rowX, rowY);

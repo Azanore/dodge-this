@@ -68,10 +68,22 @@ export async function insertRun(state) {
 }
 
 // Fetches top 10 best scores per player for a given difficulty via RPC — throws on error
+// POLISH: player rank — also fetches current user's rank; remove playerRank from return to revert
 export async function fetchLeaderboard(difficulty) {
   const { data, error } = await supabase.rpc('get_leaderboard', { diff: difficulty });
   if (error) throw error;
-  return data;
+
+  // Fetch current user's rank for this difficulty (best score rank among all players)
+  let playerRank = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: rankData } = await supabase.rpc('get_player_rank', { p_user_id: user.id, p_difficulty: difficulty });
+      playerRank = rankData ?? null;
+    }
+  } catch (_) { /* rank is optional — silently skip */ }
+
+  return { rows: data, playerRank };
 }
 
 // Calls get_user_stats RPC — server-side aggregation, returns single row — throws on error

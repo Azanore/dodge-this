@@ -271,6 +271,22 @@ export function render(ctx, state, delta) {
 
   // 5. Obstacles — per-type shapes with glow
   for (const obs of state.obstacles) {
+    // POLISH: tracker spawn warning — draw pending trackers as a pulsing ring, skip normal draw
+    if (obs.pending > 0) {
+      const t = obs.pending / 500; // 1→0 as it materializes
+      const pulse = 0.5 + 0.5 * Math.sin(pulseT * 8);
+      ctx.save();
+      ctx.globalAlpha = (1 - t) * 0.3 + pulse * 0.4;
+      ctx.strokeStyle = '#cc44ff';
+      ctx.shadowColor = '#cc44ff';
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(obs.x, obs.y, obs.radius * 1.8 * (1 + t * 0.5), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      continue;
+    }
     drawObstacle(ctx, obs);
     if (showHitboxes) drawHitbox(ctx, obs.x, obs.y, obs.radius);
   }
@@ -381,6 +397,21 @@ export function render(ctx, state, delta) {
     // Bright core dot
     glowCircle(ctx, px, py, pr * 0.4, '#ffffff', 6);
     if (showHitboxes) drawHitbox(ctx, px, py, pr);
+
+    // POLISH: grace period ring — fading cyan ring around player during grace; remove this block to revert
+    if (state.status === 'grace' && state.graceRemaining > 0) {
+      const graceT = state.graceRemaining / gameConfig.gracePeriod; // 1→0
+      ctx.save();
+      ctx.globalAlpha = graceT * 0.7;
+      ctx.strokeStyle = '#00eeff';
+      ctx.shadowColor = '#00eeff';
+      ctx.shadowBlur = 16;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(px, py, pr + 8 + (1 - graceT) * 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   // 8. Near-miss "CLOSE!" text — fades out over 600ms above player

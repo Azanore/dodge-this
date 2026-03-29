@@ -60,9 +60,11 @@ export function showGameOver(state, onRestart) {
 
   const pbEl = document.getElementById('go-pb');
   if (pb.score > 0) {
+    // POLISH: score delta — replace the ternary body with just isNewBest label to revert
+    const deltaStr = !isNewBest ? `  −${Math.round(pb.score - state.score)} pts from best` : '';
     pbEl.textContent = isNewBest
       ? 'New Best'
-      : `Best  ${Math.round(pb.score)} pts  ${(pb.elapsed / 1000).toFixed(1)}s`;
+      : `Best  ${Math.round(pb.score)} pts  ${(pb.elapsed / 1000).toFixed(1)}s${deltaStr}`;
     pbEl.className = `overlay-pb${isNewBest ? ' new-best' : ''}`;
   } else {
     pbEl.textContent = '';

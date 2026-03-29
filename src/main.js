@@ -123,6 +123,14 @@ function updateDiffPB() {
 }
 updateDiffPB();
 
+// POLISH: difficulty descriptions — remove this map and the updateDiffDesc call to revert
+const DIFF_DESCRIPTIONS = { easy: 'forgiving ramp, gentle chaos', normal: 'balanced challenge', hard: 'chaos from the start' };
+function updateDiffDesc() {
+  const el = document.getElementById('diff-desc');
+  if (el) el.textContent = DIFF_DESCRIPTIONS[activeDifficulty] ?? '';
+}
+updateDiffDesc();
+
 // Preload audio on first difficulty button interaction — buffers ready before Play is clicked
 let audioPreloaded = false;
 document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -136,6 +144,7 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
     state = resetState(activeDifficulty);
     state.graceRemaining = gameConfig.gracePeriod;
     updateDiffPB();
+    updateDiffDesc(); // POLISH: difficulty descriptions
   });
 });
 
@@ -279,6 +288,9 @@ window.addEventListener('keydown', (e) => {
     state.status = 'paused';
     loop.stop();
     pauseMusic(); // AUDIO
+    // POLISH: pause stats — populate current run info; remove these lines to revert
+    const pauseStats = document.getElementById('pause-stats');
+    if (pauseStats) pauseStats.textContent = `${Math.floor(state.score)} pts  •  ${(state.elapsed / 1000).toFixed(1)}s  •  x${state.comboMultiplier.toFixed(1)}`;
     pauseScreenEl.classList.add('open');
     syncHelpBtn();
   } else if (state.status === 'paused') {
@@ -418,7 +430,7 @@ async function loadLeaderboard(difficulty) {
   document.querySelectorAll('.lb-tab').forEach(t => t.classList.toggle('selected', t.dataset.diff === difficulty));
   let loadingTimer = setTimeout(() => { lbList.textContent = 'Loading...'; }, 150);
   try {
-    const rows = await fetchLeaderboard(difficulty);
+    const { rows, playerRank } = await fetchLeaderboard(difficulty); // POLISH: player rank
     clearTimeout(loadingTimer);
     lbList.innerHTML = '';
     if (!rows.length) { lbList.textContent = 'No runs yet for this difficulty.'; return; }
@@ -447,6 +459,14 @@ async function loadLeaderboard(difficulty) {
       row.append(rank, name, score, time);
       lbList.appendChild(row);
     });
+
+    // POLISH: player rank — show current user's rank below the list; remove this block to revert
+    if (playerRank !== null) {
+      const rankEl = document.createElement('div');
+      rankEl.style.cssText = 'margin-top:12px;font:11px monospace;color:#555;text-align:center';
+      rankEl.textContent = `Your rank: #${playerRank}`;
+      lbList.appendChild(rankEl);
+    }
   } catch (_) {
     clearTimeout(loadingTimer);
     lbList.textContent = 'Failed to load. Try again.';
