@@ -75,7 +75,7 @@ See the Backlog section below.
 5. ~~Sound effects~~ — done session 8 & 13. Volume slider deliberately excluded — OS/browser controls are sufficient for a game this size.
 6. ~~**Statistics + Auth**~~ — done sessions 15–17. Stats tracking, Google OAuth sign in/out, run persistence, all-time stats overlay.
 7. ~~**Leaderboard**~~ — done session 18. Public per-difficulty top scores from the `runs` table.
-8. **Achievements** — next. Conditions evaluate against the runs table.
+8. ~~**Achievements**~~ — done session 24. 30 achievements (23 milestone tiers + 7 single-run), toast notifications, overlay UI.
 
 ---
 
@@ -245,6 +245,14 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 24 — Achievements system
+- `src/achievements.js` created: `ACHIEVEMENTS` array (30 items — 23 milestone tiers across veteran/survivor/collector/ghost/hard_boiled groups + 7 single-run), `renderAchievementsOverlay(unlockedSet)`, `queueToasts(keys)`, `clearToastQueue()`
+- `src/stats.js` extended: `fetchUnlockedAchievements()` queries `user_achievements` for authenticated user; `evaluateAchievements(state)` guards on elapsed < 5000 and unauthenticated, calls `insertRun` internally, evaluates all 30 conditions, deduplicates against already-unlocked, inserts new keys fire-and-forget
+- `index.html`: added `#achievements-btn` (visibility:hidden, after stats-btn), `#achievements-screen` overlay (`.htp-panel` with `#ach-list`), `#toast-container` (fixed bottom:72px right:24px z-index:50, not an overlay), toast CSS
+- `src/main.js`: death handler now `async`, calls `evaluateAchievements` + `queueToasts`; `isAnyModalOpen` includes `#achievements-screen`; Escape handler priority 4 for achievements-screen; `onAuthStateChange` toggles `#achievements-btn` visibility; achievements-btn click handler with 150ms loading delay; backdrop click; `clearToastQueue()` in `onRestart()` and `goToMenu()`
+- 16 tests in `src/achievements.test.js`: 6 property tests (Properties 6–11) + 7 unit tests + 3 stats integration tests — all passing
+- 5 property tests added to `src/stats.test.js` `evaluateAchievements` block (Properties 1–5) — all passing
 
 ### Session 23 — Achievements pre-work: drop combo achievements, fix hard runs count
 - Dropped `combo_chaser_1/2/3` and `max_power` from `achievements` table — `max_combo` multiplier tracking was deliberately removed in session 20; re-adding it just for these two achievements contradicts that decision; can be restored later if needed
