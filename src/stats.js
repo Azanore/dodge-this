@@ -76,16 +76,18 @@ export async function fetchAllTimeStats() {
   const runs = data;
   const totalRuns = runs.length;
 
-  const scores = (diff) => runs.filter(r => r.difficulty === diff).map(r => r.score);
+  const byDiff = (diff) => runs.filter(r => r.difficulty === diff);
+  const scores = (diff) => byDiff(diff).map(r => r.score);
   const bestScoreEasy = Math.max(0, ...scores('easy'));
   const bestScoreNormal = Math.max(0, ...scores('normal'));
   const bestScoreHard = Math.max(0, ...scores('hard'));
+  const hardRunsCount = byDiff('hard').length;
 
   const totalNearMisses = runs.reduce((s, r) => s + (r.near_misses ?? 0), 0);
   const totalBonuses = runs.reduce((s, r) => s + (r.bonuses_collected ?? 0), 0);
   const bestComboScore = Math.max(0, ...runs.map(r => r.combo_score ?? 0));
   const avgScore = (diff) => {
-    const diffRuns = runs.filter(r => r.difficulty === diff);
+    const diffRuns = byDiff(diff);
     return diffRuns.length ? diffRuns.reduce((s, r) => s + (r.score ?? 0), 0) / diffRuns.length : 0;
   };
   const avgScoreEasy = avgScore('easy');
@@ -106,6 +108,7 @@ export async function fetchAllTimeStats() {
     totalBonuses,
     bestComboScore,
     totalElapsedMs,
-    avgElapsedMs
+    avgElapsedMs,
+    hardRunsCount
   };
 }

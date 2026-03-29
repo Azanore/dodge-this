@@ -246,6 +246,12 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 23 — Achievements pre-work: drop combo achievements, fix hard runs count
+- Dropped `combo_chaser_1/2/3` and `max_power` from `achievements` table — `max_combo` multiplier tracking was deliberately removed in session 20; re-adding it just for these two achievements contradicts that decision; can be restored later if needed
+- `achievements` table now has 30 rows: 23 milestone, 7 single_run
+- Fixed `fetchAllTimeStats` in `stats.js`: extracted `byDiff(diff)` helper, added `hardRunsCount` to return value — needed for `hard_boiled` milestone evaluation
+- All 30 remaining achievements are now fully coverable with existing state + stats data — no more gaps
+
 ### Session 22 — OAuth redirect fix + achievements readiness audit
 - Fixed Google OAuth redirect on deployed site — Supabase "Site URL" was pointing to localhost; updated to `https://dodge-this.vercel.app`
 - Added redirect URL allowlist in Supabase Auth: `https://dodge-this.vercel.app` and `http://localhost:*`
