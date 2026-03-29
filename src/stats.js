@@ -184,6 +184,7 @@ export async function evaluateAchievements(state) {
     // Include mid-run achievements that fired this run so they get persisted
     for (const k of getFiredMidRunKeys()) earned.push(k);
 
+    const midRunFired = new Set(getFiredMidRunKeys());
     const newKeys = earned.filter(k => !alreadyUnlocked.has(k));
 
     for (const key of newKeys) {
@@ -194,7 +195,8 @@ export async function evaluateAchievements(state) {
       }
     }
 
-    return newKeys;
+    // Don't re-toast keys that already fired mid-run — they were shown in real-time
+    return newKeys.filter(k => !midRunFired.has(k));
   } catch (_) {
     return [];
   }
