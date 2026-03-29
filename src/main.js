@@ -50,11 +50,10 @@ function update(delta) {
       syncHelpBtn();
       showGameOver(state, onRestart);
       insertRun(state);
-      const { nearMisses, bonusesCollected, maxCombo, comboScore } = getRunStats();
+      const { nearMisses, bonusesCollected, comboScore } = getRunStats();
       document.getElementById('rs-difficulty').textContent = state.difficulty;
       document.getElementById('rs-near-misses').textContent = nearMisses;
       document.getElementById('rs-bonuses').textContent = bonusesCollected;
-      document.getElementById('rs-max-combo').textContent = `x${maxCombo.toFixed(1)}`;
       document.getElementById('rs-combo-score').textContent = Math.round(comboScore);
     }, 450);
   }
@@ -307,7 +306,7 @@ document.getElementById('stats-btn').addEventListener('click', async () => {
     const s = await fetchAllTimeStats();
     if (s.totalRuns === 0) {
       msg.textContent = 'No stats yet — play a run first.';
-      ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-score', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-highest-combo', 'st-best-combo-score'].forEach(id => {
+      ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-score', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score'].forEach(id => {
         document.getElementById(id).textContent = '—';
       });
     } else {
@@ -320,7 +319,6 @@ document.getElementById('stats-btn').addEventListener('click', async () => {
       document.getElementById('st-total-time').textContent = `${(s.totalElapsedMs / 1000).toFixed(0)}s`;
       document.getElementById('st-near-misses').textContent = s.totalNearMisses;
       document.getElementById('st-bonuses').textContent = s.totalBonuses;
-      document.getElementById('st-highest-combo').textContent = `x${s.highestCombo.toFixed(1)}`;
       document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
     }
   } catch (_) {
