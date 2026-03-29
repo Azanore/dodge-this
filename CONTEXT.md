@@ -246,6 +246,16 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 22 — OAuth redirect fix + achievements readiness audit
+- Fixed Google OAuth redirect on deployed site — Supabase "Site URL" was pointing to localhost; updated to `https://dodge-this.vercel.app`
+- Added redirect URL allowlist in Supabase Auth: `https://dodge-this.vercel.app` and `http://localhost:*`
+- Multi-tab edge case (sign out in one tab while playing in another): `onAuthStateChange` fires in all tabs automatically; mid-run sign-out causes silent insert skip on death — consistent with existing fire-and-forget design, not worth handling
+- Achievements readiness audit: DB tables (`achievements` 34 rows seeded, `user_achievements`), RLS, and insert policy all confirmed ready
+- Two gaps identified in `stats.js` before achievements can be implemented:
+  1. Peak combo multiplier per run not tracked — needed for `max_power` (single-run) and `combo_chaser` (milestone); `onComboUpdate` is already called in `gameUpdate.js` but ignored in `stats.js`
+  2. Hard runs count missing from `fetchAllTimeStats` — needed for `hard_boiled` milestone
+- All other achievement conditions already covered by existing state/stats data
+
 ### Session 21 — RLS security fix: cross-user stats leak
 - Bug: `fetchAllTimeStats` had no `user_id` filter — all authenticated users saw the same combined stats from all accounts
 - Root cause: `runs_public_read` policy had `qual: true` (all rows readable by anyone), and the query didn't filter by user
