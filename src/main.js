@@ -306,7 +306,7 @@ document.getElementById('stats-btn').addEventListener('click', async () => {
     const s = await fetchAllTimeStats();
     if (s.totalRuns === 0) {
       msg.textContent = 'No stats yet — play a run first.';
-      ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-score', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score'].forEach(id => {
+      ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-easy', 'st-avg-normal', 'st-avg-hard', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score'].forEach(id => {
         document.getElementById(id).textContent = '—';
       });
     } else {
@@ -314,7 +314,9 @@ document.getElementById('stats-btn').addEventListener('click', async () => {
       document.getElementById('st-best-easy').textContent = s.bestScoreEasy > 0 ? `${Math.round(s.bestScoreEasy)} pts` : '—';
       document.getElementById('st-best-normal').textContent = s.bestScoreNormal > 0 ? `${Math.round(s.bestScoreNormal)} pts` : '—';
       document.getElementById('st-best-hard').textContent = s.bestScoreHard > 0 ? `${Math.round(s.bestScoreHard)} pts` : '—';
-      document.getElementById('st-avg-score').textContent = `${Math.round(s.avgScore)} pts`;
+      document.getElementById('st-avg-easy').textContent = s.avgScoreEasy > 0 ? `${Math.round(s.avgScoreEasy)} pts` : '—';
+      document.getElementById('st-avg-normal').textContent = s.avgScoreNormal > 0 ? `${Math.round(s.avgScoreNormal)} pts` : '—';
+      document.getElementById('st-avg-hard').textContent = s.avgScoreHard > 0 ? `${Math.round(s.avgScoreHard)} pts` : '—';
       document.getElementById('st-avg-time').textContent = `${(s.avgElapsedMs / 1000).toFixed(1)}s`;
       document.getElementById('st-total-time').textContent = `${(s.totalElapsedMs / 1000).toFixed(0)}s`;
       document.getElementById('st-near-misses').textContent = s.totalNearMisses;
