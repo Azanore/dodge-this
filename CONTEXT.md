@@ -246,6 +246,17 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 26 — Category A cleanup
+- Removed dead `export const state` from `GameState.js` — never imported anywhere
+- Removed stale `difficulty` block and `maxSpeedMultiplier` from `config.js` DEFAULTS (pre-presets shape, never validated); removed orphaned `validateDifficulty` function; added comment pointing to `difficultyPresets`
+- Renamed misleading constants in `combo.test.js` from `INTERVAL/DURATION/RADIUS/...` to `TEST_INTERVAL/TEST_DURATION/TEST_RADIUS/...` with a clarifying comment — they are test-only overrides, not real game values
+- Added 5s elapsed guard to `insertRun` in `stats.js` — matches documented intent (CONTEXT.md session 17) and prevents junk runs in DB; guard in `evaluateAchievements` kept as defense in depth
+- Stats overlay now uses localStorage cache (`dodge_stats_cache`) — renders instantly on open, refreshes from DB in background; no layout shift; cache cleared on sign-out and invalidated after each run; consistent with achievements overlay pattern
+- Reorganized `index.html` `<style>` block — all overlay backdrop rules grouped together with comments, toast/achievement CSS moved up from orphaned bottom position, consistent indentation throughout
+- `checkNearMisses` in `collision.js` now takes a `now` parameter instead of calling `Date.now()` internally — caller passes `performance.now()` from `gameUpdate.js`; keeps the function pure and on the same clock as the rest of the game loop
+- Fixed stale tests: `config.test.js` (removed `maxSpeedMultiplier` from TOP_KEYS), `difficulty.test.js` (now uses `getPreset` and passes difficulty param), `obstacles.test.js` (uses `difficultyPresets` instead of `gameConfig.difficulty`), `player.test.js` (assertion now matches radius-inset clamping), `collision.test.js` (passes `performance.now()` and adds `activeEffects: {}` to test state), `stats.test.js` (`readCounters` uses `elapsed: 5001` to pass the new guard)
+- All 93 tests pass
+
 ### Session 25 — Achievements polish, bug fixes, and test cleanup
 - Fixed mid-run achievements not persisting to DB — `evaluateAchievements` now collects `getFiredMidRunKeys()` and inserts them post-run
 - Fixed double toast bug — mid-run keys are excluded from `queueToasts` return value in `evaluateAchievements` so they don't re-fire post-game

@@ -10,7 +10,7 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
-import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements, resetMyAchievements } from './stats.js';
+import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
@@ -401,13 +401,6 @@ document.getElementById('achievements-screen').addEventListener('click', (e) => 
   }
 });
 
-// Reset achievements button — deletes all user_achievements rows for the current user
-document.getElementById('reset-achievements-btn').addEventListener('click', async () => {
-  await resetMyAchievements();
-  localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([]));
-  renderAchievementsOverlay(new Set(), null);
-});
-
 // Leaderboard overlay
 const lbScreen = document.getElementById('leaderboard-screen');
 const lbList = document.getElementById('lb-list');
@@ -420,19 +413,33 @@ async function loadLeaderboard(difficulty) {
   try {
     const rows = await fetchLeaderboard(difficulty);
     clearTimeout(loadingTimer);
+    lbList.innerHTML = '';
     if (!rows.length) { lbList.textContent = 'No runs yet for this difficulty.'; return; }
-    lbList.innerHTML = rows.map((r, i) => {
-      const name = r.username ?? 'Anonymous';
-      const score = Math.round(r.score);
-      const time = (r.elapsed_ms / 1000).toFixed(1) + 's';
-      const rankColor = i === 0 ? '#ffe600' : i === 1 ? '#aaa' : i === 2 ? '#cd7f32' : '#555';
-      return `<div class="stats-row" style="margin-bottom:6px">
-        <span style="color:${rankColor};width:24px;text-align:right">#${i + 1}</span>
-        <span style="flex:1;color:#ddd;padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
-        <span style="color:#00ff88">${score} pts</span>
-        <span style="color:#666;margin-left:10px">${time}</span>
-      </div>`;
-    }).join('');
+    const rankColors = ['#ffe600', '#aaa', '#cd7f32'];
+    rows.forEach((r, i) => {
+      const row = document.createElement('div');
+      row.className = 'stats-row';
+      row.style.marginBottom = '6px';
+
+      const rank = document.createElement('span');
+      rank.style.cssText = `color:${rankColors[i] ?? '#555'};width:24px;text-align:right`;
+      rank.textContent = `#${i + 1}`;
+
+      const name = document.createElement('span');
+      name.style.cssText = 'flex:1;color:#ddd;padding:0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      name.textContent = r.username ?? 'Anonymous';
+
+      const score = document.createElement('span');
+      score.style.color = '#00ff88';
+      score.textContent = `${Math.round(r.score)} pts`;
+
+      const time = document.createElement('span');
+      time.style.cssText = 'color:#666;margin-left:10px';
+      time.textContent = `${(r.elapsed_ms / 1000).toFixed(1)}s`;
+
+      row.append(rank, name, score, time);
+      lbList.appendChild(row);
+    });
   } catch (_) {
     clearTimeout(loadingTimer);
     lbList.textContent = 'Failed to load. Try again.';
