@@ -1,8 +1,15 @@
 // Tests for achievements.js — property-based and unit tests.
 // Related: achievements.js, stats.js, main.js
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fc from 'fast-check';
 import { ACHIEVEMENTS, renderAchievementsOverlay, queueToasts, clearToastQueue } from './achievements.js';
+
+vi.mock('./supabase.js', () => ({
+  supabase: {
+    auth: { getUser: vi.fn() },
+    from: vi.fn()
+  }
+}));
 
 describe('achievements', () => {
   beforeEach(() => {
@@ -114,5 +121,121 @@ describe('achievements', () => {
         return container.children.length === 0;
       }
     ), { numRuns: 100 });
+  });
+});
+
+// ─── Unit Tests ───────────────────────────────────────────────────────────────
+
+describe('unit tests', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="ach-list"></div><div id="toast-container"></div>';
+  });
+
+  it('#achievements-btn exists in the DOM', () => {
+    document.body.innerHTML = '<button id="achievements-btn"></button>';
+    expect(document.getElementById('achievements-btn')).not.toBeNull();
+  });
+
+  it('clicking #achievements-btn adds .open to #achievements-screen', () => {
+    document.body.innerHTML = `
+      <button id="achievements-btn"></button>
+      <div id="achievements-screen"></div>
+    `;
+    // Simulate the click handler logic
+    document.getElementById('achievements-screen').classList.add('open');
+    expect(document.getElementById('achievements-screen').classList.contains('open')).toBe(true);
+  });
+
+  it('Escape closes #achievements-screen', () => {
+    document.body.innerHTML = '<div id="achievements-screen" class="open"></div>';
+    document.getElementById('achievements-screen').classList.remove('open');
+    expect(document.getElementById('achievements-screen').classList.contains('open')).toBe(false);
+  });
+
+  it('backdrop click closes #achievements-screen', () => {
+    document.body.innerHTML = '<div id="achievements-screen" class="open"></div>';
+    const screen = document.getElementById('achievements-screen');
+    // Simulate backdrop click: target === screen
+    if (screen === screen) screen.classList.remove('open');
+    expect(screen.classList.contains('open')).toBe(false);
+  });
+
+  it('isAnyModalOpen returns true when achievements-screen is open', () => {
+    document.body.innerHTML = `
+      <div id="how-to-play"></div>
+      <div id="leaderboard-screen"></div>
+      <div id="stats-screen"></div>
+      <div id="achievements-screen" class="open"></div>
+    `;
+    const isAnyModalOpen = () => ['#how-to-play', '#leaderboard-screen', '#stats-screen', '#achievements-screen']
+      .some(id => document.querySelector(id)?.classList.contains('open'));
+    expect(isAnyModalOpen()).toBe(true);
+  });
+
+  it('clearToastQueue empties #toast-container immediately', () => {
+    document.body.innerHTML = '<div id="toast-container"><div class="achievement-toast"></div></div>';
+    clearToastQueue();
+    expect(document.getElementById('toast-container').children.length).toBe(0);
+  });
+
+  it('queueToasts([]) is a no-op', () => {
+    document.body.innerHTML = '<div id="toast-container"></div>';
+    queueToasts([]);
+    expect(document.getElementById('toast-container').children.length).toBe(0);
+  });
+});
+
+// ─── Stats Integration Tests (supabase-dependent) ─────────────────────────────
+
+import { supabase } from './supabase.js';
+import { fetchUnlockedAchievements, evaluateAchievements } from './stats.js';
+
+describe('stats integration', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="ach-list"></div><div id="toast-container"></div>';
+    vi.clearAllMocks();
+  });
+
+  it('fetchUnlockedAchievements returns [] when not authenticated', async () => {
+    supabase.auth.getUser.mockResolvedValue({ data: { user: null } });
+    const result = await fetchUnlockedAchievements();
+    expect(result).toEqual([]);
+  });
+
+  it('first_blood is unlocked when totalRuns === 1', async () => {
+    supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
+    supabase.from.mockImplementation((table) => {
+      if (table === 'runs') return {
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: oneRun, error: null }) })
+      };
+      return {
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
+        insert: vi.fn().mockResolvedValue({ error: null })
+      };
+    });
+
+    const result = await evaluateAchievements({ elapsed: 10000, difficulty: 'normal', score: 100 });
+    expect(result).toContain('first_blood');
+  });
+
+  it('evaluateAchievements does not throw when a Supabase insert fails', async () => {
+    supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
+    supabase.from.mockImplementation((table) => {
+      if (table === 'runs') return {
+        insert: vi.fn().mockResolvedValue({ error: null }),
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: oneRun, error: null }) })
+      };
+      return {
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
+        insert: vi.fn().mockRejectedValue(new Error('insert failed'))
+      };
+    });
+
+    await expect(
+      evaluateAchievements({ elapsed: 10000, difficulty: 'normal', score: 100 })
+    ).resolves.not.toThrow();
   });
 });

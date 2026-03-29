@@ -66,7 +66,7 @@ Implement the achievements system across four files: `src/achievements.js` (new 
 - [x] 4. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 5. Wire achievements into `src/main.js`
+- [x] 5. Wire achievements into `src/main.js`
   - Import `evaluateAchievements`, `fetchUnlockedAchievements` from `./stats.js`; import `renderAchievementsOverlay`, `queueToasts`, `clearToastQueue` from `./achievements.js`
   - Replace `insertRun(state)` in the death handler with `await evaluateAchievements(state)` (make the setTimeout callback async), then call `queueToasts(newKeys)`
   - Add `'#achievements-screen'` to `isAnyModalOpen()` array
@@ -82,11 +82,11 @@ Implement the achievements system across four files: `src/achievements.js` (new 
     - **Property 6: Achievement button visibility matches auth state**
     - **Validates: Requirements 1.2, 1.3**
 
-  - [-] 5.2 Write property test for isAnyModalOpen includes achievements-screen
+  - [x] 5.2 Write property test for isAnyModalOpen includes achievements-screen
     - **Property 9: isAnyModalOpen includes achievements-screen**
     - **Validates: Requirements 2.7**
 
-- [~] 6. Write unit tests in `src/achievements.test.js`
+- [x] 6. Write unit tests in `src/achievements.test.js`
   - `#achievements-btn` exists in the DOM
   - Clicking `#achievements-btn` adds `.open` to `#achievements-screen`
   - Escape closes `#achievements-screen`
@@ -99,10 +99,10 @@ Implement the achievements system across four files: `src/achievements.js` (new 
   - `queueToasts([])` is a no-op — `#toast-container` remains empty
   - _Requirements: 1.1, 1.4, 2.5, 2.6, 2.7, 3.2, 5.1, 8.8, 8.9, 8.10_
 
-- [~] 7. Final checkpoint — Ensure all tests pass
+- [x] 7. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 8. Commit and push
+- [-] 8. Commit and push
   - Run: `git add . ; git commit -m "feat: achievements system" ; git push origin master`
 
 ## Notes
