@@ -25,6 +25,11 @@ export function onBonusCollected() {
   bonusesCollected += 1;
 }
 
+// Adds amount to comboScore
+export function onComboBank(amount) {
+  comboScore += amount;
+}
+
 // Returns current run counter values — used by main.js to populate the per-run panel
 export function getRunStats() {
   return { nearMisses, bonusesCollected, comboScore };
