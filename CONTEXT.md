@@ -246,6 +246,16 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 21 — RLS security fix: cross-user stats leak
+- Bug: `fetchAllTimeStats` had no `user_id` filter — all authenticated users saw the same combined stats from all accounts
+- Root cause: `runs_public_read` policy had `qual: true` (all rows readable by anyone), and the query didn't filter by user
+- Fixed `runs` SELECT policy: dropped `runs_public_read`, added `runs_own_read` (`auth.uid() = user_id`, `authenticated` role only)
+- Fixed `get_leaderboard` RPC: recreated as `SECURITY DEFINER` so it can still read all runs for the public leaderboard despite the restrictive SELECT policy
+- Fixed `fetchAllTimeStats` in `stats.js`: now fetches current user via `supabase.auth.getUser()` and filters with `.eq('user_id', user.id)` — defense in depth
+- Guests: confirmed safe — `anon` role has execute on `get_leaderboard` (SECURITY DEFINER bypasses RLS), but cannot directly query `runs` table
+- Full RLS audit: `achievements` (public read only ✓), `profiles` (public read, own insert/update ✓), `user_achievements` (public read, own insert, no delete ✓) — all correct
+- Security advisory: "Leaked Password Protection Disabled" — irrelevant, Google OAuth only, no password auth
+
 ### Session 20 — Post-overhaul polish, bug fixes & stats cleanup
 - Fixed Tab key accidentally dismissing modals and starting the game — `onStartAction` now uses allowlist (`e.key !== ' '`) instead of blocklist (`e.key === 'Escape'`)
 - Updated hint text from "or press any key" to "or press Space"
