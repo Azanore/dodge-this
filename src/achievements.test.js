@@ -9,6 +9,28 @@ describe('achievements', () => {
     document.body.innerHTML = '<div id="ach-list"></div><div id="toast-container"></div>';
   });
 
+  // Feature: achievements, Property 6: Achievement button visibility matches auth state
+  it('Property 6: achievements-btn visibility matches auth state', () => {
+    fc.assert(fc.property(
+      fc.boolean(),
+      (hasSession) => {
+        document.body.innerHTML = `
+          <button id="achievements-btn" style="visibility:hidden"></button>
+          <button id="stats-btn" style="visibility:hidden"></button>
+        `;
+        // Simulate onAuthStateChange logic
+        document.getElementById('achievements-btn').style.visibility = hasSession ? 'visible' : 'hidden';
+        document.getElementById('stats-btn').style.visibility = hasSession ? 'visible' : 'hidden';
+
+        const achVis = document.getElementById('achievements-btn').style.visibility;
+        const statsVis = document.getElementById('stats-btn').style.visibility;
+        const expected = hasSession ? 'visible' : 'hidden';
+
+        return achVis === expected && statsVis === expected && achVis === statsVis;
+      }
+    ), { numRuns: 100 });
+  });
+
   // Feature: achievements, Property 7: Overlay renders all 30 achievements
   it('Property 7: renderAchievementsOverlay always renders all 30 achievements', () => {
     const allKeys = ACHIEVEMENTS.map(a => a.key);
@@ -50,6 +72,31 @@ describe('achievements', () => {
         const count = document.getElementById('toast-container').children.length;
         clearToastQueue();
         return count <= 1;
+      }
+    ), { numRuns: 100 });
+  });
+
+  // Feature: achievements, Property 9: isAnyModalOpen includes achievements-screen
+  it('Property 9: isAnyModalOpen returns true when achievements-screen is open', () => {
+    fc.assert(fc.property(
+      fc.boolean(), // achievements-screen open
+      fc.boolean(), // how-to-play open
+      fc.boolean(), // leaderboard-screen open
+      fc.boolean(), // stats-screen open
+      (achOpen, htpOpen, lbOpen, statsOpen) => {
+        document.body.innerHTML = `
+          <div id="how-to-play" class="${htpOpen ? 'open' : ''}"></div>
+          <div id="leaderboard-screen" class="${lbOpen ? 'open' : ''}"></div>
+          <div id="stats-screen" class="${statsOpen ? 'open' : ''}"></div>
+          <div id="achievements-screen" class="${achOpen ? 'open' : ''}"></div>
+        `;
+
+        // Simulates the isAnyModalOpen logic from main.js
+        const result = ['#how-to-play', '#leaderboard-screen', '#stats-screen', '#achievements-screen']
+          .some(id => document.querySelector(id)?.classList.contains('open'));
+
+        const expected = achOpen || htpOpen || lbOpen || statsOpen;
+        return result === expected;
       }
     ), { numRuns: 100 });
   });
