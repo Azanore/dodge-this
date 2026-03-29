@@ -182,9 +182,9 @@ export async function evaluateAchievements(state) {
     if (stats.totalRuns >= 1) earned.push('first_blood');
 
     // Include mid-run achievements that fired this run so they get persisted
-    for (const k of getFiredMidRunKeys()) earned.push(k);
-
     const midRunFired = new Set(getFiredMidRunKeys());
+    for (const k of midRunFired) earned.push(k);
+
     const newKeys = earned.filter(k => !alreadyUnlocked.has(k));
 
     for (const key of newKeys) {

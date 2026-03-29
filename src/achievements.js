@@ -48,7 +48,7 @@ export const ACHIEVEMENTS = [
 
 // Toast timing constants
 const TOAST_SLIDE_MS = 150;
-const TOAST_VISIBLE_MS = 1500;
+const TOAST_VISIBLE_MS = 2500;
 const TOAST_GAP_MS = 80;
 
 // Internal toast queue state

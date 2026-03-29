@@ -291,9 +291,11 @@ supabase.auth.onAuthStateChange((_event, session) => {
     const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Signed in';
     authBtn.textContent = `${name} — Sign out`;
     authBtn.style.color = '#aaa';
+    refreshUnlockedCache();
   } else {
     authBtn.textContent = 'Sign in with Google';
     authBtn.style.color = '#888';
+    state._unlockedAchievements = new Set();
   }
 });
 

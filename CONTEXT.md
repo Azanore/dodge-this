@@ -246,6 +246,21 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 25 — Achievements polish, bug fixes, and test cleanup
+- Fixed mid-run achievements not persisting to DB — `evaluateAchievements` now collects `getFiredMidRunKeys()` and inserts them post-run
+- Fixed double toast bug — mid-run keys are excluded from `queueToasts` return value in `evaluateAchievements` so they don't re-fire post-game
+- Fixed first-run unlocked cache — `refreshUnlockedCache()` now called in `onAuthStateChange` when session exists, so the very first run of a session correctly filters already-unlocked achievements from mid-run checks
+- Fixed duplicate `resetMyAchievements` declaration in `stats.js` (leftover from failed append)
+- Fixed missing RLS DELETE policy on `user_achievements` — added `user_achievements_own_delete` policy so the reset button actually deletes rows
+- Added "Reset my achievements" button to achievements overlay (bottom right, subtle red) — calls `resetMyAchievements()` and re-renders overlay
+- Toast duration bumped: 1500ms → 2500ms visible time
+- Progress counter styling improved: now uses achievement's neon color at 80% opacity instead of dim grey
+- Cleaned up double `getFiredMidRunKeys()` call in `evaluateAchievements`
+- Fixed stale `fetchAllTimeStats` tests: mock chain now includes `.eq()`, removed assertions for dropped fields (`highestCombo`, `avgScore`)
+- Fixed stale `insertRun` test: removed `max_combo` assertion (column dropped session 20)
+- Fixed stale `readCounters` helper: removed `maxCombo` from payload read (not in insert payload anymore)
+- All 41 tests pass
+
 ### Session 24 — Achievements system
 - `src/achievements.js` created: `ACHIEVEMENTS` array (30 items — 23 milestone tiers across veteran/survivor/collector/ghost/hard_boiled groups + 7 single-run), `renderAchievementsOverlay(unlockedSet)`, `queueToasts(keys)`, `clearToastQueue()`
 - `src/stats.js` extended: `fetchUnlockedAchievements()` queries `user_achievements` for authenticated user; `evaluateAchievements(state)` guards on elapsed < 5000 and unauthenticated, calls `insertRun` internally, evaluates all 30 conditions, deduplicates against already-unlocked, inserts new keys fire-and-forget
