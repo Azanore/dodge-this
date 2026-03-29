@@ -56,16 +56,18 @@ export function showGameOver(state, onRestart) {
 
   const el = document.getElementById('game-over-screen');
   document.getElementById('go-score').textContent = `${Math.round(state.score)} pts`;
-  document.getElementById('go-elapsed').textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
 
   const pbEl = document.getElementById('go-pb');
   if (pb.score > 0) {
-    // POLISH: score delta — replace the ternary body with just isNewBest label to revert
-    const deltaStr = !isNewBest ? `  −${Math.round(pb.score - state.score)} pts from best` : '';
-    pbEl.textContent = isNewBest
-      ? 'New Best'
-      : `Best  ${Math.round(pb.score)} pts  ${(pb.elapsed / 1000).toFixed(1)}s${deltaStr}`;
-    pbEl.className = `overlay-pb${isNewBest ? ' new-best' : ''}`;
+    if (isNewBest) {
+      pbEl.textContent = 'New Best';
+      pbEl.className = 'overlay-pb new-best';
+    } else {
+      // POLISH: score delta — remove deltaStr line and second line to revert to single-line PB
+      const deltaStr = `−${Math.round(pb.score - state.score)} pts from best`;
+      pbEl.innerHTML = `<span style="color:#555">Best ${Math.round(pb.score)} pts &nbsp;${(pb.elapsed / 1000).toFixed(1)}s</span><br><span style="color:#ff6666;font-size:12px">${deltaStr}</span>`;
+      pbEl.className = 'overlay-pb';
+    }
   } else {
     pbEl.textContent = '';
   }

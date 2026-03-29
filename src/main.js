@@ -47,6 +47,13 @@ function update(delta) {
   const result = gameUpdate(delta, state, accumulators, queueToasts);
   if (result === 'dead') {
     triggerShake();
+    // Populate run stats immediately — data is synchronous, no reason to wait for the timeout
+    const { nearMisses, bonusesCollected, comboScore } = getRunStats();
+    document.getElementById('go-elapsed').textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
+    document.getElementById('rs-difficulty').textContent = state.difficulty;
+    document.getElementById('rs-near-misses').textContent = nearMisses;
+    document.getElementById('rs-bonuses').textContent = bonusesCollected;
+    document.getElementById('rs-combo-score').textContent = Math.round(comboScore);
     deathTimer = setTimeout(async () => {
       deathTimer = null;
       loop.stop();
@@ -61,11 +68,6 @@ function update(delta) {
       }
       // Invalidate stats cache — run was just inserted, cache is stale
       localStorage.removeItem(STATS_CACHE_KEY);
-      const { nearMisses, bonusesCollected, comboScore } = getRunStats();
-      document.getElementById('rs-difficulty').textContent = state.difficulty;
-      document.getElementById('rs-near-misses').textContent = nearMisses;
-      document.getElementById('rs-bonuses').textContent = bonusesCollected;
-      document.getElementById('rs-combo-score').textContent = Math.round(comboScore);
     }, 450);
   }
 }
@@ -289,8 +291,12 @@ window.addEventListener('keydown', (e) => {
     loop.stop();
     pauseMusic(); // AUDIO
     // POLISH: pause stats — populate current run info; remove these lines to revert
-    const pauseStats = document.getElementById('pause-stats');
-    if (pauseStats) pauseStats.textContent = `${Math.floor(state.score)} pts  •  ${(state.elapsed / 1000).toFixed(1)}s  •  x${state.comboMultiplier.toFixed(1)}`;
+    const psScore = document.getElementById('ps-score');
+    const psTime = document.getElementById('ps-time');
+    const psMult = document.getElementById('ps-mult');
+    if (psScore) psScore.textContent = `${Math.floor(state.score)} pts`;
+    if (psTime) psTime.textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
+    if (psMult) psMult.textContent = `x${state.comboMultiplier.toFixed(1)}`;
     pauseScreenEl.classList.add('open');
     syncHelpBtn();
   } else if (state.status === 'paused') {

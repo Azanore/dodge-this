@@ -212,7 +212,11 @@
     <div class="overlay-panel">
       <div class="overlay-title" style="color:#fff;text-shadow:0 0 20px #fff">PAUSED</div>
       <!-- POLISH: pause stats — remove this div to revert -->
-      <div id="pause-stats" style="font:12px monospace;color:#666;margin-bottom:4px;text-align:center"></div>
+      <div id="pause-stats" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 20px;font:12px monospace;min-width:200px;margin-bottom:4px">
+        <div class="stats-row"><span class="htp-label">Score</span><span id="ps-score" class="htp-desc" style="color:#fff"></span></div>
+        <div class="stats-row"><span class="htp-label">Time</span><span id="ps-time" class="htp-desc" style="color:#aaa"></span></div>
+        <div class="stats-row"><span class="htp-label">Multiplier</span><span id="ps-mult" class="htp-desc" style="color:#00ff88"></span></div>
+      </div>
       <button id="resume-btn" class="overlay-btn primary">Resume</button>
       <div class="overlay-label">or press Esc</div>
       <div class="btn-row" style="margin-top:8px">
@@ -227,13 +231,14 @@
     <div class="overlay-panel">
       <div class="overlay-title" style="color:#ff4444;text-shadow:0 0 20px #ff4444">GAME OVER</div>
       <div id="go-score" class="overlay-score"></div>
-      <div id="go-elapsed" class="overlay-meta"></div>
       <div id="go-pb" class="overlay-pb"></div>
       <div id="run-stats-panel">
-        <div style="display:flex;justify-content:space-between;gap:24px"><span>Difficulty</span><span id="rs-difficulty" style="color:#fff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:24px"><span>Near Misses</span><span id="rs-near-misses" style="color:#00eeff"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:24px"><span>Bonuses</span><span id="rs-bonuses" style="color:#00ff88"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:24px"><span>Combo Score</span><span id="rs-combo-score" style="color:#ffe600"></span></div>
+        <div class="htp-section" style="margin-top:0">This run</div>
+        <div class="stats-row"><span class="htp-label">Time</span><span id="go-elapsed" class="htp-desc" style="color:#aaa"></span></div>
+        <div class="stats-row"><span class="htp-label">Difficulty</span><span id="rs-difficulty" class="htp-desc" style="color:#fff"></span></div>
+        <div class="stats-row"><span class="htp-label">Near Misses</span><span id="rs-near-misses" class="htp-desc" style="color:#00eeff"></span></div>
+        <div class="stats-row"><span class="htp-label">Bonuses</span><span id="rs-bonuses" class="htp-desc" style="color:#00ff88"></span></div>
+        <div class="stats-row"><span class="htp-label">Combo Score</span><span id="rs-combo-score" class="htp-desc" style="color:#ffe600"></span></div>
       </div>
       <button id="restart-btn" class="overlay-btn primary">Restart</button>
       <div class="overlay-label">or press R</div>
