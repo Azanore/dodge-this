@@ -6,7 +6,7 @@ window.gameConfig = {
   playerHitboxRadius: 10,      // base player hitbox radius in pixels
   outerZoneScale: 1.3,         // outer zone is this multiple of inner zone on each axis
 
-  nearMissThreshold: 20,       // px gap between edges that counts as a near-miss
+  nearMissThreshold: 26,       // px gap between edges that counts as a near-miss
 
   comboMultiplierMax: 5.0,     // hard cap on combo multiplier
   comboBuildRate: 1.5,         // multiplier units gained per second while inside score zone
@@ -15,7 +15,7 @@ window.gameConfig = {
 
   scoreZoneInterval: 10000,    // ms between zone appearances
   scoreZoneDuration: 7000,     // ms zone stays active
-  scoreZoneRadius: 110,        // px radius of the score zone
+  scoreZoneRadius: 90,         // px radius of the score zone
   scoreZoneWanderSpeed: 40,    // px per second wander speed
 
   slowmoFadeDuration: 1500,    // ms to ease slowmoMultiplier back to 1 after expiry

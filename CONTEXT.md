@@ -246,7 +246,15 @@ Run: `npm test`
 
 ## Changelog
 
-### Session 27 — Category B: security and production cleanup
+### Session 28 — Category C: stats aggregation RPC
+- Created `get_user_stats(p_user_id uuid)` Postgres function — `SECURITY DEFINER`, `STABLE`, aggregates all stats server-side in a single query; returns one row with all fields matching the previous `fetchAllTimeStats` return shape
+- Granted `execute` to `authenticated` role only
+- `fetchAllTimeStats` in `stats.js` replaced: was `select('*').eq('user_id')` + client-side JS aggregation; now `supabase.rpc('get_user_stats', { p_user_id })` — one round-trip, no data transfer overhead, scales to any run count
+- Updated `stats.test.js` `fetchAllTimeStats` unit tests to mock `supabase.rpc` instead of `supabase.from`
+- Updated `evaluateAchievements` property tests (Properties 3–5) and `achievements.test.js` stats integration tests to mock `supabase.rpc` with `rpcRowFromRuns` helper
+- Security advisors clean — only pre-existing leaked password warning (irrelevant, Google OAuth only)
+
+
 - Removed "Reset my achievements" button from `index.html` and its event listener from `main.js` — dev artifact with no place in production; `resetMyAchievements()` in `stats.js` stays for console use
 - Removed `resetMyAchievements` from `main.js` import
 - Replaced leaderboard `innerHTML` string builder in `main.js` with DOM construction using `textContent` for `username` — eliminates XSS risk from user-supplied display names; rank/score/time remain as literals (derived from numbers, safe)
