@@ -170,6 +170,9 @@ function onStartAction(e) {
   initAudio().then(() => { startMusic(); playGameStart(); }); // AUDIO
   state.status = 'grace';
   syncHelpBtn();
+  // POLISH: in-game difficulty overlay — populate and show; remove these lines to revert
+  const diffEl = document.getElementById('ingame-difficulty');
+  if (diffEl) { diffEl.textContent = activeDifficulty; diffEl.style.display = 'block'; }
   loop.start();
 }
 
