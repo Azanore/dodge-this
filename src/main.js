@@ -354,14 +354,16 @@ document.getElementById('stats-screen').addEventListener('click', (e) => {
 document.getElementById('achievements-btn').addEventListener('click', async () => {
   const achScreen = document.getElementById('achievements-screen');
   achScreen.classList.add('open');
-  const achList = document.getElementById('ach-list');
-  let loadingTimer = setTimeout(() => { achList.textContent = 'Loading...'; }, 150);
+  const achLoading = document.getElementById('ach-loading');
+  let loadingTimer = setTimeout(() => { achLoading.textContent = 'Loading...'; }, 150);
   try {
     const [keys, stats] = await Promise.all([fetchUnlockedAchievements(), fetchAllTimeStats().catch(() => null)]);
     clearTimeout(loadingTimer);
+    achLoading.textContent = '';
     renderAchievementsOverlay(new Set(keys), stats);
   } catch (_) {
     clearTimeout(loadingTimer);
+    achLoading.textContent = '';
     renderAchievementsOverlay(new Set(), null);
   }
 });
