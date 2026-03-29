@@ -213,11 +213,12 @@ describe('insertRun', () => {
 describe('fetchAllTimeStats', () => {
   it('computes aggregates correctly from rows', async () => {
     const rows = [
-      { score: 500, elapsed_ms: 10000, difficulty: 'easy', near_misses: 2, bonuses_collected: 3, max_combo: 2.5, combo_score: 100 },
-      { score: 800, elapsed_ms: 20000, difficulty: 'normal', near_misses: 1, bonuses_collected: 1, max_combo: 4.0, combo_score: 300 },
-      { score: 1200, elapsed_ms: 30000, difficulty: 'hard', near_misses: 5, bonuses_collected: 0, max_combo: 5.0, combo_score: 500 }
+      { score: 500, elapsed_ms: 10000, difficulty: 'easy', near_misses: 2, bonuses_collected: 3, combo_score: 100 },
+      { score: 800, elapsed_ms: 20000, difficulty: 'normal', near_misses: 1, bonuses_collected: 1, combo_score: 300 },
+      { score: 1200, elapsed_ms: 30000, difficulty: 'hard', near_misses: 5, bonuses_collected: 0, combo_score: 500 }
     ];
-    supabase.from.mockReturnValue({ select: vi.fn().mockResolvedValue({ data: rows, error: null }) });
+    supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    supabase.from.mockReturnValue({ select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: rows, error: null }) }) });
 
     const stats = await fetchAllTimeStats();
 
@@ -227,16 +228,16 @@ describe('fetchAllTimeStats', () => {
     expect(stats.bestScoreHard).toBe(1200);
     expect(stats.totalNearMisses).toBe(8);
     expect(stats.totalBonuses).toBe(4);
-    expect(stats.highestCombo).toBe(5.0);
     expect(stats.bestComboScore).toBe(500);
     expect(stats.totalElapsedMs).toBe(60000);
-    expect(stats.avgScore).toBeCloseTo(833.33, 1);
     expect(stats.avgElapsedMs).toBe(20000);
+    expect(stats.hardRunsCount).toBe(1);
   });
 
   it('fetch throws — error propagates', async () => {
     const err = new Error('fetch failed');
-    supabase.from.mockReturnValue({ select: vi.fn().mockResolvedValue({ data: null, error: err }) });
+    supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    supabase.from.mockReturnValue({ select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: err }) }) });
 
     await expect(fetchAllTimeStats()).rejects.toThrow('fetch failed');
   });
