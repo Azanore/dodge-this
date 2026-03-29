@@ -46,7 +46,6 @@ async function readCounters() {
   return {
     nearMisses: payload.near_misses,
     bonusesCollected: payload.bonuses_collected,
-    maxCombo: payload.max_combo,
     comboScore: payload.combo_score
   };
 }
@@ -108,7 +107,8 @@ describe('property tests', () => {
         async (multipliers) => {
           resetRunStats();
           for (const m of multipliers) onComboUpdate(m);
-          const { maxCombo } = await readCounters();
+          // maxCombo is tracked internally but no longer in the insert payload — verify via getRunStats
+          const { maxCombo } = (await import('./stats.js')).getRunStats();
           expect(maxCombo).toBeCloseTo(Math.max(...multipliers), 5);
         }
       ),
@@ -159,7 +159,6 @@ describe('property tests', () => {
 
           expect(counters.nearMisses).toBe(0);
           expect(counters.bonusesCollected).toBe(0);
-          expect(counters.maxCombo).toBe(1.0);
           expect(counters.comboScore).toBe(0);
         }
       ),
@@ -191,7 +190,6 @@ describe('insertRun', () => {
     expect(payload.difficulty).toBe('hard');
     expect(payload.near_misses).toBe(1);
     expect(payload.bonuses_collected).toBe(1);
-    expect(payload.max_combo).toBe(3.5);
     expect(payload.combo_score).toBe(200);
     expect(typeof payload.played_at).toBe('string');
   });

@@ -3,7 +3,7 @@
 // Does not mutate GameState — counters are ephemeral module-level variables.
 
 import { supabase } from './supabase.js';
-import { ACHIEVEMENTS } from './achievements.js';
+import { ACHIEVEMENTS, getFiredMidRunKeys } from './achievements.js';
 
 let nearMisses = 0;
 let bonusesCollected = 0;
@@ -180,6 +180,9 @@ export async function evaluateAchievements(state) {
 
     // Single-run achievements (post-run only — mid-run ones handled by checkMidRunAchievements)
     if (stats.totalRuns >= 1) earned.push('first_blood');
+
+    // Include mid-run achievements that fired this run so they get persisted
+    for (const k of getFiredMidRunKeys()) earned.push(k);
 
     const newKeys = earned.filter(k => !alreadyUnlocked.has(k));
 

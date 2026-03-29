@@ -121,6 +121,11 @@ export function resetMidRunTracking() {
   _firedThisRun = new Set();
 }
 
+// Returns keys that fired mid-run this session — used by evaluateAchievements to persist them
+export function getFiredMidRunKeys() {
+  return [..._firedThisRun];
+}
+
 // Checks mid-run single-run achievement conditions synchronously.
 // Returns newly-triggered keys not already in unlockedSet or fired this run.
 // state: { elapsed, difficulty }, nearMisses: number, bonusesCollected: number
