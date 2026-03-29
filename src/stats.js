@@ -54,7 +54,6 @@ export async function insertRun(state) {
     elapsed_ms: Math.round(state.elapsed),
     difficulty: state.difficulty,
     near_misses: nearMisses,
-    max_combo: maxCombo,
     combo_score: Math.round(comboScore),
     bonuses_collected: bonusesCollected,
     played_at: new Date().toISOString()
