@@ -6,8 +6,8 @@ import { describe, it } from 'vitest';
 import * as fc from 'fast-check';
 import { validateConfig, DEFAULTS } from './config.js';
 
-// Top-level scalar keys that must be present
-const TOP_KEYS = ['gracePeriod', 'playerHitboxRadius', 'outerZoneScale', 'maxSpeedMultiplier'];
+// Top-level scalar keys that validateConfig actually checks
+const TOP_KEYS = ['gracePeriod', 'playerHitboxRadius', 'outerZoneScale'];
 
 // Arbitrary: config with a random subset of top-level keys removed
 const arbIncompleteConfig = fc.array(
@@ -18,8 +18,6 @@ const arbIncompleteConfig = fc.array(
     gracePeriod: 2000,
     playerHitboxRadius: 14,
     outerZoneScale: 1.3,
-    maxSpeedMultiplier: 4.0,
-    difficulty: { ...DEFAULTS.difficulty },
     obstacleTypes: JSON.parse(JSON.stringify(DEFAULTS.obstacleTypes)),
     bonusTypes: JSON.parse(JSON.stringify(DEFAULTS.bonusTypes))
   };

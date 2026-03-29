@@ -28,4 +28,3 @@ export function resetState(difficulty = 'normal') {
   };
 }
 
-export const state = resetState();

@@ -4,10 +4,11 @@
 
 import { describe, it } from 'vitest';
 import * as fc from 'fast-check';
-import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
+import { getCurrentSpeedMultiplier, getCurrentSpawnInterval, getPreset } from './difficulty.js';
 
 // Arbitrary: elapsed time from 0 to 10 minutes in ms
 const arbElapsed = fc.integer({ min: 0, max: 600000 });
+const arbDifficulty = fc.constantFrom('easy', 'normal', 'hard');
 
 describe('difficulty', () => {
   /**
@@ -16,11 +17,11 @@ describe('difficulty', () => {
    */
   it('Property 7: speed multiplier is monotonically non-decreasing over time', () => {
     fc.assert(
-      fc.property(arbElapsed, arbElapsed, (t1, t2) => {
+      fc.property(arbElapsed, arbElapsed, arbDifficulty, (t1, t2, diff) => {
         const earlier = Math.min(t1, t2);
         const later = Math.max(t1, t2);
-        expect(getCurrentSpeedMultiplier(later)).toBeGreaterThanOrEqual(
-          getCurrentSpeedMultiplier(earlier)
+        expect(getCurrentSpeedMultiplier(later, diff)).toBeGreaterThanOrEqual(
+          getCurrentSpeedMultiplier(earlier, diff)
         );
       }),
       { numRuns: 100 }
@@ -33,12 +34,13 @@ describe('difficulty', () => {
    */
   it('Property 8: spawn interval >= spawnRateMin and speed multiplier <= maxSpeedMultiplier', () => {
     fc.assert(
-      fc.property(arbElapsed, elapsed => {
-        const spawnInterval = getCurrentSpawnInterval(elapsed);
-        const speedMult = getCurrentSpeedMultiplier(elapsed);
+      fc.property(arbElapsed, arbDifficulty, (elapsed, diff) => {
+        const preset = getPreset(diff);
+        const spawnInterval = getCurrentSpawnInterval(elapsed, diff);
+        const speedMult = getCurrentSpeedMultiplier(elapsed, diff);
 
-        expect(spawnInterval).toBeGreaterThanOrEqual(gameConfig.difficulty.spawnRateMin);
-        expect(speedMult).toBeLessThanOrEqual(gameConfig.maxSpeedMultiplier);
+        expect(spawnInterval).toBeGreaterThanOrEqual(preset.spawnRateMin);
+        expect(speedMult).toBeLessThanOrEqual(preset.maxSpeedMultiplier);
       }),
       { numRuns: 100 }
     );

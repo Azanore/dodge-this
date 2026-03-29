@@ -43,10 +43,11 @@ export function getRunStats() {
   return { nearMisses, bonusesCollected, maxCombo, comboScore };
 }
 
-// Checks auth, inserts run record if authenticated — fire-and-forget, swallows errors
+// Checks auth, inserts run record if authenticated and run lasted at least 5s — fire-and-forget, swallows errors
 export async function insertRun(state) {
   const { data } = await supabase.auth.getUser();
   if (!data?.user) return;
+  if (state.elapsed < 5000) return;
 
   const payload = {
     user_id: data.user.id,

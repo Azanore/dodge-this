@@ -18,7 +18,7 @@ const COOLDOWN = 600;
 
 // Builds a minimal state object for checkNearMisses
 function makeState(player, obstacles) {
-  return { player, obstacles };
+  return { player, obstacles, activeEffects: {} };
 }
 
 // Builds an obstacle at a specific edge gap from the player
@@ -76,7 +76,7 @@ describe('collision', () => {
         (gap) => {
           const obs = obsAtGap(player, gap);
           let fired = 0;
-          checkNearMisses(makeState(player, [obs]), () => fired++);
+          checkNearMisses(makeState(player, [obs]), () => fired++, performance.now());
           expect(fired).toBe(1);
         }
       ),
@@ -90,7 +90,7 @@ describe('collision', () => {
         (gap) => {
           const obs = obsAtGap(player, gap);
           let fired = 0;
-          checkNearMisses(makeState(player, [obs]), () => fired++);
+          checkNearMisses(makeState(player, [obs]), () => fired++, performance.now());
           expect(fired).toBe(0);
         }
       ),
@@ -106,7 +106,7 @@ describe('collision', () => {
         (gap) => {
           const obs = obsAtGap(player, gap, obsRadius);
           let fired = 0;
-          checkNearMisses(makeState(player, [obs]), () => fired++);
+          checkNearMisses(makeState(player, [obs]), () => fired++, performance.now());
           expect(fired).toBe(0);
         }
       ),
@@ -129,9 +129,10 @@ describe('collision', () => {
         fc.integer({ min: 0, max: COOLDOWN - 1 }),
         (gap, elapsed) => {
           const obs = obsAtGap(player, gap);
-          obs.lastNearMissAt = Date.now() - elapsed;
+          const now = performance.now();
+          obs.lastNearMissAt = now - elapsed;
           let fired = 0;
-          checkNearMisses(makeState(player, [obs]), () => fired++);
+          checkNearMisses(makeState(player, [obs]), () => fired++, now);
           expect(fired).toBe(0);
         }
       ),
@@ -145,9 +146,10 @@ describe('collision', () => {
         fc.integer({ min: COOLDOWN + 1, max: COOLDOWN + 5000 }),
         (gap, elapsed) => {
           const obs = obsAtGap(player, gap);
-          obs.lastNearMissAt = Date.now() - elapsed;
+          const now = performance.now();
+          obs.lastNearMissAt = now - elapsed;
           let fired = 0;
-          checkNearMisses(makeState(player, [obs]), () => fired++);
+          checkNearMisses(makeState(player, [obs]), () => fired++, now);
           expect(fired).toBe(1);
         }
       ),
@@ -180,7 +182,7 @@ describe('collision', () => {
             };
           });
           let fired = 0;
-          checkNearMisses(makeState(player, obstacles), () => fired++);
+          checkNearMisses(makeState(player, obstacles), () => fired++, performance.now());
           expect(fired).toBe(n);
         }
       ),

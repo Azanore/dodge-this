@@ -6,14 +6,9 @@ const DEFAULTS = {
   gracePeriod: 2000,
   playerHitboxRadius: 14,
   outerZoneScale: 1.3,
-  maxSpeedMultiplier: 4.0,
-  difficulty: {
-    speedScaleFactor: 0.6,
-    spawnRateDecayRate: 0.04,
-    spawnRateMin: 400,
-    baseSpawnInterval: 1800,
-    maxObstaclesOnScreen: 25
-  },
+  // difficultyPresets is intentionally not validated here — each preset has its own
+  // fallback in difficulty.js (getPreset falls back to 'normal'), and presets are
+  // runtime-tunable via the config panel.
   obstacleTypes: {
     ball: { enabled: true, baseSpeed: 0.18, spawnWeight: 5 },
     bullet: { enabled: true, baseSpeed: 0.32, spawnWeight: 3 },
@@ -35,20 +30,6 @@ function validateKey(cfg, key, type) {
   if (!isValid(cfg[key], type)) {
     console.warn(`[config] Missing or invalid key "${key}" — using default: ${DEFAULTS[key]}`);
     cfg[key] = DEFAULTS[key];
-  }
-}
-
-function validateDifficulty(cfg) {
-  if (!cfg.difficulty || typeof cfg.difficulty !== 'object') {
-    console.warn('[config] Missing or invalid "difficulty" block — using defaults');
-    cfg.difficulty = { ...DEFAULTS.difficulty };
-    return;
-  }
-  for (const key of Object.keys(DEFAULTS.difficulty)) {
-    if (!isValid(cfg.difficulty[key], 'number')) {
-      console.warn(`[config] Missing or invalid key "difficulty.${key}" — using default: ${DEFAULTS.difficulty[key]}`);
-      cfg.difficulty[key] = DEFAULTS.difficulty[key];
-    }
   }
 }
 

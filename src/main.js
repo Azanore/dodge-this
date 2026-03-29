@@ -52,11 +52,13 @@ function update(delta) {
       showGameOver(state, onRestart);
       const newKeys = await evaluateAchievements(state);
       queueToasts(newKeys);
-      // Update unlocked cache so next overlay open is instant
+      // Update caches so next overlay open is instant
       if (newKeys.length) {
         const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
         localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([...new Set([...cached, ...newKeys])]));
       }
+      // Invalidate stats cache — run was just inserted, cache is stale
+      localStorage.removeItem(STATS_CACHE_KEY);
       const { nearMisses, bonusesCollected, comboScore } = getRunStats();
       document.getElementById('rs-difficulty').textContent = state.difficulty;
       document.getElementById('rs-near-misses').textContent = nearMisses;
@@ -302,6 +304,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     authBtn.style.color = '#888';
     state._unlockedAchievements = new Set();
     localStorage.removeItem(ACH_CACHE_KEY);
+    localStorage.removeItem(STATS_CACHE_KEY);
   }
 });
 
@@ -317,35 +320,47 @@ authBtn.addEventListener('click', async () => {
   }
 });
 
-// All-time stats overlay — open, fetch, populate
+// Populates the stats overlay DOM from a stats object
+function renderStatsOverlay(s) {
+  const msg = document.getElementById('stats-message');
+  if (s.totalRuns === 0) {
+    msg.textContent = 'No stats yet — play a run first.';
+    ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-easy', 'st-avg-normal', 'st-avg-hard', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+  } else {
+    msg.textContent = '';
+    document.getElementById('st-total-runs').textContent = s.totalRuns;
+    document.getElementById('st-best-easy').textContent = s.bestScoreEasy > 0 ? `${Math.round(s.bestScoreEasy)} pts` : '—';
+    document.getElementById('st-best-normal').textContent = s.bestScoreNormal > 0 ? `${Math.round(s.bestScoreNormal)} pts` : '—';
+    document.getElementById('st-best-hard').textContent = s.bestScoreHard > 0 ? `${Math.round(s.bestScoreHard)} pts` : '—';
+    document.getElementById('st-avg-easy').textContent = s.avgScoreEasy > 0 ? `${Math.round(s.avgScoreEasy)} pts` : '—';
+    document.getElementById('st-avg-normal').textContent = s.avgScoreNormal > 0 ? `${Math.round(s.avgScoreNormal)} pts` : '—';
+    document.getElementById('st-avg-hard').textContent = s.avgScoreHard > 0 ? `${Math.round(s.avgScoreHard)} pts` : '—';
+    document.getElementById('st-avg-time').textContent = `${(s.avgElapsedMs / 1000).toFixed(1)}s`;
+    document.getElementById('st-total-time').textContent = `${(s.totalElapsedMs / 1000).toFixed(0)}s`;
+    document.getElementById('st-near-misses').textContent = s.totalNearMisses;
+    document.getElementById('st-bonuses').textContent = s.totalBonuses;
+    document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
+  }
+}
+
+// All-time stats overlay — renders from cache instantly, refreshes from DB in background
 document.getElementById('stats-btn').addEventListener('click', async () => {
   const screen = document.getElementById('stats-screen');
   screen.classList.add('open');
-  const msg = document.getElementById('stats-message');
-  msg.textContent = '';
+
+  // Render from cache immediately — no layout shift
+  const cached = JSON.parse(localStorage.getItem(STATS_CACHE_KEY) ?? 'null');
+  if (cached) renderStatsOverlay(cached);
+
+  // Fetch fresh data in background and re-render silently
   try {
     const s = await fetchAllTimeStats();
-    if (s.totalRuns === 0) {
-      msg.textContent = 'No stats yet — play a run first.';
-      ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-easy', 'st-avg-normal', 'st-avg-hard', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score'].forEach(id => {
-        document.getElementById(id).textContent = '—';
-      });
-    } else {
-      document.getElementById('st-total-runs').textContent = s.totalRuns;
-      document.getElementById('st-best-easy').textContent = s.bestScoreEasy > 0 ? `${Math.round(s.bestScoreEasy)} pts` : '—';
-      document.getElementById('st-best-normal').textContent = s.bestScoreNormal > 0 ? `${Math.round(s.bestScoreNormal)} pts` : '—';
-      document.getElementById('st-best-hard').textContent = s.bestScoreHard > 0 ? `${Math.round(s.bestScoreHard)} pts` : '—';
-      document.getElementById('st-avg-easy').textContent = s.avgScoreEasy > 0 ? `${Math.round(s.avgScoreEasy)} pts` : '—';
-      document.getElementById('st-avg-normal').textContent = s.avgScoreNormal > 0 ? `${Math.round(s.avgScoreNormal)} pts` : '—';
-      document.getElementById('st-avg-hard').textContent = s.avgScoreHard > 0 ? `${Math.round(s.avgScoreHard)} pts` : '—';
-      document.getElementById('st-avg-time').textContent = `${(s.avgElapsedMs / 1000).toFixed(1)}s`;
-      document.getElementById('st-total-time').textContent = `${(s.totalElapsedMs / 1000).toFixed(0)}s`;
-      document.getElementById('st-near-misses').textContent = s.totalNearMisses;
-      document.getElementById('st-bonuses').textContent = s.totalBonuses;
-      document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
-    }
+    localStorage.setItem(STATS_CACHE_KEY, JSON.stringify(s));
+    renderStatsOverlay(s);
   } catch (_) {
-    msg.textContent = 'Failed to load stats. Try again.';
+    if (!cached) document.getElementById('stats-message').textContent = 'Failed to load stats. Try again.';
   }
 });
 
@@ -359,6 +374,7 @@ document.getElementById('stats-screen').addEventListener('click', (e) => {
 // Achievements overlay — open, fetch, populate
 // Renders from localStorage cache immediately, then refreshes from DB in background
 const ACH_CACHE_KEY = 'dodge_unlocked_achievements';
+const STATS_CACHE_KEY = 'dodge_stats_cache';
 
 document.getElementById('achievements-btn').addEventListener('click', async () => {
   const achScreen = document.getElementById('achievements-screen');

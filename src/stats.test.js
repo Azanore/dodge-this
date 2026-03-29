@@ -41,7 +41,7 @@ function captureInsertPayload() {
 // Helper: read current counter values by triggering insertRun with a dummy state
 async function readCounters() {
   const insertMock = captureInsertPayload();
-  await insertRun({ score: 0, elapsed: 0, difficulty: 'normal' });
+  await insertRun({ score: 0, elapsed: 5001, difficulty: 'normal' });
   const payload = insertMock.mock.calls[0][0];
   return {
     nearMisses: payload.near_misses,
@@ -180,8 +180,7 @@ describe('insertRun', () => {
     onComboUpdate(3.5);
     onComboBank(200);
 
-    const state = { score: 1234.7, elapsed: 45678.9, difficulty: 'hard' };
-    await insertRun(state);
+    const state = { score: 1234.7, elapsed: 45678.9, difficulty: 'hard' }; await insertRun(state);
 
     expect(supabase.from).toHaveBeenCalledWith('runs');
     const payload = insertMock.mock.calls[0][0];
@@ -206,7 +205,7 @@ describe('insertRun', () => {
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     supabase.from.mockReturnValue({ insert: vi.fn().mockRejectedValue(new Error('network')) });
 
-    await expect(insertRun({ score: 0, elapsed: 0, difficulty: 'normal' })).resolves.toBeUndefined();
+    await expect(insertRun({ score: 0, elapsed: 5001, difficulty: 'normal' })).resolves.toBeUndefined();
   });
 });
 

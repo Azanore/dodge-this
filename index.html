@@ -40,14 +40,19 @@
     }
     .overlay.open { display: flex; }
 
-    #how-to-play { background: rgba(0,0,0,0.75); z-index: 30; }
-    #pause-screen { background: rgba(0,0,0,0.6); }
-    #game-over-screen { background: rgba(0,0,0,0.78); }
-    #difficulty-screen { background: rgba(0,0,0,0.92); z-index: 10; }
-    #stats-screen { background: rgba(0,0,0,0.75); }
-    #leaderboard-screen { background: rgba(0,0,0,0.75); }
+    /* Overlay backdrop opacities — intentional, see CONTEXT.md */
+    #difficulty-screen   { background: rgba(0,0,0,0.92); z-index: 10; }
+    #game-over-screen    { background: rgba(0,0,0,0.78); }
+    #how-to-play         { background: rgba(0,0,0,0.75); z-index: 30; }
+    #stats-screen        { background: rgba(0,0,0,0.75); }
+    #leaderboard-screen  { background: rgba(0,0,0,0.75); }
+    #achievements-screen { background: rgba(0,0,0,0.75); }
+    #pause-screen        { background: rgba(0,0,0,0.6); }
+
     #auth-btn:hover { color: #ccc !important; }
     #stats-screen .htp-panel { width: min(320px, calc(100vw - 48px)); }
+    #achievements-screen .htp-panel { width: min(480px, calc(100vw - 48px)); }
+
     .lb-tab { width:90px; padding:6px 0; font-size:13px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:monospace; cursor:pointer; color:#fff; background:rgba(255,255,255,0.05); transition:background 0.15s,border-color 0.15s; }
     .lb-tab:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.4); }
     .lb-tab.selected { border-color: #00eeff !important; color: #00eeff !important; background: rgba(0,238,255,0.08) !important; }
@@ -73,13 +78,7 @@
       gap: 10px;
       text-align: center;
     }
-
-    .overlay-title {
-      font-size: 48px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
-    }
+    .overlay-title { font-size: 48px; font-weight: bold; letter-spacing: 2px; margin-bottom: 8px; }
     .overlay-label { font-size: 14px; color: #666; }
     .overlay-score { font-size: 36px; font-weight: bold; color: #fff; text-shadow: 0 0 12px #fff; }
     .overlay-meta  { font-size: 14px; color: #666; }
@@ -100,12 +99,9 @@
     .overlay-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); }
     .overlay-btn.primary { background: rgba(0,238,255,0.12); border-color: #00eeff; box-shadow: 0 0 8px rgba(0,238,255,0.3); }
     .overlay-btn.primary:hover { background: rgba(0,238,255,0.22); border-color: #00eeff; }
+    .overlay-secondary-btn { background: #222; }
 
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      margin-top: 4px;
-    }
+    .btn-row { display: flex; gap: 12px; margin-top: 4px; }
     .toggle-btn {
       padding: 8px 0;
       width: 150px;
@@ -118,6 +114,7 @@
     .toggle-btn:hover { opacity: 0.85; }
     .toggle-btn.on  { background: #00ff88; color: #000; }
     .toggle-btn.off { background: #333;    color: #888; }
+
     .htp-panel {
       background: #0d0d1a;
       border: 1px solid rgba(255,255,255,0.1);
@@ -137,78 +134,51 @@
       margin-bottom: 20px;
       letter-spacing: 2px;
     }
-    .htp-section {
-      font-size: 11px;
-      color: #888;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin: 16px 0 8px;
-    }
-    .htp-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 10px;
-    }
-    .htp-row canvas {
-      flex-shrink: 0;
-      width: 32px;
-      height: 32px;
-    }
+    .htp-section { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; margin: 16px 0 8px; }
+    .htp-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+    .htp-row canvas { flex-shrink: 0; width: 32px; height: 32px; }
     .htp-row .htp-label { color: #ddd; font-size: 13px; font-weight: bold; }
     .htp-row .htp-desc  { color: #999; font-size: 13px; margin-left: 4px; }
-    .htp-hint {
-      text-align: center;
-      font-size: 11px;
-      color: #555;
-      margin-top: 16px;
-    }
-    .stats-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
+    .htp-hint { text-align: center; font-size: 11px; color: #555; margin-top: 16px; }
 
+    .stats-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
     #run-stats-panel { background: #0d0d1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 20px; font: 12px monospace; color: #aaa; text-align: left; min-width: 200px; margin-top: 8px; }
 
-    .overlay-secondary-btn { background: #222; }
     .diff-btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .auth-link { cursor: pointer; background: none; border: none; color: #888; font: 12px monospace; margin-top: 8px; transition: color 0.15s; }
+
+    /* Toast notifications */
     #toast-container {
-  position: fixed;
-  bottom: 72px;
-  right: 24px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  pointer-events: none;
-}
-.achievement-toast {
-  background: #0d0d1a;
-  border: 1px solid;
-  border-radius: 10px;
-  padding: 10px 14px;
-  width: 280px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: monospace;
-  transform: translateX(320px);
-  transition: transform 0.3s ease;
-  pointer-events: none;
-}
-.achievement-toast.visible { transform: translateX(0); }
-.toast-icon { font-size: 20px; flex-shrink: 0; }
-.toast-body { flex: 1; min-width: 0; }
-.toast-title { font-size: 13px; font-weight: bold; }
-.toast-desc { font-size: 11px; color: #888; margin-top: 2px; }
-.ach-progress { font-size: 11px; margin-left: 6px; opacity: 0.8; }
-#achievements-screen .htp-panel { width: min(480px, calc(100vw - 48px)); }
-#achievements-screen { background: rgba(0,0,0,0.75); }
+      position: fixed;
+      bottom: 72px;
+      right: 24px;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .achievement-toast {
+      background: #0d0d1a;
+      border: 1px solid;
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 280px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: monospace;
+      transform: translateX(320px);
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+    .achievement-toast.visible { transform: translateX(0); }
+    .toast-icon { font-size: 20px; flex-shrink: 0; }
+    .toast-body { flex: 1; min-width: 0; }
+    .toast-title { font-size: 13px; font-weight: bold; }
+    .toast-desc { font-size: 11px; color: #888; margin-top: 2px; }
+    .ach-progress { font-size: 11px; margin-left: 6px; opacity: 0.8; }
   </style>
 </head>
 <body>

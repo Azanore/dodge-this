@@ -131,9 +131,8 @@ describe('obstacles', () => {
       fc.property(fc.integer({ min: 1, max: 100 }), spawnCount => {
         const state = makeState();
         for (let i = 0; i < spawnCount; i++) spawnObstacle(state, 1);
-        expect(state.obstacles.length).toBeLessThanOrEqual(
-          gameConfig.difficulty.maxObstaclesOnScreen
-        );
+        const preset = gameConfig.difficultyPresets[state.difficulty] ?? gameConfig.difficultyPresets.normal;
+        expect(state.obstacles.length).toBeLessThanOrEqual(preset.maxObstaclesOnScreen);
       }),
       { numRuns: 100 }
     );

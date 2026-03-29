@@ -2,7 +2,7 @@
 // Related: player.js, zones.js, GameState.js
 import { describe, it, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { recomputeZones, clampToInner, innerZone } from './zones.js';
+import { recomputeZones, innerZone } from './zones.js';
 import { update } from './player.js';
 import { resetState } from './GameState.js';
 
@@ -20,9 +20,10 @@ describe('player position sync', () => {
    * Feature: dodge-game-fixes, Property 1: Player position always synced to state
    * Validates: Requirements 1.1
    *
-   * For any mouse (x, y), after player.update(state), state.player.x/y must equal clampToInner(x, y)
+   * For any mouse (x, y), after player.update(state), state.player.x/y must be
+   * clamped to the inner zone inset by the player radius (so the ball never exits visually).
    */
-  it('Property 1: state.player.x/y equals clampToInner(x, y) after update', () => {
+  it('Property 1: state.player.x/y is clamped to inner zone (radius-inset) after update', () => {
     fc.assert(
       fc.property(
         fc.float({ min: -2000, max: 4000, noNaN: true }),
@@ -33,8 +34,16 @@ describe('player position sync', () => {
 
           update(state);
 
-          const expected = clampToInner(x, y);
-          return state.player.x === expected.x && state.player.y === expected.y;
+          const r = state.player.radius;
+          const minX = innerZone.x + r;
+          const maxX = innerZone.x + innerZone.width - r;
+          const minY = innerZone.y + r;
+          const maxY = innerZone.y + innerZone.height - r;
+
+          const expectedX = Math.max(minX, Math.min(maxX, x));
+          const expectedY = Math.max(minY, Math.min(maxY, y));
+
+          return state.player.x === expectedX && state.player.y === expectedY;
         }
       ),
       { numRuns: 100 }

@@ -89,7 +89,7 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
   checkPlayerBonusPickups(state, collectBonus);
   checkPlayerObstacles(state);
   if (state.status !== 'dead') {
-    checkNearMisses(state, (x, y) => { triggerNearMiss(x, y); onNearMiss(); });
+    checkNearMisses(state, (x, y) => { triggerNearMiss(x, y); onNearMiss(); }, performance.now());
     playMultiplierMax(state.comboMultiplier, delta); // AUDIO
     tickNearMissCooldown(delta); // AUDIO
   } else {
