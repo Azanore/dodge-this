@@ -291,12 +291,17 @@ window.addEventListener('keydown', (e) => {
     loop.stop();
     pauseMusic(); // AUDIO
     // POLISH: pause stats — populate current run info; remove these lines to revert
+    const { nearMisses: pauseNM, bonusesCollected: pauseB, comboScore: pauseCS } = getRunStats();
     const psScore = document.getElementById('ps-score');
     const psTime = document.getElementById('ps-time');
-    const psMult = document.getElementById('ps-mult');
+    const psNM = document.getElementById('ps-near-misses');
+    const psB = document.getElementById('ps-bonuses');
+    const psCS = document.getElementById('ps-combo-score');
     if (psScore) psScore.textContent = `${Math.floor(state.score)} pts`;
     if (psTime) psTime.textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
-    if (psMult) psMult.textContent = `x${state.comboMultiplier.toFixed(1)}`;
+    if (psNM) psNM.textContent = pauseNM;
+    if (psB) psB.textContent = pauseB;
+    if (psCS) psCS.textContent = Math.round(pauseCS);
     pauseScreenEl.classList.add('open');
     syncHelpBtn();
   } else if (state.status === 'paused') {
