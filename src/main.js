@@ -10,7 +10,8 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
-import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard } from './stats.js';
+import { resetRunStats, insertRun, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements } from './stats.js';
+import { renderAchievementsOverlay, queueToasts, clearToastQueue } from './achievements.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
@@ -45,11 +46,12 @@ function update(delta) {
   const result = gameUpdate(delta, state, accumulators);
   if (result === 'dead') {
     triggerShake();
-    setTimeout(() => {
+    setTimeout(async () => {
       loop.stop();
       syncHelpBtn();
       showGameOver(state, onRestart);
-      insertRun(state);
+      const newKeys = await evaluateAchievements(state);
+      queueToasts(newKeys);
       const { nearMisses, bonusesCollected, comboScore } = getRunStats();
       document.getElementById('rs-difficulty').textContent = state.difficulty;
       document.getElementById('rs-near-misses').textContent = nearMisses;
@@ -69,6 +71,7 @@ function renderFrame() {
 const loop = createGameLoop(update, renderFrame);
 
 function onRestart() {
+  clearToastQueue();
   resetRunStats();
   state = resetState(activeDifficulty);
   state.status = 'grace';
@@ -118,7 +121,7 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
 
 // Returns true if any modal overlay is currently open
 function isAnyModalOpen() {
-  return ['#how-to-play', '#leaderboard-screen', '#stats-screen']
+  return ['#how-to-play', '#leaderboard-screen', '#stats-screen', '#achievements-screen']
     .some(id => document.querySelector(id).classList.contains('open'));
 }
 
@@ -155,6 +158,7 @@ const musicBtn = document.getElementById('music-btn');
 
 // Returns to difficulty screen — resets state, stops loop and music, re-shows selector
 function goToMenu() {
+  clearToastQueue();
   cleanupGameOver();
   loop.stop();
   stopMusic(); // AUDIO
@@ -245,6 +249,7 @@ window.addEventListener('keydown', (e) => {
   if (howToPlayEl.classList.contains('open')) { howToPlayEl.classList.remove('open'); return; }
   if (lbScreen.classList.contains('open')) { lbScreen.classList.remove('open'); return; }
   if (document.getElementById('stats-screen').classList.contains('open')) { document.getElementById('stats-screen').classList.remove('open'); return; }
+  if (document.getElementById('achievements-screen').classList.contains('open')) { document.getElementById('achievements-screen').classList.remove('open'); return; }
   const panel = document.getElementById('config-panel');
   if (panel && panel.style.display !== 'none') return;
   if (state.status === 'dead' || state.status === 'start') return;
@@ -274,6 +279,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     history.replaceState(null, '', window.location.origin + window.location.pathname);
   }
   document.getElementById('stats-btn').style.visibility = session ? 'visible' : 'hidden';
+  document.getElementById('achievements-btn').style.visibility = session ? 'visible' : 'hidden';
   if (session?.user) {
     const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Signed in';
     authBtn.textContent = `${name} — Sign out`;
@@ -332,6 +338,29 @@ document.getElementById('stats-btn').addEventListener('click', async () => {
 document.getElementById('stats-screen').addEventListener('click', (e) => {
   if (e.target === document.getElementById('stats-screen')) {
     document.getElementById('stats-screen').classList.remove('open');
+  }
+});
+
+// Achievements overlay — open, fetch, populate
+document.getElementById('achievements-btn').addEventListener('click', async () => {
+  const achScreen = document.getElementById('achievements-screen');
+  achScreen.classList.add('open');
+  const achList = document.getElementById('ach-list');
+  let loadingTimer = setTimeout(() => { achList.textContent = 'Loading...'; }, 150);
+  try {
+    const keys = await fetchUnlockedAchievements();
+    clearTimeout(loadingTimer);
+    renderAchievementsOverlay(new Set(keys));
+  } catch (_) {
+    clearTimeout(loadingTimer);
+    renderAchievementsOverlay(new Set());
+  }
+});
+
+// Achievements overlay — backdrop click
+document.getElementById('achievements-screen').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('achievements-screen')) {
+    document.getElementById('achievements-screen').classList.remove('open');
   }
 });
 

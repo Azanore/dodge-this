@@ -14,6 +14,7 @@ vi.mock('./supabase.js', () => {
 });
 
 import { supabase } from './supabase.js';
+import { ACHIEVEMENTS } from './achievements.js';
 import {
   resetRunStats,
   onNearMiss,
@@ -21,7 +22,8 @@ import {
   onComboUpdate,
   onComboBank,
   insertRun,
-  fetchAllTimeStats
+  fetchAllTimeStats,
+  evaluateAchievements
 } from './stats.js';
 
 // Expose internal counter values for testing via re-import trick — we read them
@@ -397,5 +399,198 @@ describe('all-time overlay and Stats button', () => {
     const { msg } = setupStatsDOM();
     msg.textContent = 'Failed to load stats. Try again.';
     expect(msg.textContent).toBe('Failed to load stats. Try again.');
+  });
+});
+
+// ─── evaluateAchievements helpers ────────────────────────────────────────────
+
+// Builds a runs array that produces exact aggregate values when summed
+function buildRuns(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount) {
+  if (totalRuns === 0) return [];
+  return Array.from({ length: totalRuns }, (_, i) => ({
+    score: 100,
+    elapsed_ms: i === 0 ? totalElapsedMs : 0,
+    difficulty: i < hardRunsCount ? 'hard' : 'normal',
+    near_misses: i < totalNearMisses ? 1 : 0,
+    bonuses_collected: i < totalBonuses ? 1 : 0,
+    combo_score: 0
+  }));
+}
+
+// Computes the expected set of milestone achievement keys for given aggregate stats
+function expectedMilestoneKeys(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount) {
+  const keys = [];
+  [1, 5, 10, 25, 50, 100].forEach((t, i) => { if (totalRuns >= t) keys.push(`veteran_${i + 1}`); });
+  [300000, 900000, 1800000, 3600000, 7200000].forEach((t, i) => { if (totalElapsedMs >= t) keys.push(`survivor_${i + 1}`); });
+  [10, 50, 150, 300].forEach((t, i) => { if (totalBonuses >= t) keys.push(`collector_${i + 1}`); });
+  [25, 100, 300, 750].forEach((t, i) => { if (totalNearMisses >= t) keys.push(`ghost_${i + 1}`); });
+  [5, 15, 30, 50].forEach((t, i) => { if (hardRunsCount >= t) keys.push(`hard_boiled_${i + 1}`); });
+  return new Set(keys);
+}
+
+// ─── evaluateAchievements ─────────────────────────────────────────────────────
+
+describe('evaluateAchievements', () => {
+  /**
+   * **Feature: achievements, Property 1: Short-run guard**
+   * Validates: Requirements 6.1, 6.4
+   */
+  // Feature: achievements, Property 1: Short-run guard
+  it('Property 1: evaluateAchievements returns [] for runs under 5s', async () => {
+    await fc.assert(fc.asyncProperty(
+      fc.record({
+        elapsed: fc.integer({ min: 0, max: 4999 }),
+        difficulty: fc.constantFrom('easy', 'normal', 'hard'),
+        score: fc.float({ min: 0, max: 10000 }),
+      }),
+      async (state) => {
+        const result = await evaluateAchievements(state);
+        return Array.isArray(result) && result.length === 0;
+      }
+    ), { numRuns: 100 });
+  });
+
+  // Feature: achievements, Property 2: Unauthenticated guard
+  it('Property 2: evaluateAchievements returns [] when not authenticated', async () => {
+    await fc.assert(fc.asyncProperty(
+      fc.record({
+        elapsed: fc.integer({ min: 5000, max: 300000 }),
+        difficulty: fc.constantFrom('easy', 'normal', 'hard'),
+        score: fc.float({ min: 0, max: 10000 }),
+      }),
+      async (state) => {
+        supabase.auth.getUser.mockResolvedValue({ data: { user: null } });
+        const result = await evaluateAchievements(state);
+        return Array.isArray(result) && result.length === 0;
+      }
+    ), { numRuns: 100 });
+  });
+
+  // Feature: achievements, Property 3: Already-unlocked dedup
+  it('Property 3: evaluateAchievements does not return already-unlocked keys', async () => {
+    const allKeys = ACHIEVEMENTS.map(a => a.key);
+    const runsData = Array.from({ length: 100 }, (_, i) => ({
+      score: 1000, elapsed_ms: 100000,
+      difficulty: i % 2 === 0 ? 'hard' : 'normal',
+      near_misses: 10, bonuses_collected: 5, combo_score: 100
+    }));
+
+    await fc.assert(fc.asyncProperty(
+      fc.subarray(allKeys),
+      async (alreadyUnlockedKeys) => {
+        supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+        supabase.from.mockImplementation((table) => {
+          if (table === 'runs') return {
+            insert: vi.fn().mockResolvedValue({ error: null }),
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: runsData, error: null }) })
+          };
+          return {
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: alreadyUnlockedKeys.map(k => ({ achievement_key: k })), error: null }) }),
+            insert: vi.fn().mockResolvedValue({ error: null })
+          };
+        });
+
+        const state = { elapsed: 60000, difficulty: 'hard', score: 1000 };
+        const result = await evaluateAchievements(state);
+        const alreadySet = new Set(alreadyUnlockedKeys);
+        return result.every(k => !alreadySet.has(k));
+      }
+    ), { numRuns: 100 });
+  });
+
+  // Feature: achievements, Property 4: Milestone threshold correctness
+  it('Property 4: milestone keys match threshold conditions exactly', async () => {
+    await fc.assert(fc.asyncProperty(
+      fc.integer({ min: 0, max: 150 }),     // totalRuns
+      fc.integer({ min: 0, max: 8000000 }), // totalElapsedMs
+      fc.integer({ min: 0, max: 400 }),     // totalBonuses
+      fc.integer({ min: 0, max: 800 }),     // totalNearMisses
+      fc.integer({ min: 0, max: 60 }),      // hardRunsCount (clamped to totalRuns)
+      async (totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCountRaw) => {
+        const hardRunsCount = Math.min(hardRunsCountRaw, totalRuns);
+        const nearMissesCount = Math.min(totalNearMisses, totalRuns);
+        const bonusesCount = Math.min(totalBonuses, totalRuns);
+        // No elapsed time is possible with zero runs
+        const effectiveElapsedMs = totalRuns === 0 ? 0 : totalElapsedMs;
+
+        const runs = buildRuns(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount);
+
+        supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+        supabase.from.mockImplementation((table) => {
+          if (table === 'runs') return {
+            insert: vi.fn().mockResolvedValue({ error: null }),
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: runs, error: null }) })
+          };
+          return {
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
+            insert: vi.fn().mockResolvedValue({ error: null })
+          };
+        });
+
+        const state = { elapsed: 60000, difficulty: 'hard', score: 1000 };
+        const result = await evaluateAchievements(state);
+
+        const singleRunKeys = new Set(['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist']);
+        const resultMilestones = new Set(result.filter(k => !singleRunKeys.has(k)));
+        const expected = expectedMilestoneKeys(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount);
+
+        for (const k of expected) {
+          if (!resultMilestones.has(k)) return false;
+        }
+        for (const k of resultMilestones) {
+          if (!expected.has(k)) return false;
+        }
+        return true;
+      }
+    ), { numRuns: 100 });
+  });
+
+  // Feature: achievements, Property 5: Single-run achievement correctness
+  it('Property 5: single-run keys match conditions exactly', async () => {
+    const singleRunKeys = ['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist'];
+
+    await fc.assert(fc.asyncProperty(
+      fc.integer({ min: 5000, max: 120000 }),       // elapsed
+      fc.constantFrom('easy', 'normal', 'hard'),    // difficulty
+      fc.integer({ min: 0, max: 20 }),              // nearMisses
+      fc.integer({ min: 0, max: 10 }),              // bonusesCollected
+      async (elapsed, difficulty, nearMissCount, bonusCount) => {
+        resetRunStats();
+        for (let i = 0; i < nearMissCount; i++) onNearMiss();
+        for (let i = 0; i < bonusCount; i++) onBonusCollected();
+
+        // Mock: 1 run exists (so totalRuns=1 after insertRun)
+        const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
+        supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+        supabase.from.mockImplementation((table) => {
+          if (table === 'runs') return {
+            insert: vi.fn().mockResolvedValue({ error: null }),
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: oneRun, error: null }) })
+          };
+          return {
+            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
+            insert: vi.fn().mockResolvedValue({ error: null })
+          };
+        });
+
+        const state = { elapsed, difficulty, score: 100 };
+        const result = await evaluateAchievements(state);
+        const resultSingleRun = new Set(result.filter(k => singleRunKeys.includes(k)));
+
+        // Compute expected
+        const expected = new Set();
+        expected.add('first_blood'); // totalRuns >= 1 always
+        if (elapsed >= 60000) expected.add('minuteman');
+        if (elapsed >= 30000 && nearMissCount === 0) expected.add('untouchable');
+        if (nearMissCount >= 15) expected.add('danger_zone');
+        if (bonusCount >= 6) expected.add('hoarder');
+        if (difficulty === 'hard' && elapsed >= 30000) expected.add('hard_debut');
+        if (elapsed >= 45000 && bonusCount === 0) expected.add('pacifist');
+
+        for (const k of expected) { if (!resultSingleRun.has(k)) return false; }
+        for (const k of resultSingleRun) { if (!expected.has(k)) return false; }
+        return true;
+      }
+    ), { numRuns: 100 });
   });
 });

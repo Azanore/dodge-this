@@ -7,12 +7,14 @@ import { ACHIEVEMENTS } from './achievements.js';
 
 let nearMisses = 0;
 let bonusesCollected = 0;
+let maxCombo = 1.0;
 let comboScore = 0;
 
 // Resets all counters to initial values — call on every restart
 export function resetRunStats() {
   nearMisses = 0;
   bonusesCollected = 0;
+  maxCombo = 1.0;
   comboScore = 0;
 }
 
@@ -26,6 +28,11 @@ export function onBonusCollected() {
   bonusesCollected += 1;
 }
 
+// Updates maxCombo if multiplier exceeds current max
+export function onComboUpdate(multiplier) {
+  if (multiplier > maxCombo) maxCombo = multiplier;
+}
+
 // Adds amount to comboScore
 export function onComboBank(amount) {
   comboScore += amount;
@@ -33,12 +40,11 @@ export function onComboBank(amount) {
 
 // Returns current run counter values — used by main.js to populate the per-run panel
 export function getRunStats() {
-  return { nearMisses, bonusesCollected, comboScore };
+  return { nearMisses, bonusesCollected, maxCombo, comboScore };
 }
 
 // Checks auth, inserts run record if authenticated — fire-and-forget, swallows errors
 export async function insertRun(state) {
-  if (state.elapsed < 5000) return;
   const { data } = await supabase.auth.getUser();
   if (!data?.user) return;
 
@@ -48,6 +54,7 @@ export async function insertRun(state) {
     elapsed_ms: Math.round(state.elapsed),
     difficulty: state.difficulty,
     near_misses: nearMisses,
+    max_combo: maxCombo,
     combo_score: Math.round(comboScore),
     bonuses_collected: bonusesCollected,
     played_at: new Date().toISOString()

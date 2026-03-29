@@ -37,36 +37,36 @@ Implement the achievements system across four files: `src/achievements.js` (new 
   - Add CSS for `#toast-container`, `.achievement-toast`, `.achievement-toast.visible`, `.toast-icon`, `.toast-title`, `.toast-desc` — slide-in/out via `transform: translateX` transition
   - _Requirements: 1.1, 2.1, 2.8, 8.2, 8.3, 8.6, 8.10_
 
-- [-] 3. Add `evaluateAchievements` and `fetchUnlockedAchievements` to `src/stats.js`
+- [x] 3. Add `evaluateAchievements` and `fetchUnlockedAchievements` to `src/stats.js`
   - Export `fetchUnlockedAchievements()` — queries `user_achievements` for authenticated user, returns `string[]` of keys; returns `[]` if not authenticated or on error
   - Export `evaluateAchievements(state)` — guards on `elapsed < 5000` and unauthenticated (return `[]`); calls `insertRun(state)`, then `fetchAllTimeStats()`, then `fetchUnlockedAchievements()`; builds `newKeys[]` from all 30 conditions; inserts each new key to `user_achievements` individually in try/catch; returns `newKeys`
   - Import `ACHIEVEMENTS` from `./achievements.js` to drive condition evaluation
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.1–4.5, 5.1–5.7, 6.1, 6.2, 6.4, 7.1, 7.2_
 
-  - [~] 3.1 Write property test for short-run guard
+  - [x] 3.1 Write property test for short-run guard
     - **Property 1: Short-run guard**
     - **Validates: Requirements 6.1, 6.4**
 
-  - [~] 3.2 Write property test for unauthenticated guard
+  - [x] 3.2 Write property test for unauthenticated guard
     - **Property 2: Unauthenticated guard**
     - **Validates: Requirements 3.2**
 
-  - [~] 3.3 Write property test for already-unlocked dedup
+  - [x] 3.3 Write property test for already-unlocked dedup
     - **Property 3: Already-unlocked dedup**
     - **Validates: Requirements 3.4, 3.5**
 
-  - [~] 3.4 Write property test for milestone threshold correctness
+  - [x] 3.4 Write property test for milestone threshold correctness
     - **Property 4: Milestone threshold correctness**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5**
 
-  - [~] 3.5 Write property test for single-run achievement correctness
+  - [x] 3.5 Write property test for single-run achievement correctness
     - **Property 5: Single-run achievement correctness**
     - **Validates: Requirements 5.2, 5.3, 5.4, 5.5, 5.6, 5.7**
 
-- [~] 4. Checkpoint — Ensure all tests pass
+- [x] 4. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 5. Wire achievements into `src/main.js`
+- [-] 5. Wire achievements into `src/main.js`
   - Import `evaluateAchievements`, `fetchUnlockedAchievements` from `./stats.js`; import `renderAchievementsOverlay`, `queueToasts`, `clearToastQueue` from `./achievements.js`
   - Replace `insertRun(state)` in the death handler with `await evaluateAchievements(state)` (make the setTimeout callback async), then call `queueToasts(newKeys)`
   - Add `'#achievements-screen'` to `isAnyModalOpen()` array
