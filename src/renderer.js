@@ -273,7 +273,8 @@ export function render(ctx, state, delta) {
   for (const obs of state.obstacles) {
     // POLISH: tracker spawn warning — draw pending trackers as a pulsing ring, skip normal draw
     if (obs.pending > 0) {
-      const t = obs.pending / 500; // 1→0 as it materializes
+      const TRACKER_PENDING = 2000;
+      const t = obs.pending / TRACKER_PENDING; // 1→0 as it materializes
       const pulse = 0.5 + 0.5 * Math.sin(pulseT * 8);
       ctx.save();
       ctx.globalAlpha = (1 - t) * 0.3 + pulse * 0.4;

@@ -88,7 +88,7 @@ export function spawnObstacle(state, speedMultiplier = 1) {
     radius: TYPE_RADIUS[type] ?? 10,
     lastNearMissAt: 0,
     // POLISH: tracker spawn warning — pending:true delays tracker activation 500ms; remove pending logic in obstacles.js, renderer.js to revert
-    pending: type === 'tracker' ? 500 : 0
+    pending: type === 'tracker' ? 2000 : 0
   });
 }
 
