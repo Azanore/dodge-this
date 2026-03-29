@@ -205,11 +205,17 @@ describe('stats integration', () => {
   it('first_blood is unlocked when totalRuns === 1', async () => {
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
+    supabase.rpc = vi.fn().mockResolvedValue({
+      data: [{
+        total_runs: 1, best_score_easy: 0, best_score_normal: 100, best_score_hard: 0,
+        avg_score_easy: 0, avg_score_normal: 100, avg_score_hard: 0,
+        total_near_misses: 0, total_bonuses: 0, best_combo_score: 0,
+        total_elapsed_ms: 10000, avg_elapsed_ms: 10000, hard_runs_count: 0
+      }],
+      error: null
+    });
     supabase.from.mockImplementation((table) => {
-      if (table === 'runs') return {
-        insert: vi.fn().mockResolvedValue({ error: null }),
-        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: oneRun, error: null }) })
-      };
+      if (table === 'runs') return { insert: vi.fn().mockResolvedValue({ error: null }) };
       return {
         select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
         insert: vi.fn().mockResolvedValue({ error: null })
@@ -223,11 +229,17 @@ describe('stats integration', () => {
   it('evaluateAchievements does not throw when a Supabase insert fails', async () => {
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
+    supabase.rpc = vi.fn().mockResolvedValue({
+      data: [{
+        total_runs: 1, best_score_easy: 0, best_score_normal: 100, best_score_hard: 0,
+        avg_score_easy: 0, avg_score_normal: 100, avg_score_hard: 0,
+        total_near_misses: 0, total_bonuses: 0, best_combo_score: 0,
+        total_elapsed_ms: 10000, avg_elapsed_ms: 10000, hard_runs_count: 0
+      }],
+      error: null
+    });
     supabase.from.mockImplementation((table) => {
-      if (table === 'runs') return {
-        insert: vi.fn().mockResolvedValue({ error: null }),
-        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: oneRun, error: null }) })
-      };
+      if (table === 'runs') return { insert: vi.fn().mockResolvedValue({ error: null }) };
       return {
         select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
         insert: vi.fn().mockRejectedValue(new Error('insert failed'))

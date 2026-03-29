@@ -246,7 +246,13 @@ Run: `npm test`
 
 ## Changelog
 
-### Session 26 — Category A cleanup
+### Session 27 — Category B: security and production cleanup
+- Removed "Reset my achievements" button from `index.html` and its event listener from `main.js` — dev artifact with no place in production; `resetMyAchievements()` in `stats.js` stays for console use
+- Removed `resetMyAchievements` from `main.js` import
+- Replaced leaderboard `innerHTML` string builder in `main.js` with DOM construction using `textContent` for `username` — eliminates XSS risk from user-supplied display names; rank/score/time remain as literals (derived from numbers, safe)
+- Google OAuth published (test mode removed) — all users can now sign in
+
+
 - Removed dead `export const state` from `GameState.js` — never imported anywhere
 - Removed stale `difficulty` block and `maxSpeedMultiplier` from `config.js` DEFAULTS (pre-presets shape, never validated); removed orphaned `validateDifficulty` function; added comment pointing to `difficultyPresets`
 - Renamed misleading constants in `combo.test.js` from `INTERVAL/DURATION/RADIUS/...` to `TEST_INTERVAL/TEST_DURATION/TEST_RADIUS/...` with a clarifying comment — they are test-only overrides, not real game values

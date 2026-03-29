@@ -210,14 +210,15 @@ describe('insertRun', () => {
 });
 
 describe('fetchAllTimeStats', () => {
-  it('computes aggregates correctly from rows', async () => {
-    const rows = [
-      { score: 500, elapsed_ms: 10000, difficulty: 'easy', near_misses: 2, bonuses_collected: 3, combo_score: 100 },
-      { score: 800, elapsed_ms: 20000, difficulty: 'normal', near_misses: 1, bonuses_collected: 1, combo_score: 300 },
-      { score: 1200, elapsed_ms: 30000, difficulty: 'hard', near_misses: 5, bonuses_collected: 0, combo_score: 500 }
-    ];
+  it('computes aggregates correctly from RPC response', async () => {
+    const rpcRow = {
+      total_runs: 3, best_score_easy: 500, best_score_normal: 800, best_score_hard: 1200,
+      avg_score_easy: 500, avg_score_normal: 800, avg_score_hard: 1200,
+      total_near_misses: 8, total_bonuses: 4, best_combo_score: 500,
+      total_elapsed_ms: 60000, avg_elapsed_ms: 20000, hard_runs_count: 1
+    };
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
-    supabase.from.mockReturnValue({ select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: rows, error: null }) }) });
+    supabase.rpc = vi.fn().mockResolvedValue({ data: [rpcRow], error: null });
 
     const stats = await fetchAllTimeStats();
 
@@ -231,12 +232,13 @@ describe('fetchAllTimeStats', () => {
     expect(stats.totalElapsedMs).toBe(60000);
     expect(stats.avgElapsedMs).toBe(20000);
     expect(stats.hardRunsCount).toBe(1);
+    expect(supabase.rpc).toHaveBeenCalledWith('get_user_stats', { p_user_id: 'u1' });
   });
 
   it('fetch throws — error propagates', async () => {
     const err = new Error('fetch failed');
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
-    supabase.from.mockReturnValue({ select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: err }) }) });
+    supabase.rpc = vi.fn().mockResolvedValue({ data: null, error: err });
 
     await expect(fetchAllTimeStats()).rejects.toThrow('fetch failed');
   });
@@ -426,6 +428,28 @@ function expectedMilestoneKeys(totalRuns, totalElapsedMs, totalBonuses, totalNea
   return new Set(keys);
 }
 
+// Computes the RPC response shape from a runs array (mirrors get_user_stats SQL logic)
+function rpcRowFromRuns(runs) {
+  const byDiff = (d) => runs.filter(r => r.difficulty === d);
+  const maxScore = (d) => byDiff(d).reduce((m, r) => Math.max(m, r.score ?? 0), 0);
+  const avgScore = (d) => { const rs = byDiff(d); return rs.length ? rs.reduce((s, r) => s + (r.score ?? 0), 0) / rs.length : 0; };
+  return {
+    total_runs: runs.length,
+    best_score_easy: maxScore('easy'),
+    best_score_normal: maxScore('normal'),
+    best_score_hard: maxScore('hard'),
+    avg_score_easy: avgScore('easy'),
+    avg_score_normal: avgScore('normal'),
+    avg_score_hard: avgScore('hard'),
+    total_near_misses: runs.reduce((s, r) => s + (r.near_misses ?? 0), 0),
+    total_bonuses: runs.reduce((s, r) => s + (r.bonuses_collected ?? 0), 0),
+    best_combo_score: runs.reduce((m, r) => Math.max(m, r.combo_score ?? 0), 0),
+    total_elapsed_ms: runs.reduce((s, r) => s + (r.elapsed_ms ?? 0), 0),
+    avg_elapsed_ms: runs.length ? runs.reduce((s, r) => s + (r.elapsed_ms ?? 0), 0) / runs.length : 0,
+    hard_runs_count: byDiff('hard').length,
+  };
+}
+
 // ─── evaluateAchievements ─────────────────────────────────────────────────────
 
 describe('evaluateAchievements', () => {
@@ -477,11 +501,9 @@ describe('evaluateAchievements', () => {
       fc.subarray(allKeys),
       async (alreadyUnlockedKeys) => {
         supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+        supabase.rpc = vi.fn().mockResolvedValue({ data: [rpcRowFromRuns(runsData)], error: null });
         supabase.from.mockImplementation((table) => {
-          if (table === 'runs') return {
-            insert: vi.fn().mockResolvedValue({ error: null }),
-            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: runsData, error: null }) })
-          };
+          if (table === 'runs') return { insert: vi.fn().mockResolvedValue({ error: null }) };
           return {
             select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: alreadyUnlockedKeys.map(k => ({ achievement_key: k })), error: null }) }),
             insert: vi.fn().mockResolvedValue({ error: null })
@@ -514,11 +536,9 @@ describe('evaluateAchievements', () => {
         const runs = buildRuns(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount);
 
         supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+        supabase.rpc = vi.fn().mockResolvedValue({ data: [rpcRowFromRuns(runs)], error: null });
         supabase.from.mockImplementation((table) => {
-          if (table === 'runs') return {
-            insert: vi.fn().mockResolvedValue({ error: null }),
-            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: runs, error: null }) })
-          };
+          if (table === 'runs') return { insert: vi.fn().mockResolvedValue({ error: null }) };
           return {
             select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
             insert: vi.fn().mockResolvedValue({ error: null })
@@ -554,11 +574,9 @@ describe('evaluateAchievements', () => {
       async (elapsed, difficulty) => {
         const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
         supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+        supabase.rpc = vi.fn().mockResolvedValue({ data: [rpcRowFromRuns(oneRun)], error: null });
         supabase.from.mockImplementation((table) => {
-          if (table === 'runs') return {
-            insert: vi.fn().mockResolvedValue({ error: null }),
-            select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: oneRun, error: null }) })
-          };
+          if (table === 'runs') return { insert: vi.fn().mockResolvedValue({ error: null }) };
           return {
             select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [], error: null }) }),
             insert: vi.fn().mockResolvedValue({ error: null })

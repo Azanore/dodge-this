@@ -74,50 +74,30 @@ export async function fetchLeaderboard(difficulty) {
   return data;
 }
 
-// Queries runs table and returns aggregate stats for the logged-in user — throws on fetch error
+// Calls get_user_stats RPC — server-side aggregation, returns single row — throws on error
 export async function fetchAllTimeStats() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
-  const { data, error } = await supabase.from('runs').select('*').eq('user_id', user.id);
+
+  const { data, error } = await supabase.rpc('get_user_stats', { p_user_id: user.id });
   if (error) throw error;
 
-  const runs = data;
-  const totalRuns = runs.length;
-
-  const byDiff = (diff) => runs.filter(r => r.difficulty === diff);
-  const scores = (diff) => byDiff(diff).map(r => r.score);
-  const bestScoreEasy = Math.max(0, ...scores('easy'));
-  const bestScoreNormal = Math.max(0, ...scores('normal'));
-  const bestScoreHard = Math.max(0, ...scores('hard'));
-  const hardRunsCount = byDiff('hard').length;
-
-  const totalNearMisses = runs.reduce((s, r) => s + (r.near_misses ?? 0), 0);
-  const totalBonuses = runs.reduce((s, r) => s + (r.bonuses_collected ?? 0), 0);
-  const bestComboScore = Math.max(0, ...runs.map(r => r.combo_score ?? 0));
-  const avgScore = (diff) => {
-    const diffRuns = byDiff(diff);
-    return diffRuns.length ? diffRuns.reduce((s, r) => s + (r.score ?? 0), 0) / diffRuns.length : 0;
-  };
-  const avgScoreEasy = avgScore('easy');
-  const avgScoreNormal = avgScore('normal');
-  const avgScoreHard = avgScore('hard');
-  const totalElapsedMs = runs.reduce((s, r) => s + (r.elapsed_ms ?? 0), 0);
-  const avgElapsedMs = totalRuns ? totalElapsedMs / totalRuns : 0;
-
+  // RPC returns an array with one row
+  const r = data[0];
   return {
-    totalRuns,
-    bestScoreEasy,
-    bestScoreNormal,
-    bestScoreHard,
-    avgScoreEasy,
-    avgScoreNormal,
-    avgScoreHard,
-    totalNearMisses,
-    totalBonuses,
-    bestComboScore,
-    totalElapsedMs,
-    avgElapsedMs,
-    hardRunsCount
+    totalRuns: Number(r.total_runs),
+    bestScoreEasy: Number(r.best_score_easy),
+    bestScoreNormal: Number(r.best_score_normal),
+    bestScoreHard: Number(r.best_score_hard),
+    avgScoreEasy: Number(r.avg_score_easy),
+    avgScoreNormal: Number(r.avg_score_normal),
+    avgScoreHard: Number(r.avg_score_hard),
+    totalNearMisses: Number(r.total_near_misses),
+    totalBonuses: Number(r.total_bonuses),
+    bestComboScore: Number(r.best_combo_score),
+    totalElapsedMs: Number(r.total_elapsed_ms),
+    avgElapsedMs: Number(r.avg_elapsed_ms),
+    hardRunsCount: Number(r.hard_runs_count),
   };
 }
 
