@@ -200,7 +200,7 @@ function _renderSection(container, label, achievements, unlockedSet, stats) {
       const current = _statForGroup(ach.group, stats);
       const cur = _formatStat(ach.group, current);
       const thr = _formatThreshold(ach.group, ach.threshold);
-      progressHtml = `<span class="ach-progress">${cur} / ${thr}</span>`;
+      progressHtml = `<span class="ach-progress" style="color:${ach.color}">${cur} / ${thr}</span>`;
     }
 
     row.innerHTML = `
