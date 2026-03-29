@@ -245,6 +245,12 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 30 — Bug fixes (audit pass)
+- Fixed near-miss flash animation: `t` was calculated against hardcoded `FLASH_DURATION` for all flashes, but near-miss flashes use `NEAR_MISS_FLASH_DURATION = 220ms` — ring spawned already mid-animation and disappeared before timer expired; fix stores `duration` on each flash object and uses `f.remaining / f.duration`
+- Fixed death timeout race: 450ms shake delay before `loop.stop()` + `showGameOver()` could be interrupted by player pressing R; `loop.stop()` would then kill the freshly-restarted run; fix uses cancellable `deathTimer` cleared in `onRestart()` and `goToMenu()`
+- Fixed `BONUS_COLORS` duplication: identical object was defined in both `bonuses.js` (local) and `renderer.js` (exported); `bonuses.js` now imports from `renderer.js` — single source of truth
+- Fixed `_unlockedAchievements` cache miss on slow connections: `refreshUnlockedCache()` was async-only, leaving `state._unlockedAchievements` undefined until fetch resolved; mid-run checks fell back to empty set, potentially re-toasting already-earned achievements; fix seeds from `localStorage` synchronously before the async fetch overwrites it
+
 ### Session 29 — Category D: design tuning
 - `scoreZoneRadius` 110 → 90px — less dominant on smaller screens, still generous enough for zone play
 - `nearMissThreshold` 20 → 26px — wider detection window at high speeds, more rewarding without feeling cheap
