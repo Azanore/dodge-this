@@ -87,9 +87,8 @@ export function spawnObstacle(state, speedMultiplier = 1) {
     vy,
     radius: TYPE_RADIUS[type] ?? 10,
     lastNearMissAt: 0,
-    // POLISH: spawn warning — all obstacles have a pending countdown before activating; remove pending logic in obstacles.js, renderer.js to revert
-    pending: 2000,
-    pendingDuration: 2000
+    // POLISH: tracker spawn warning — pending:true delays tracker activation 500ms; remove pending logic in obstacles.js, renderer.js to revert
+    pending: type === 'tracker' ? 2000 : 0
   });
 }
 
@@ -100,7 +99,7 @@ export function updateObstacles(delta, state) {
   const slowmo = state.slowmoMultiplier ?? 1;
 
   state.obstacles = state.obstacles.filter(obs => {
-    // POLISH: spawn warning — tick down pending timer; skip movement/removal while pending
+    // POLISH: tracker spawn warning — tick down pending timer; skip movement/removal while pending
     if (obs.pending > 0) {
       obs.pending -= delta * slowmo;
       return true;
