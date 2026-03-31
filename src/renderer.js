@@ -271,15 +271,15 @@ export function render(ctx, state, delta) {
 
   // 5. Obstacles — per-type shapes with glow
   for (const obs of state.obstacles) {
-    // POLISH: tracker spawn warning — draw pending trackers as a pulsing ring, skip normal draw
+    // POLISH: spawn warning — draw pending obstacles as a pulsing ring in their type color, skip normal draw
     if (obs.pending > 0) {
-      const TRACKER_PENDING = 2000;
-      const t = obs.pending / TRACKER_PENDING; // 1→0 as it materializes
+      const t = obs.pending / obs.pendingDuration; // 1→0 as it materializes
       const pulse = 0.5 + 0.5 * Math.sin(pulseT * 8);
+      const color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
       ctx.save();
       ctx.globalAlpha = (1 - t) * 0.3 + pulse * 0.4;
-      ctx.strokeStyle = '#cc44ff';
-      ctx.shadowColor = '#cc44ff';
+      ctx.strokeStyle = color;
+      ctx.shadowColor = color;
       ctx.shadowBlur = 20;
       ctx.lineWidth = 2;
       ctx.beginPath();
