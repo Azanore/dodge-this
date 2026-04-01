@@ -25,7 +25,7 @@ window.gameConfig = {
   difficultyPresets: {
     easy: {
       speedScaleFactor: 0.3,
-      spawnRateDecayRate: 0.03,
+      spawnRateDecayRate: 0.067,
       spawnRateMin: 700,
       baseSpawnInterval: 1800,
       maxObstaclesOnScreen: 12,
@@ -34,7 +34,7 @@ window.gameConfig = {
     },
     normal: {
       speedScaleFactor: 0.4,
-      spawnRateDecayRate: 0.04,
+      spawnRateDecayRate: 0.09,
       spawnRateMin: 550,
       baseSpawnInterval: 1500,
       maxObstaclesOnScreen: 18,
@@ -43,7 +43,7 @@ window.gameConfig = {
     },
     hard: {
       speedScaleFactor: 0.5,
-      spawnRateDecayRate: 0.05,
+      spawnRateDecayRate: 0.113,
       spawnRateMin: 400,
       baseSpawnInterval: 1200,
       maxObstaclesOnScreen: 25,

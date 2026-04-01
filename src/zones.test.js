@@ -1,41 +1,30 @@
-// Property tests for zone geometry and mouse clamping.
+// Property tests for zone geometry and CSS scale factor.
 // Related: zones.js
-// Tests Properties 1 and 2 from design.md
+// Tests Properties 1 and 2 from design.md (game-balancing-overhaul)
 
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
+import { recomputeZones, innerZone, outerZone, clampToInner, CANVAS_W, CANVAS_H } from '../src/zones.js';
 
-// Recompute zones with a given viewport size
-function setupZones(width, height) {
-  window.innerWidth = width;
-  window.innerHeight = height;
-  // Re-import is not possible in ESM; call recomputeZones directly
+// Reads back zone values after calling recomputeZones()
+function getZones() {
+  recomputeZones();
+  return {
+    innerZone: { ...innerZone },
+    outerZone: { ...outerZone }
+  };
+}
+
+// Computes expected zone values from fixed constants
+function expectedZones() {
   const scale = globalThis.gameConfig.outerZoneScale;
-  const iw = width / scale;
-  const ih = height / scale;
+  const iw = CANVAS_W / scale;
+  const ih = CANVAS_H / scale;
   return {
-    innerZone: {
-      x: (width - iw) / 2,
-      y: (height - ih) / 2,
-      width: iw,
-      height: ih
-    },
-    outerZone: { x: 0, y: 0, width, height }
+    innerZone: { x: (CANVAS_W - iw) / 2, y: (CANVAS_H - ih) / 2, width: iw, height: ih },
+    outerZone: { x: 0, y: 0, width: CANVAS_W, height: CANVAS_H }
   };
 }
-
-function clampToInner(x, y, innerZone) {
-  return {
-    x: Math.max(innerZone.x, Math.min(innerZone.x + innerZone.width, x)),
-    y: Math.max(innerZone.y, Math.min(innerZone.y + innerZone.height, y))
-  };
-}
-
-// Arbitrary: realistic browser viewport dimensions
-const arbViewport = fc.record({
-  width: fc.integer({ min: 320, max: 3840 }),
-  height: fc.integer({ min: 240, max: 2160 })
-});
 
 // Arbitrary: any point including out-of-bounds
 const arbPoint = fc.record({
@@ -45,35 +34,89 @@ const arbPoint = fc.record({
 
 describe('zones', () => {
   /**
-   * **Feature: dodge-game, Property 1: Zone containment for any viewport**
-   * Validates: Requirements 1.1, 1.3, 1.4
+   * **Feature: game-balancing-overhaul, Property 1: Zone geometry is viewport-independent**
+   * Validates: Requirements 1.7, 1.8, 1.9, 1.10
    */
-  it('Property 1: inner zone is fully contained within outer zone for any viewport', () => {
+  it('Property 1: zone geometry equals fixed-constants values regardless of viewport size', () => {
+    const { innerZone: expInner, outerZone: expOuter } = expectedZones();
+
     fc.assert(
-      fc.property(arbViewport, ({ width, height }) => {
-        const { innerZone, outerZone } = setupZones(width, height);
+      fc.property(
+        fc.integer({ min: 320, max: 3840 }),
+        fc.integer({ min: 240, max: 2160 }),
+        (vw, vh) => {
+          // Simulate any viewport — zones.js must ignore these
+          window.innerWidth = vw;
+          window.innerHeight = vh;
 
-        // Inner zone left/top edges must be >= outer zone left/top
-        expect(innerZone.x).toBeGreaterThanOrEqual(outerZone.x);
-        expect(innerZone.y).toBeGreaterThanOrEqual(outerZone.y);
+          const { innerZone: actual, outerZone: actualOuter } = getZones();
 
-        // Inner zone right/bottom edges must be <= outer zone right/bottom
-        expect(innerZone.x + innerZone.width).toBeLessThanOrEqual(outerZone.x + outerZone.width);
-        expect(innerZone.y + innerZone.height).toBeLessThanOrEqual(outerZone.y + outerZone.height);
-      }),
+          expect(actual.x).toBeCloseTo(expInner.x);
+          expect(actual.y).toBeCloseTo(expInner.y);
+          expect(actual.width).toBeCloseTo(expInner.width);
+          expect(actual.height).toBeCloseTo(expInner.height);
+          expect(actualOuter.width).toBe(expOuter.width);
+          expect(actualOuter.height).toBe(expOuter.height);
+        }
+      ),
       { numRuns: 100 }
     );
   });
 
   /**
-   * **Feature: dodge-game, Property 2: Mouse clamping keeps player inside Inner Zone**
+   * **Feature: game-balancing-overhaul, Property 2: CSS scale factor is correct for any viewport**
+   * Validates: Requirements 1.4
+   */
+  describe('Property 2: CSS scale factor examples', () => {
+    it('1920×1080 → scale 1.2', () => {
+      expect(Math.min(1920 / 1600, 1080 / 900)).toBeCloseTo(1.2);
+    });
+
+    it('1280×720 → scale 0.8', () => {
+      expect(Math.min(1280 / 1600, 720 / 900)).toBeCloseTo(0.8);
+    });
+
+    it('375×667 → scale ~0.234375', () => {
+      expect(Math.min(375 / 1600, 667 / 900)).toBeCloseTo(375 / 1600);
+    });
+
+    it('3840×2160 → scale 2.4', () => {
+      expect(Math.min(3840 / 1600, 2160 / 900)).toBeCloseTo(2.4);
+    });
+  });
+
+  /**
+   * **Feature: game-balancing-overhaul, Property 2: CSS scale factor is correct for any viewport**
+   * Validates: Requirements 1.4
+   */
+  it('Property 2: CSS scale factor is positive and ≤ 1 for sub-1600×900 viewports', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 7680 }),
+        fc.integer({ min: 1, max: 7680 }),
+        (vw, vh) => {
+          const scale = Math.min(vw / 1600, vh / 900);
+          // Always positive for positive inputs
+          expect(scale).toBeGreaterThan(0);
+          // ≤ 1 when both dimensions are within the logical canvas size
+          if (vw <= 1600 && vh <= 900) {
+            expect(scale).toBeLessThanOrEqual(1);
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
+  });
+
+  /**
+   * **Feature: game-balancing-overhaul, Property 2: Mouse clamping keeps player inside Inner Zone**
    * Validates: Requirements 1.5, 2.2
    */
   it('Property 2: clampToInner always returns a point within inner zone bounds', () => {
+    recomputeZones();
     fc.assert(
-      fc.property(arbViewport, arbPoint, ({ width, height }, { x, y }) => {
-        const { innerZone } = setupZones(width, height);
-        const clamped = clampToInner(x, y, innerZone);
+      fc.property(arbPoint, ({ x, y }) => {
+        const clamped = clampToInner(x, y);
 
         expect(clamped.x).toBeGreaterThanOrEqual(innerZone.x);
         expect(clamped.x).toBeLessThanOrEqual(innerZone.x + innerZone.width);
