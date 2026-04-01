@@ -9,6 +9,12 @@ import { resetState } from './GameState.js';
 // Ensure zones are computed before tests run
 recomputeZones();
 
+// Mock canvas-container bounding rect so coordinate transform is a no-op (scale=1, offset=0)
+const mockContainer = document.createElement('div');
+mockContainer.id = 'canvas-container';
+mockContainer.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1600, height: 900 });
+document.body.appendChild(mockContainer);
+
 describe('player position sync', () => {
   let state;
 

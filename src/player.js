@@ -4,14 +4,16 @@
 
 import { innerZone } from './zones.js';
 
-// Raw mouse position — updated on every mousemove
+// Raw mouse position in canvas (logical) space — updated on every mousemove
 let rawX = null;
 let rawY = null;
 
-// Track mouse position as raw values; clamping happens in update()
+// Maps viewport mouse coords to logical 1600×900 canvas coords via the container's bounding rect
 window.addEventListener('mousemove', e => {
-  rawX = e.clientX;
-  rawY = e.clientY;
+  const rect = document.getElementById('canvas-container').getBoundingClientRect();
+  const scale = rect.width / 1600;
+  rawX = (e.clientX - rect.left) / scale;
+  rawY = (e.clientY - rect.top) / scale;
 });
 
 // Called each frame — clamps latest mouse position into inner zone and writes to state.player

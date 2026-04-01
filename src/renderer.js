@@ -92,13 +92,13 @@ export function triggerNearMiss(x, y) {
   playNearMiss(); // AUDIO
 }
 
-// Generates the static star field array using viewport dimensions
+// Generates the static star field array within the fixed 1600×900 canvas space
 export function initRenderer() {
   stars.length = 0;
   for (let i = 0; i < STAR_COUNT; i++) {
     stars.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
+      x: Math.random() * 1600,
+      y: Math.random() * 900,
       r: 0.5 + Math.random() * 1.5,
       brightness: 0.3 + Math.random() * 0.7
     });
