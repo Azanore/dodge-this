@@ -215,16 +215,15 @@ Run: `npm test`
 | File | What it covers |
 |------|---------------|
 | `collision.test.js` | Circle overlap math |
-| `player.test.js` | Position sync property (for any x/y, state.player matches clampToInner) |
+| `player.test.js` | Position sync property (for any x/y, state.player matches clampToInner after coordinate transform) |
 | `GameState.test.js` | resetState completeness |
 | `obstacles.test.js` | Spawn and movement |
 | `bonuses.test.js` | Collect and expire effects |
-| `difficulty.test.js` | Speed and spawn interval curves |
-| `zones.test.js` | Zone geometry |
+| `difficulty.test.js` | Speed and spawn interval curves; new decay rate values; Property 3 (spawnRateMin floor); Property 4 (proportional ordering easy≥normal≥hard) |
+| `zones.test.js` | Property 1: zone geometry viewport-independence (fixed 1600×900 constants); Property 2: CSS scale factor correctness; clampToInner bounds |
 | `config.test.js` | Validation and fallbacks |
 | `main.test.js` | State guards using local helper functions (not real update()) |
 | `integration.test.js` | Real `gameUpdate()` end-to-end: start→grace→active→death, pause/resume, restart |
-
 | `combo.test.js` | Score zone spawn/expiry/wander bounds, multiplier build/decay (6 property tests) |
 
 **Known gap:** `main.test.js` uses local helper functions that simulate the logic rather than importing the real `update()`. DOM event wiring (click handlers, keydown listeners) is not tested.
