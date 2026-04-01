@@ -355,14 +355,12 @@ supabase.auth.onAuthStateChange((_event, session) => {
   }
   document.getElementById('stats-btn').style.visibility = session ? 'visible' : 'hidden';
   document.getElementById('achievements-btn').style.visibility = session ? 'visible' : 'hidden';
-  // POLISH: in-game username overlay — show when authenticated; remove this block to revert
   const userEl = document.getElementById('ingame-username');
   if (session?.user) {
     authBtn.style.display = 'none';
     usernameBtn.style.display = 'inline';
     signoutSep.style.display = 'inline';
     signoutBtn.style.display = 'inline';
-    if (userEl) userEl.style.display = 'block';
     refreshUnlockedCache();
     // Fetch profiles.username outside the callback to avoid Supabase client re-entrancy
     fetchDisplayName(session.user);
