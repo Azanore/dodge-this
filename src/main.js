@@ -359,7 +359,6 @@ supabase.auth.onAuthStateChange((_event, session) => {
   }
   document.getElementById('stats-btn').style.visibility = session ? 'visible' : 'hidden';
   document.getElementById('achievements-btn').style.visibility = session ? 'visible' : 'hidden';
-  const userEl = document.getElementById('ingame-username');
   if (session?.user) {
     authBtn.style.display = 'none';
     usernameBtn.style.display = 'inline';
@@ -373,7 +372,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     usernameBtn.style.display = 'none';
     signoutSep.style.display = 'none';
     signoutBtn.style.display = 'none';
-    if (userEl) userEl.style.display = 'none';
+    document.getElementById('ingame-username').style.display = 'none';
     state._unlockedAchievements = new Set();
     localStorage.removeItem(ACH_CACHE_KEY);
     localStorage.removeItem(STATS_CACHE_KEY);
