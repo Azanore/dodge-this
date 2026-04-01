@@ -245,6 +245,33 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 33 — Username change feature
+- Auth row redesigned: single `#auth-btn` (guest) replaced with `#username-btn` + separator + `#signout-btn` (authenticated) — `index.html`, `main.js`; revert by restoring original `#auth-btn` click handler and removing the three new elements
+- `updateUsername(name)` added to `stats.js` — updates `profiles.username` in Supabase; throws on unauthenticated, empty, too short (<2), too long (>30), control chars, or duplicate (Postgres `23505` → "Username already taken")
+- `#rename-screen` overlay added — modal with text input, error display, Save button, Escape to cancel; wired into `isAnyModalOpen` and `KeydownRegistry` — `index.html`, `main.js`
+- `setDisplayName(name)` helper in `main.js` — updates `#username-btn` text and `#ingame-username` overlay in one call
+- `fetchDisplayName(user)` extracted from `onAuthStateChange` — fetches `profiles.username` outside the Supabase callback to avoid client re-entrancy; falls back to `user_metadata.full_name` → email → 'Player'
+- Username button edit affordance: `::after` pencil icon (✎) iterated through visible-by-default → hidden-until-hover → replaced with underline; final state: always-underlined with dim color, cyan underline on hover — `index.html`
+- Fixed username reverting on page load: `onAuthStateChange` was reading `user_metadata.full_name` (Google name) instead of `profiles.username`; fixed by calling `fetchDisplayName` after auth settles
+- Fixed auth UI race: profiles fetch moved out of `onAuthStateChange` callback into `fetchDisplayName` to prevent Supabase client re-entrancy
+- Fixed TDZ on cache keys: `ACH_CACHE_KEY` and `STATS_CACHE_KEY` constants moved to top of `main.js` (were declared after first use)
+- Fixed `#ingame-username` showing on menu: hidden by default via CSS `display:none`; shown on `onRestart()` and `onStartAction()` only when authenticated; hidden in `goToMenu()`
+- Fixed ingame-username guard: show condition checks `usernameBtn.style.display !== 'none'` (auth state) instead of button text content
+- Removed dead `userEl` declaration in `onAuthStateChange`
+- Username max length: iterated 32 → 20 → 30 across DB trigger, `updateUsername` validation, and `#rename-input` `maxlength` attribute; final constraint: min 2, max 30, no control/zero-width chars, unique
+
+**DB changes required:** Add `UNIQUE` constraint on `profiles.username`; update `handle_new_user` trigger to enforce max length 30.
+
+### Session 32 — Polish pass continuation
+- Tracker pending duration: 500ms → 2000ms — more time to react; `t` calc in `renderer.js` extracted to named constant `TRACKER_PENDING` to match — `obstacles.js`, `renderer.js`
+- Game-over screen: `#go-elapsed` moved inside `#run-stats-panel` under a "This run" section header; run stats populated immediately on death (synchronous, no reason to wait for the 450ms timeout) — `index.html`, `gameOver.js`, `main.js`
+- Score delta display: `pbEl.innerHTML` now two-line when not a new best — dimmed best score on first line, `−X pts from best` in red below — `gameOver.js`; revert by restoring single-line `pbEl.textContent`
+- Pause stats panel: restructured to match game-over panel (opaque `#0d0d1a` background, `stats-row` layout, section header, added Difficulty field, consistent padding) — `index.html`, `main.js`; individual field elements `#ps-score`, `#ps-time`, `#ps-mult`, `#ps-difficulty` replace the old single-string textContent
+- Difficulty moved from canvas HUD to `#ingame-difficulty` HTML overlay (fixed top-left, `pointer-events:none`, uppercase monospace) — `hud.js` (removed canvas draw), `index.html`, `main.js`; shown on `onRestart()`/`onStartAction()`, hidden in `goToMenu()`
+- `#ingame-username` HTML overlay added (fixed bottom-left, `pointer-events:none`) — shows authenticated player's display name during active play — `index.html`, `main.js`
+- Spawn warning pulse extended to all obstacle types (not just tracker) — attempted then reverted; tracker-only remains the intended behavior
+- Removed unused `insertRun` import — `main.js`
+
 ### Session 31 — Polish pass
 - Difficulty descriptions: grey subtitle under difficulty buttons ("forgiving ramp, gentle chaos" / "balanced challenge" / "chaos from the start") — `index.html` + `main.js`; remove `DIFF_DESCRIPTIONS` map and `updateDiffDesc()` call to revert
 - Score delta on game-over: when not a new best, shows "−X pts from best" inline — `gameOver.js`; remove `deltaStr` to revert
