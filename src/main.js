@@ -344,7 +344,7 @@ function setDisplayName(name) {
   if (userEl) { userEl.textContent = name; }
 }
 
-supabase.auth.onAuthStateChange(async (_event, session) => {
+supabase.auth.onAuthStateChange((_event, session) => {
   // Clean OAuth token fragment from URL after redirect
   if (window.location.hash.includes('access_token')) {
     history.replaceState(null, '', window.location.origin + window.location.pathname);
@@ -354,16 +354,14 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
   // POLISH: in-game username overlay — show when authenticated; remove this block to revert
   const userEl = document.getElementById('ingame-username');
   if (session?.user) {
-    // Fetch profiles.username — user may have changed it; fall back to Google name only if null
-    const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
-    const name = profile?.username ?? session.user.user_metadata?.full_name ?? session.user.email ?? 'Player';
     authBtn.style.display = 'none';
     usernameBtn.style.display = 'inline';
     signoutSep.style.display = 'inline';
     signoutBtn.style.display = 'inline';
-    setDisplayName(name);
     if (userEl) userEl.style.display = 'block';
     refreshUnlockedCache();
+    // Fetch profiles.username outside the callback to avoid Supabase client re-entrancy
+    fetchDisplayName(session.user);
   } else {
     authBtn.style.display = 'inline';
     usernameBtn.style.display = 'none';
@@ -375,6 +373,13 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
     localStorage.removeItem(STATS_CACHE_KEY);
   }
 });
+
+// Fetches profiles.username and updates display — called after auth state settles, not inside the callback
+async function fetchDisplayName(user) {
+  const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+  const name = profile?.username ?? user.user_metadata?.full_name ?? user.email ?? 'Player';
+  setDisplayName(name);
+}
 
 authBtn.addEventListener('click', () => {
   supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
