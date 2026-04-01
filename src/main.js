@@ -344,7 +344,7 @@ function setDisplayName(name) {
   if (userEl) { userEl.textContent = name; }
 }
 
-supabase.auth.onAuthStateChange((_event, session) => {
+supabase.auth.onAuthStateChange(async (_event, session) => {
   // Clean OAuth token fragment from URL after redirect
   if (window.location.hash.includes('access_token')) {
     history.replaceState(null, '', window.location.origin + window.location.pathname);
@@ -354,7 +354,9 @@ supabase.auth.onAuthStateChange((_event, session) => {
   // POLISH: in-game username overlay — show when authenticated; remove this block to revert
   const userEl = document.getElementById('ingame-username');
   if (session?.user) {
-    const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Player';
+    // Fetch profiles.username — user may have changed it; fall back to Google name only if null
+    const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
+    const name = profile?.username ?? session.user.user_metadata?.full_name ?? session.user.email ?? 'Player';
     authBtn.style.display = 'none';
     usernameBtn.style.display = 'inline';
     signoutSep.style.display = 'inline';
