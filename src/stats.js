@@ -203,7 +203,10 @@ export async function updateUsername(name) {
   if (!trimmed) throw new Error('Username cannot be empty');
   if (trimmed.length > 32) throw new Error('Username must be 32 characters or fewer');
   const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', user.id);
-  if (error) throw error;
+  if (error) {
+    if (error.code === '23505') throw new Error('Username already taken');
+    throw error;
+  }
   return trimmed;
 }
 
