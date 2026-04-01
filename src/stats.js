@@ -202,7 +202,7 @@ export async function updateUsername(name) {
   const trimmed = name.trim();
   if (!trimmed) throw new Error('Username cannot be empty');
   if (trimmed.length < 2) throw new Error('Username must be at least 2 characters');
-  if (trimmed.length > 20) throw new Error('Username must be 20 characters or fewer');
+  if (trimmed.length > 30) throw new Error('Username must be 30 characters or fewer');
   if (/[\x00-\x1F\x7F\u200B\u200C\u200D\uFEFF]/.test(trimmed)) throw new Error('Username contains invalid characters');
   const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', user.id);
   if (error) {
