@@ -233,6 +233,29 @@ Run: `npm test`
 
 ## Changelog
 
+### Session 35 — game-balancing-overhaul + post-overhaul bug fixes
+
+**Spec: game-balancing-overhaul (all 8 tasks completed)**
+
+Core changes:
+- Fixed logical canvas to 1600×900 — `src/zones.js` exports `CANVAS_W/CANVAS_H` constants, `recomputeZones()` uses them instead of `window.innerWidth/Height`, resize listener removed
+- `index.html` — canvas wrapped in `#canvas-container` div with fixed 1600×900 dimensions and `transform-origin: center center`
+- `src/main.js` — `resizeCanvas` replaced with `updateScale()`: computes `Math.min(vw/1600, vh/900)` and applies CSS `transform: scale()` to the container only; game geometry never changes on resize
+- `game.config.js` — `spawnRateDecayRate` updated: easy 0.03→0.067, normal 0.04→0.09, hard 0.05→0.113
+- `src/zones.test.js` — rewritten: Property 1 now asserts viewport-independence (zone values always match fixed-constant-derived values regardless of window size); Property 2 tests CSS scale factor formula for representative viewports and via PBT
+- `src/difficulty.test.js` — added: example tests for new decay rate values, Property 3 (spawnRateMin floor), Property 4 (proportional difficulty ordering easy≥normal≥hard at all times)
+
+**Post-overhaul bugs found and fixed (not in original spec):**
+
+- Bug: `player.js` used `e.clientX/Y` raw — with CSS scale, viewport coords ≠ canvas coords; player dot lagged behind cursor at any scale ≠ 1.0. Fix: `getBoundingClientRect()` on container, divide by `rect.width / 1600` to map to logical canvas space. `player.test.js` updated to mock container rect so coordinate transform is a no-op in tests.
+- Bug: `renderer.js initRenderer()` generated stars using `window.innerWidth/Height` — stars only populated top-left corner on small viewports. Fix: use `1600` / `900` constants.
+- Bug: tracker `turnRate: 0.025` was a per-frame fraction — tracker homing was frame-rate dependent (3× more aggressive at 144fps vs 60fps). Also: slowmo bonus didn't affect turn rate, only movement. Fix: renamed to `turnRatePerMs: 0.0015`, multiplied by `delta * slowmo` in `obstacles.js`.
+
+**UI additions:**
+- Fullscreen toggle button (`#fullscreen-btn`) — top-right, always visible (hidden only if `document.fullscreenEnabled` is false). `fullscreenchange` listener keeps icon in sync when user exits via Escape. Both `#help-btn` and `#fullscreen-btn` use `display: flex` with `align-items/justify-content: center` for pixel-perfect icon centering.
+
+**Session confidence: medium-high.** The spec tasks themselves executed cleanly. The post-spec audit caught 3 real bugs the spec didn't cover (mouse coordinate mapping, star field bounds, tracker frame-rate dependency) — these were found through manual reasoning, not tests, which is the verification gap the article described. The subagent reported task 4 (config values) as complete when the file hadn't actually changed yet — required a manual re-read to confirm. One test regression on `player.test.js` after the coordinate fix required a jsdom mock for `getBoundingClientRect`. Everything resolved without rollbacks.
+
 ### Session 34 — CONTEXT.md cleanup
 - Removed stale backlog entries (leaderboard, difficulty presets, achievements, sound — all done)
 - Moved touch/mobile to "Deliberately out of scope" with clear rationale

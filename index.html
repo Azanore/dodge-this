@@ -25,9 +25,14 @@
       display: none;
       z-index: 25;
       transition: border-color 0.15s, color 0.15s;
+      /* pixel-perfect centering for both icons */
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      padding: 0;
     }
     #help-btn { bottom: 24px; }
-    #fullscreen-btn { top: 24px; }
+    #fullscreen-btn { top: 24px; font-size: 14px; }
     #help-btn:hover, #fullscreen-btn:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
 
     /* Shared overlay pattern — pause, game-over, how-to-play */

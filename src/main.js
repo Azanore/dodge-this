@@ -290,13 +290,13 @@ function drawHtpIcons() {
 
 function syncHelpBtn() {
   const visible = state.status === 'start' || state.status === 'paused';
-  helpBtn.style.display = visible ? 'block' : 'none';
+  helpBtn.style.display = visible ? 'flex' : 'none';
 }
 
 // Fullscreen button — hidden if API unsupported (e.g. iOS Safari, sandboxed iframes)
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 if (document.fullscreenEnabled) {
-  fullscreenBtn.style.display = 'block';
+  fullscreenBtn.style.display = 'flex';
   // Sync icon to actual fullscreen state — covers Escape-to-exit case
   document.addEventListener('fullscreenchange', () => {
     fullscreenBtn.textContent = document.fullscreenElement ? '⊠' : '⛶';
