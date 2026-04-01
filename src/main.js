@@ -113,6 +113,8 @@ function onRestart() {
   // POLISH: in-game difficulty overlay — populate and show; remove these lines to revert
   const diffEl = document.getElementById('ingame-difficulty');
   if (diffEl) { diffEl.textContent = activeDifficulty; diffEl.style.display = 'block'; }
+  const userEl = document.getElementById('ingame-username');
+  if (userEl && usernameBtn.textContent) { userEl.style.display = 'block'; }
   loop.start();
 }
 
