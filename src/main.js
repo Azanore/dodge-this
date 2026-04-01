@@ -32,6 +32,10 @@ window.addEventListener('resize', resizeCanvas);
 const DIFF_KEY = 'dodge_difficulty';
 let activeDifficulty = localStorage.getItem(DIFF_KEY) ?? 'normal';
 
+// localStorage cache keys
+const ACH_CACHE_KEY = 'dodge_unlocked_achievements';
+const STATS_CACHE_KEY = 'dodge_stats_cache';
+
 let state = resetState(activeDifficulty);
 state.graceRemaining = gameConfig.gracePeriod;
 let lastDelta = 16;
@@ -475,8 +479,6 @@ document.getElementById('stats-screen').addEventListener('click', (e) => {
 
 // Achievements overlay — open, fetch, populate
 // Renders from localStorage cache immediately, then refreshes from DB in background
-const ACH_CACHE_KEY = 'dodge_unlocked_achievements';
-const STATS_CACHE_KEY = 'dodge_stats_cache';
 
 document.getElementById('achievements-btn').addEventListener('click', async () => {
   const achScreen = document.getElementById('achievements-screen');

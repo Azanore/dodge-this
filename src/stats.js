@@ -201,6 +201,7 @@ export async function updateUsername(name) {
   if (!user) throw new Error('Not authenticated');
   const trimmed = name.trim();
   if (!trimmed) throw new Error('Username cannot be empty');
+  if (trimmed.length > 32) throw new Error('Username must be 32 characters or fewer');
   const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', user.id);
   if (error) throw error;
   return trimmed;
