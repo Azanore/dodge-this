@@ -195,6 +195,17 @@ export async function evaluateAchievements(state) {
   }
 }
 
+// Updates the authenticated user's username in profiles — throws on error
+export async function updateUsername(name) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error('Username cannot be empty');
+  const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', user.id);
+  if (error) throw error;
+  return trimmed;
+}
+
 // Deletes all user_achievements rows for the authenticated user — for testing only
 export async function resetMyAchievements() {
   const { data: { user } } = await supabase.auth.getUser();

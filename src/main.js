@@ -10,7 +10,7 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
-import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements } from './stats.js';
+import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
 import { initConfigPanel } from './configPanel.js';
@@ -155,7 +155,7 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
 
 // Returns true if any modal overlay is currently open
 function isAnyModalOpen() {
-  return ['#how-to-play', '#leaderboard-screen', '#stats-screen', '#achievements-screen']
+  return ['#how-to-play', '#leaderboard-screen', '#stats-screen', '#achievements-screen', '#rename-screen']
     .some(id => document.querySelector(id).classList.contains('open'));
 }
 
@@ -286,6 +286,9 @@ function syncHelpBtn() {
 helpBtn.addEventListener('click', () => { drawHtpIcons(); howToPlayEl.classList.add('open'); });
 howToPlayEl.addEventListener('click', (e) => { if (e.target === howToPlayEl) howToPlayEl.classList.remove('open'); });
 
+const renameScreen = document.getElementById('rename-screen');
+function closeRenameModal() { renameScreen.classList.remove('open'); }
+
 // KeydownRegistry — single handler for all global keyboard shortcuts
 window.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
@@ -293,6 +296,7 @@ window.addEventListener('keydown', (e) => {
   if (lbScreen.classList.contains('open')) { lbScreen.classList.remove('open'); return; }
   if (document.getElementById('stats-screen').classList.contains('open')) { document.getElementById('stats-screen').classList.remove('open'); return; }
   if (document.getElementById('achievements-screen').classList.contains('open')) { document.getElementById('achievements-screen').classList.remove('open'); return; }
+  if (renameScreen.classList.contains('open')) { closeRenameModal(); return; }
   const panel = document.getElementById('config-panel');
   if (panel && panel.style.display !== 'none') return;
   if (state.status === 'dead' || state.status === 'start') return;
@@ -327,8 +331,18 @@ syncHelpBtn();
 
 initConfigPanel(loop, onRestart, () => state.status);
 
-// Auth button — sign in/out; Stats button — show only when authenticated
+// Auth — sign in button (guest), username button + sign out (authenticated)
 const authBtn = document.getElementById('auth-btn');
+const usernameBtn = document.getElementById('username-btn');
+const signoutBtn = document.getElementById('signout-btn');
+const signoutSep = document.getElementById('signout-sep');
+
+// Updates the displayed username across all surfaces
+function setDisplayName(name) {
+  usernameBtn.textContent = name;
+  const userEl = document.getElementById('ingame-username');
+  if (userEl) { userEl.textContent = name; }
+}
 
 supabase.auth.onAuthStateChange((_event, session) => {
   // Clean OAuth token fragment from URL after redirect
@@ -339,39 +353,66 @@ supabase.auth.onAuthStateChange((_event, session) => {
   document.getElementById('achievements-btn').style.visibility = session ? 'visible' : 'hidden';
   // POLISH: in-game username overlay — show when authenticated; remove this block to revert
   const userEl = document.getElementById('ingame-username');
-  if (userEl) {
-    if (session?.user) {
-      const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Player';
-      userEl.textContent = name;
-      userEl.style.display = 'block';
-    } else {
-      userEl.style.display = 'none';
-    }
-  }
   if (session?.user) {
-    const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Signed in';
-    authBtn.textContent = `${name} — Sign out`;
-    authBtn.style.color = '#aaa';
+    const name = session.user.user_metadata?.full_name ?? session.user.email ?? 'Player';
+    authBtn.style.display = 'none';
+    usernameBtn.style.display = 'inline';
+    signoutSep.style.display = 'inline';
+    signoutBtn.style.display = 'inline';
+    setDisplayName(name);
+    if (userEl) userEl.style.display = 'block';
     refreshUnlockedCache();
   } else {
-    authBtn.textContent = 'Sign in with Google';
-    authBtn.style.color = '#888';
+    authBtn.style.display = 'inline';
+    usernameBtn.style.display = 'none';
+    signoutSep.style.display = 'none';
+    signoutBtn.style.display = 'none';
+    if (userEl) userEl.style.display = 'none';
     state._unlockedAchievements = new Set();
     localStorage.removeItem(ACH_CACHE_KEY);
     localStorage.removeItem(STATS_CACHE_KEY);
   }
 });
 
-authBtn.addEventListener('click', async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await supabase.auth.signOut();
-  } else {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
-    });
+authBtn.addEventListener('click', () => {
+  supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+});
+
+signoutBtn.addEventListener('click', () => supabase.auth.signOut());
+
+// Rename modal
+const renameInput = document.getElementById('rename-input');
+const renameError = document.getElementById('rename-error');
+const renameSaveBtn = document.getElementById('rename-save-btn');
+
+function openRenameModal() {
+  renameInput.value = usernameBtn.textContent;
+  renameError.textContent = '';
+  renameScreen.classList.add('open');
+  setTimeout(() => renameInput.focus(), 50);
+}
+
+usernameBtn.addEventListener('click', openRenameModal);
+
+renameSaveBtn.addEventListener('click', async () => {
+  const val = renameInput.value.trim();
+  if (!val) { renameError.textContent = 'Username cannot be empty.'; return; }
+  renameSaveBtn.disabled = true;
+  renameSaveBtn.textContent = 'Saving...';
+  try {
+    const saved = await updateUsername(val);
+    setDisplayName(saved);
+    closeRenameModal();
+  } catch (err) {
+    renameError.textContent = err.message ?? 'Failed to save. Try again.';
+  } finally {
+    renameSaveBtn.disabled = false;
+    renameSaveBtn.textContent = 'Save';
   }
+});
+
+renameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') renameSaveBtn.click();
 });
 
 // Populates the stats overlay DOM from a stats object

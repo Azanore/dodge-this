@@ -50,6 +50,11 @@
     #pause-screen        { background: rgba(0,0,0,0.6); }
 
     #auth-btn:hover { color: #ccc !important; }
+    #username-btn { cursor: pointer; background: none; border: none; color: #aaa; font: 12px monospace; transition: color 0.15s; }
+    #username-btn:hover { color: #00eeff; }
+    #signout-btn { cursor: pointer; background: none; border: none; color: #555; font: 12px monospace; transition: color 0.15s; }
+    #signout-btn:hover { color: #888; }
+    #rename-screen { background: rgba(0,0,0,0.85); z-index: 40; }
     #stats-screen .htp-panel { width: min(320px, calc(100vw - 48px)); }
     #achievements-screen .htp-panel { width: min(480px, calc(100vw - 48px)); }
 
@@ -232,7 +237,12 @@
       <button id="leaderboard-btn" class="overlay-btn overlay-secondary-btn">Leaderboard</button>
       <button id="stats-btn" class="overlay-btn overlay-secondary-btn" style="visibility:hidden">Stats</button>
       <button id="achievements-btn" class="overlay-btn overlay-secondary-btn" style="visibility:hidden">Achievements</button>
-      <button id="auth-btn" class="auth-link">Sign in with Google</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <button id="auth-btn" class="auth-link">Sign in with Google</button>
+        <button id="username-btn" class="auth-link" style="display:none"></button>
+        <span id="signout-sep" style="color:#333;font:12px monospace;display:none">·</span>
+        <button id="signout-btn" style="display:none">Sign out</button>
+      </div>
     </div>
   </div>
 
@@ -393,6 +403,17 @@
     <p class="htp-hint">click outside or press Escape to close</p>
   </div>
 </div>
+
+  <div id="rename-screen" class="overlay">
+    <div class="htp-panel" style="width:min(340px,calc(100vw - 48px));padding:28px">
+      <h2>CHANGE USERNAME</h2>
+      <input id="rename-input" type="text" maxlength="32" placeholder="New username"
+        style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:10px 12px;font:14px monospace;color:#fff;outline:none;margin-bottom:12px" />
+      <div id="rename-error" style="font:11px monospace;color:#ff4444;min-height:1.2em;margin-bottom:8px"></div>
+      <button id="rename-save-btn" class="overlay-btn primary" style="width:100%;margin-top:0">Save</button>
+      <p class="htp-hint" style="margin-top:12px">press Escape to cancel</p>
+    </div>
+  </div>
 
   <script src="game.config.js"></script>
   <script type="module" src="src/main.js"></script>
