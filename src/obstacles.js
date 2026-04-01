@@ -111,9 +111,9 @@ export function updateObstacles(delta, state) {
       const dy = state.player.y - obs.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist > 0) {
-        const turnRate = gameConfig.obstacleTypes.tracker.turnRate;
+        const turnRate = gameConfig.obstacleTypes.tracker.turnRatePerMs * delta * slowmo;
         const speed = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
-        // Blend current direction toward player direction by turnRate
+        // Blend current direction toward player direction — delta-scaled and slowmo-aware
         const tx = (dx / dist) * speed;
         const ty = (dy / dist) * speed;
         obs.vx += (tx - obs.vx) * turnRate;

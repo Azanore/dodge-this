@@ -56,7 +56,7 @@ window.gameConfig = {
     ball: { enabled: true, baseSpeed: 0.22, spawnWeight: 5 },
     bullet: { enabled: true, baseSpeed: 0.30, spawnWeight: 3 },
     shard: { enabled: true, baseSpeed: 0.26, spawnWeight: 2 },
-    tracker: { enabled: true, baseSpeed: 0.13, spawnWeight: 1, turnRate: 0.025 }
+    tracker: { enabled: true, baseSpeed: 0.13, spawnWeight: 1, turnRatePerMs: 0.0015 }
   },
 
   bonusTypes: {
