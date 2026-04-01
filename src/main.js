@@ -114,7 +114,7 @@ function onRestart() {
   const diffEl = document.getElementById('ingame-difficulty');
   if (diffEl) { diffEl.textContent = activeDifficulty; diffEl.style.display = 'block'; }
   const userEl = document.getElementById('ingame-username');
-  if (userEl && usernameBtn.textContent) { userEl.style.display = 'block'; }
+  if (userEl && usernameBtn.style.display !== 'none') { userEl.style.display = 'block'; }
   loop.start();
 }
 
@@ -179,6 +179,8 @@ function onStartAction(e) {
   // POLISH: in-game difficulty overlay — populate and show; remove these lines to revert
   const diffEl = document.getElementById('ingame-difficulty');
   if (diffEl) { diffEl.textContent = activeDifficulty; diffEl.style.display = 'block'; }
+  const userEl2 = document.getElementById('ingame-username');
+  if (userEl2 && usernameBtn.style.display !== 'none') { userEl2.style.display = 'block'; }
   loop.start();
 }
 
