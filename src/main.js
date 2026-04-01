@@ -20,13 +20,15 @@ validateConfig(gameConfig);
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const container = document.getElementById('canvas-container');
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+// CSS-only scale handler — keeps game geometry fixed at 1600×900
+function updateScale() {
+  const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+  container.style.transform = `scale(${scale})`;
 }
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+updateScale();
+window.addEventListener('resize', updateScale);
 
 // Persist last selected difficulty across sessions
 const DIFF_KEY = 'dodge_difficulty';
