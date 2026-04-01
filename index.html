@@ -50,8 +50,10 @@
     #pause-screen        { background: rgba(0,0,0,0.6); }
 
     #auth-btn:hover { color: #ccc !important; }
-    #username-btn { cursor: pointer; background: none; border: none; color: #aaa; font: 12px monospace; transition: color 0.15s; display: inline-flex; align-items: center; }
+    #username-btn { cursor: pointer; background: none; border: none; color: #aaa; font: 12px monospace; transition: color 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+    #username-btn::after { content: '✎'; font-size: 10px; opacity: 0.4; transition: opacity 0.15s; }
     #username-btn:hover { color: #00eeff; }
+    #username-btn:hover::after { opacity: 1; }
     #signout-btn { cursor: pointer; background: none; border: none; color: #555; font: 12px monospace; transition: color 0.15s; display: inline-flex; align-items: center; }
     #signout-btn:hover { color: #888; }
     #rename-screen { background: rgba(0,0,0,0.85); z-index: 40; }
