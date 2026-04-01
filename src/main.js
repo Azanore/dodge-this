@@ -293,6 +293,23 @@ function syncHelpBtn() {
   helpBtn.style.display = visible ? 'block' : 'none';
 }
 
+// Fullscreen button — hidden if API unsupported (e.g. iOS Safari, sandboxed iframes)
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+if (document.fullscreenEnabled) {
+  fullscreenBtn.style.display = 'block';
+  // Sync icon to actual fullscreen state — covers Escape-to-exit case
+  document.addEventListener('fullscreenchange', () => {
+    fullscreenBtn.textContent = document.fullscreenElement ? '⊠' : '⛶';
+  });
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
+}
+
 helpBtn.addEventListener('click', () => { drawHtpIcons(); howToPlayEl.classList.add('open'); });
 howToPlayEl.addEventListener('click', (e) => { if (e.target === howToPlayEl) howToPlayEl.classList.remove('open'); });
 

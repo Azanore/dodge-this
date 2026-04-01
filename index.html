@@ -11,9 +11,8 @@
     canvas { display: block; }
     #canvas-container { position: relative; width: 1600px; height: 900px; transform-origin: center center; }
 
-    #help-btn {
+    #help-btn, #fullscreen-btn {
       position: fixed;
-      bottom: 24px;
       right: 24px;
       width: 36px;
       height: 36px;
@@ -27,7 +26,9 @@
       z-index: 25;
       transition: border-color 0.15s, color 0.15s;
     }
-    #help-btn:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+    #help-btn { bottom: 24px; }
+    #fullscreen-btn { bottom: 68px; }
+    #help-btn:hover, #fullscreen-btn:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
 
     /* Shared overlay pattern — pause, game-over, how-to-play */
     .overlay {
@@ -218,6 +219,7 @@
   </div>
 
   <button id="help-btn">?</button>
+  <button id="fullscreen-btn" title="Toggle fullscreen">⛶</button>
 
   <!-- In-game overlays — difficulty and username -->
   <div id="ingame-difficulty"></div>
