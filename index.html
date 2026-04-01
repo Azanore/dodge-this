@@ -9,6 +9,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; }
     canvas { display: block; }
+    #canvas-container { position: relative; width: 1600px; height: 900px; transform-origin: center center; }
 
     #help-btn {
       position: fixed;
@@ -212,7 +213,9 @@
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+  <div id="canvas-container">
+    <canvas id="gameCanvas" width="1600" height="900"></canvas>
+  </div>
 
   <button id="help-btn">?</button>
 

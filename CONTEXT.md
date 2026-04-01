@@ -60,9 +60,8 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 
 ### Deliberately not added
 - **Share button** — removed. `navigator.clipboard` requires HTTPS + user gesture; the textarea fallback was janky. No real value for a solo survival game.
-- **Backend leaderboard** — now planned. Supabase makes this viable without a custom server.
-- **Touch/mobile support** — the game is mouse-only by design. Adding touch would require rethinking the entire input model and zone layout.
-- **Sound** — not ruled out, but adds asset management complexity. Worth a dedicated session if added.
+- **Touch/mobile support** — out of scope. The game is fundamentally mouse-driven; the player is the cursor. Touch would require a completely different input model (virtual joystick, drag mechanic, etc.) — that's a redesign, not a port. Doesn't fit the game's identity.
+- **Sound** — added session 8 & 13.
 
 ### Pending / ideas for later
 See the Backlog section below.
@@ -200,25 +199,14 @@ See the Backlog section below.
 
 ## Backlog
 
-Grouped by effort. All of these fit the current architecture without major rewrites.
-
-### Quick wins (low effort, high impact)
-- (none remaining)
-
-### Medium effort (worth a dedicated session)
-- ~~**Sound effects**~~ — done. Volume slider deliberately excluded — OS/browser controls are sufficient; a slider adds UI complexity for a problem that may not exist.
-- **Difficulty presets** — easy/normal/hard. Defer until gameplay is stable. Per-difficulty PB keys: `dodge_pb_easy`, `dodge_pb_normal`, `dodge_pb_hard`. Migrate existing `dodge_pb` to normal on first load.
-- **Achievements** — after statistics. Implement last when all metrics are stable. Conditions become simple reads against the stats store.
-
 ### Larger scope (plan carefully before starting)
-- **Touch/mobile** — the game is mouse-only by design. Adding touch requires rethinking input, zone sizing for small screens, and the entire feel. Not a small change.
-- **Global leaderboard** — requires a backend, auth, and anti-cheat. Changes the game's social nature entirely. Only worth it if the game gets real traffic.
 - **Obstacle patterns / waves** — scripted formations instead of pure random spawning. High design effort, risk of breaking the emergent feel of the current system.
 
 ### Deliberately out of scope (don't revisit without a strong reason)
 - **Multiplayer** — different architecture entirely.
 - **Level system** — endless survival is the identity of the game. Levels would break the format.
 - **Share button** — removed in session 2. `navigator.clipboard` requires HTTPS + user gesture; no real value for a solo game.
+- **Touch/mobile** — out of scope. The player is the cursor; touch requires a completely different input model. Doesn't fit the game's identity.
 
 ---
 
@@ -244,6 +232,11 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 34 — CONTEXT.md cleanup
+- Removed stale backlog entries (leaderboard, difficulty presets, achievements, sound — all done)
+- Moved touch/mobile to "Deliberately out of scope" with clear rationale
+- Cleaned up "Deliberately not added" section to reflect current state
 
 ### Session 33 — Username change feature
 - Auth row redesigned: single `#auth-btn` (guest) replaced with `#username-btn` + separator + `#signout-btn` (authenticated) — `index.html`, `main.js`; revert by restoring original `#auth-btn` click handler and removing the three new elements
