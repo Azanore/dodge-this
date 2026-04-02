@@ -468,10 +468,10 @@ function renderStatsOverlay(s) {
     document.getElementById('st-near-misses').textContent = s.totalNearMisses;
     document.getElementById('st-bonuses').textContent = s.totalBonuses;
     document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
-    document.getElementById('st-deaths-ball').textContent = s.deathsBall;
-    document.getElementById('st-deaths-bullet').textContent = s.deathsBullet;
-    document.getElementById('st-deaths-shard').textContent = s.deathsShard;
-    document.getElementById('st-deaths-tracker').textContent = s.deathsTracker;
+    document.getElementById('st-deaths-ball').textContent = s.deathsBall ?? 0;
+    document.getElementById('st-deaths-bullet').textContent = s.deathsBullet ?? 0;
+    document.getElementById('st-deaths-shard').textContent = s.deathsShard ?? 0;
+    document.getElementById('st-deaths-tracker').textContent = s.deathsTracker ?? 0;
   }
 }
 
