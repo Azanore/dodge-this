@@ -18,30 +18,20 @@ function getEnabledTypes() {
   return types;
 }
 
-// Returns a random spawn point in the outer zone but outside the inner zone
+// Returns a random spawn point on the canvas perimeter — center exactly on the edge
+// Obstacles enter the screen from outside, giving maximum travel distance to the player area
 function pickSpawnPoint() {
   const oz = outerZone;
-  const iz = innerZone;
+  const perimeter = 2 * (oz.width + oz.height);
+  const t = Math.random() * perimeter;
 
-  // Pick a random edge of the outer zone (0=top, 1=right, 2=bottom, 3=left)
-  const edge = Math.floor(Math.random() * 4);
-  let x, y;
-
-  if (edge === 0) {
-    x = oz.x + Math.random() * oz.width;
-    y = oz.y + Math.random() * (iz.y - oz.y);
-  } else if (edge === 1) {
-    x = iz.x + iz.width + Math.random() * (oz.x + oz.width - iz.x - iz.width);
-    y = oz.y + Math.random() * oz.height;
-  } else if (edge === 2) {
-    x = oz.x + Math.random() * oz.width;
-    y = iz.y + iz.height + Math.random() * (oz.y + oz.height - iz.y - iz.height);
-  } else {
-    x = oz.x + Math.random() * (iz.x - oz.x);
-    y = oz.y + Math.random() * oz.height;
-  }
-
-  return { x, y };
+  if (t < oz.width)
+    return { x: oz.x + t, y: oz.y };
+  if (t < oz.width + oz.height)
+    return { x: oz.x + oz.width, y: oz.y + (t - oz.width) };
+  if (t < 2 * oz.width + oz.height)
+    return { x: oz.x + oz.width - (t - oz.width - oz.height), y: oz.y + oz.height };
+  return { x: oz.x, y: oz.y + oz.height - (t - 2 * oz.width - oz.height) };
 }
 
 // Returns a velocity vector aimed at a random point inside the inner zone
