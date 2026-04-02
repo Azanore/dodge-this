@@ -9,7 +9,8 @@ export function circlesOverlap(a, b) {
   return dx * dx + dy * dy < (a.radius + b.radius) ** 2;
 }
 
-// Checks player vs all obstacles; triggers death if overlap and invincibility is not active
+// Checks player vs all obstacles; triggers death if overlap and invincibility is not active.
+// Sets state.deathCause to the obstacle type that killed the player.
 export function checkPlayerObstacles(state) {
   if (state.activeEffects.invincibility) return;
   const player = state.player;
@@ -17,6 +18,7 @@ export function checkPlayerObstacles(state) {
     if (obs.pending > 0) continue; // POLISH: tracker spawn warning — skip pending obstacles
     if (circlesOverlap(player, obs)) {
       state.status = 'dead';
+      state.deathCause = obs.type;
       return;
     }
   }

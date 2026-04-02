@@ -24,7 +24,8 @@ export function resetState(difficulty = 'normal') {
     score: 0,
     pendingScore: 0,
     comboMultiplier: 1.0,
-    scoreZone: { active: false }
+    scoreZone: { active: false },
+    deathCause: null
   };
 }
 

@@ -451,7 +451,7 @@ function renderStatsOverlay(s) {
   const msg = document.getElementById('stats-message');
   if (s.totalRuns === 0) {
     msg.textContent = 'No stats yet — play a run first.';
-    ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-easy', 'st-avg-normal', 'st-avg-hard', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score'].forEach(id => {
+    ['st-total-runs', 'st-best-easy', 'st-best-normal', 'st-best-hard', 'st-avg-easy', 'st-avg-normal', 'st-avg-hard', 'st-avg-time', 'st-total-time', 'st-near-misses', 'st-bonuses', 'st-best-combo-score', 'st-deaths-ball', 'st-deaths-bullet', 'st-deaths-shard', 'st-deaths-tracker'].forEach(id => {
       document.getElementById(id).textContent = '—';
     });
   } else {
@@ -468,6 +468,10 @@ function renderStatsOverlay(s) {
     document.getElementById('st-near-misses').textContent = s.totalNearMisses;
     document.getElementById('st-bonuses').textContent = s.totalBonuses;
     document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
+    document.getElementById('st-deaths-ball').textContent = s.deathsBall;
+    document.getElementById('st-deaths-bullet').textContent = s.deathsBullet;
+    document.getElementById('st-deaths-shard').textContent = s.deathsShard;
+    document.getElementById('st-deaths-tracker').textContent = s.deathsTracker;
   }
 }
 

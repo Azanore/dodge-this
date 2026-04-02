@@ -57,7 +57,8 @@ export async function insertRun(state) {
     near_misses: nearMisses,
     combo_score: Math.round(comboScore),
     bonuses_collected: bonusesCollected,
-    played_at: new Date().toISOString()
+    played_at: new Date().toISOString(),
+    death_cause: state.deathCause ?? null
   };
 
   try {
@@ -110,6 +111,10 @@ export async function fetchAllTimeStats() {
     totalElapsedMs: Number(r.total_elapsed_ms),
     avgElapsedMs: Number(r.avg_elapsed_ms),
     hardRunsCount: Number(r.hard_runs_count),
+    deathsBall: Number(r.deaths_ball),
+    deathsBullet: Number(r.deaths_bullet),
+    deathsShard: Number(r.deaths_shard),
+    deathsTracker: Number(r.deaths_tracker),
   };
 }
 
