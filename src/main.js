@@ -13,7 +13,6 @@ import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
 import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
-import { initConfigPanel } from './configPanel.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
 validateConfig(gameConfig);
@@ -324,8 +323,6 @@ window.addEventListener('keydown', (e) => {
   if (document.getElementById('stats-screen').classList.contains('open')) { document.getElementById('stats-screen').classList.remove('open'); return; }
   if (document.getElementById('achievements-screen').classList.contains('open')) { document.getElementById('achievements-screen').classList.remove('open'); return; }
   if (renameScreen.classList.contains('open')) { closeRenameModal(); return; }
-  const panel = document.getElementById('config-panel');
-  if (panel && panel.style.display !== 'none') return;
   if (state.status === 'dead' || state.status === 'start') return;
   if (state.status === 'active' || state.status === 'grace') {
     state.prevStatus = state.status;
@@ -355,8 +352,6 @@ window.addEventListener('keydown', (e) => {
 
 renderFrame();
 syncHelpBtn();
-
-initConfigPanel(loop, onRestart, () => state.status);
 
 // Auth — sign in button (guest), username button + sign out (authenticated)
 const authBtn = document.getElementById('auth-btn');
