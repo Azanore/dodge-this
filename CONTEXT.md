@@ -52,7 +52,6 @@ Restart always goes to `'grace'`, never `'start'`. Escape is ignored in `'dead'`
 - Pause screen (Escape to pause/resume), ignored in dead/start states
 - Game over screen with time, PB, Restart button, R key shortcut
 - Personal best stored in localStorage (`dodge_pb` key, value in ms)
-- Dev config panel (P key) — toggle obstacle/bonus types, tune parameters at runtime; includes hitbox debug toggle
 - 4 bonus types: slowmo, invincibility, screenclear, shrink
 - 4 obstacle types: ball, bullet, shard, tracker — distinct shapes, weighted spawn, difficulty ramp over time
 - Tracker obstacle — homing diamond that permanently hunts the player, only removed by screenclear bonus
@@ -99,7 +98,7 @@ See the Backlog section below.
 **Backdrop click and Escape:**
 - `#how-to-play`, `#stats-screen`, `#leaderboard-screen` — both backdrop click and Escape close them
 - `#pause-screen`, `#game-over-screen`, `#difficulty-screen` — no backdrop click (accidental dismissal would have meaningful consequences); Escape handles pause/unpause only
-- All Escape handling is in the single `KeydownRegistry` in `main.js` (priority order: how-to-play → leaderboard → stats → config guard → dead/start guard → Escape pause/unpause)
+- All Escape handling is in the single `KeydownRegistry` in `main.js` (priority order: how-to-play → leaderboard → stats → achievements → rename → dead/start guard → Escape pause/unpause)
 
 **Start screen key to begin:** Space only (not "any key" — too broad, caused Tab to accidentally dismiss modals and start the game)
 
@@ -197,7 +196,26 @@ See the Backlog section below.
 
 ---
 
+## Status
+
+**The game is production-ready as of session 36.** Core loop, auth, leaderboard, stats, achievements, sound, and difficulty system are all complete and stable. 121 tests passing across 16 suites.
+
+From here, development is incremental — new features, polish, and bug fixes logged to the backlog below and picked up whenever ready.
+
 ## Backlog
+
+### Features (prioritised)
+- **Daily challenge** — same seeded run for all players each day, separate leaderboard. Adds a daily return loop. Needs: seeded RNG, date-keyed leaderboard query, UI tab.
+- **Ghost replay** — record PB run inputs, show a ghost dot on subsequent runs. High motivation for self-improvement.
+- **Weekly / monthly leaderboard tabs** — DB already has `played_at`, just a query filter change.
+- **Streak tracking** — "X days in a row" — needs `last_played_at` column in `profiles`.
+- **New obstacle types** — architecture supports it cleanly (`obstacles.js` + `game.config.js`).
+- **New achievements** — system is fully built, just add entries to `ACHIEVEMENTS` in `achievements.js` and evaluation logic in `stats.js`.
+
+### Tech debt / improvements
+- `main.js` is ~350 lines and handles too many concerns — worth splitting into smaller modules eventually.
+- DOM event wiring (click handlers, keyboard shortcuts) has no test coverage — documented gap, acceptable for now.
+- `combo_score` in `runs` tracks banked score only, not peak multiplier reached. If a "reach 5x on hard" achievement is ever added, a `max_combo` column would be needed.
 
 ### Larger scope (plan carefully before starting)
 - **Obstacle patterns / waves** — scripted formations instead of pure random spawning. High design effort, risk of breaking the emergent feel of the current system.
@@ -231,6 +249,13 @@ Run: `npm test`
 ---
 
 ## Changelog
+
+### Session 36 — production readiness + cleanup
+
+- Removed dev config panel (`src/configPanel.js` deleted, import + `initConfigPanel` call + Escape guard removed from `main.js`) — dev artifact with no place in production
+- Fixed `integration.test.js`: added `vi.mock('./supabase.js')` — Node's ESM loader rejects `https:` CDN imports; all other test files already had this mock; integration suite was silently skipped
+- All 16 test suites now pass (121 tests)
+- Game declared production-ready; backlog restructured for ongoing incremental development
 
 ### Session 35 — game-balancing-overhaul + post-overhaul bug fixes
 
