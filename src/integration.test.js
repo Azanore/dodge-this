@@ -2,7 +2,13 @@
 // Tests the real gameUpdate() with real state — no simulated helpers.
 // Related: gameUpdate.js, GameState.js, collision.js, obstacles.js, zones.js
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Supabase uses a CDN https: import that Node's ESM loader rejects — mock it out.
+// The integration tests don't exercise auth or DB paths, so a minimal stub is sufficient.
+vi.mock('./supabase.js', () => ({
+  supabase: { auth: { getUser: vi.fn() }, from: vi.fn(), rpc: vi.fn() }
+}));
 import { resetState } from './GameState.js';
 import { gameUpdate, BONUS_SPAWN_INTERVAL } from './gameUpdate.js';
 import { recomputeZones, innerZone } from './zones.js';
