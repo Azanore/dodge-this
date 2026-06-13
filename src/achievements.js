@@ -3,87 +3,74 @@
 // Does not handle DB operations — evaluation and fetch live in stats.js.
 
 export const ACHIEVEMENTS = [
-  // Veteran — total runs
-  { key: 'veteran_1', group: 'veteran', name: 'Veteran I', description: 'Play 1 game', type: 'milestone', icon: '🎮', color: '#00eeff', threshold: 1 },
-  { key: 'veteran_2', group: 'veteran', name: 'Veteran II', description: 'Play 5 games', type: 'milestone', icon: '🎮', color: '#00eeff', threshold: 5 },
-  { key: 'veteran_3', group: 'veteran', name: 'Veteran III', description: 'Play 10 games', type: 'milestone', icon: '🎮', color: '#00eeff', threshold: 10 },
-  { key: 'veteran_4', group: 'veteran', name: 'Veteran IV', description: 'Play 25 games', type: 'milestone', icon: '🎮', color: '#00eeff', threshold: 25 },
-  { key: 'veteran_5', group: 'veteran', name: 'Veteran V', description: 'Play 50 games', type: 'milestone', icon: '🎮', color: '#00eeff', threshold: 50 },
-  { key: 'veteran_6', group: 'veteran', name: 'Veteran VI', description: 'Play 100 games', type: 'milestone', icon: '🎮', color: '#00eeff', threshold: 100 },
+  // --- MILESTONES (Persistent progress) ---
+  { key: 'veteran_1', group: 'veteran', name: 'Novice Pilot', description: 'Play 5 games', type: 'milestone', icon: 'award', color: '#00eeff', threshold: 5 },
+  { key: 'veteran_2', group: 'veteran', name: 'Veteran Pilot', description: 'Play 25 games', type: 'milestone', icon: 'award', color: '#00eeff', threshold: 25 },
+  { key: 'veteran_3', group: 'veteran', name: 'Elite Pilot', description: 'Play 100 games', type: 'milestone', icon: 'award', color: '#00eeff', threshold: 100 },
 
-  // Survivor — total elapsed ms (threshold stored in ms, displayed as minutes)
-  { key: 'survivor_1', group: 'survivor', name: 'Survivor I', description: 'Survive 5 min total', type: 'milestone', icon: '⏱️', color: '#00ff88', threshold: 300000 },
-  { key: 'survivor_2', group: 'survivor', name: 'Survivor II', description: 'Survive 15 min total', type: 'milestone', icon: '⏱️', color: '#00ff88', threshold: 900000 },
-  { key: 'survivor_3', group: 'survivor', name: 'Survivor III', description: 'Survive 30 min total', type: 'milestone', icon: '⏱️', color: '#00ff88', threshold: 1800000 },
-  { key: 'survivor_4', group: 'survivor', name: 'Survivor IV', description: 'Survive 60 min total', type: 'milestone', icon: '⏱️', color: '#00ff88', threshold: 3600000 },
-  { key: 'survivor_5', group: 'survivor', name: 'Survivor V', description: 'Survive 120 min total', type: 'milestone', icon: '⏱️', color: '#00ff88', threshold: 7200000 },
+  { key: 'survivor_1', group: 'survivor', name: 'Time Walker', description: 'Survive 15 min total', type: 'milestone', icon: 'timer', color: '#00ff88', threshold: 900000 },
+  { key: 'survivor_2', group: 'survivor', name: 'Eternal Drifter', description: 'Survive 60 min total', type: 'milestone', icon: 'timer', color: '#00ff88', threshold: 3600000 },
 
-  // Collector — total bonuses
-  { key: 'collector_1', group: 'collector', name: 'Collector I', description: 'Collect 10 bonuses', type: 'milestone', icon: '✨', color: '#ffe600', threshold: 10 },
-  { key: 'collector_2', group: 'collector', name: 'Collector II', description: 'Collect 50 bonuses', type: 'milestone', icon: '✨', color: '#ffe600', threshold: 50 },
-  { key: 'collector_3', group: 'collector', name: 'Collector III', description: 'Collect 150 bonuses', type: 'milestone', icon: '✨', color: '#ffe600', threshold: 150 },
-  { key: 'collector_4', group: 'collector', name: 'Collector IV', description: 'Collect 300 bonuses', type: 'milestone', icon: '✨', color: '#ffe600', threshold: 300 },
+  { key: 'collector_1', group: 'collector', name: 'Fragment Seeker', description: 'Collect 50 bonuses', type: 'milestone', icon: 'sparkles', color: '#ffe600', threshold: 50 },
+  { key: 'collector_2', group: 'collector', name: 'Hoard Master', description: 'Collect 250 bonuses', type: 'milestone', icon: 'sparkles', color: '#ffe600', threshold: 250 },
 
-  // Ghost — total near misses
-  { key: 'ghost_1', group: 'ghost', name: 'Ghost I', description: '25 near misses total', type: 'milestone', icon: '👻', color: '#cc44ff', threshold: 25 },
-  { key: 'ghost_2', group: 'ghost', name: 'Ghost II', description: '100 near misses total', type: 'milestone', icon: '👻', color: '#cc44ff', threshold: 100 },
-  { key: 'ghost_3', group: 'ghost', name: 'Ghost III', description: '300 near misses total', type: 'milestone', icon: '👻', color: '#cc44ff', threshold: 300 },
-  { key: 'ghost_4', group: 'ghost', name: 'Ghost IV', description: '750 near misses total', type: 'milestone', icon: '👻', color: '#cc44ff', threshold: 750 },
+  { key: 'ghost_1', group: 'ghost', name: 'Ghost', description: '100 near misses total', type: 'milestone', icon: 'ghost', color: '#cc44ff', threshold: 100 },
+  { key: 'ghost_2', group: 'ghost', name: 'Wraith', description: '500 near misses total', type: 'milestone', icon: 'ghost', color: '#cc44ff', threshold: 500 },
 
-  // Hard Boiled — hard runs
-  { key: 'hard_boiled_1', group: 'hard_boiled', name: 'Hard Boiled I', description: 'Play 5 hard runs', type: 'milestone', icon: '🔥', color: '#ff4444', threshold: 5 },
-  { key: 'hard_boiled_2', group: 'hard_boiled', name: 'Hard Boiled II', description: 'Play 15 hard runs', type: 'milestone', icon: '🔥', color: '#ff4444', threshold: 15 },
-  { key: 'hard_boiled_3', group: 'hard_boiled', name: 'Hard Boiled III', description: 'Play 30 hard runs', type: 'milestone', icon: '🔥', color: '#ff4444', threshold: 30 },
-  { key: 'hard_boiled_4', group: 'hard_boiled', name: 'Hard Boiled IV', description: 'Play 50 hard runs', type: 'milestone', icon: '🔥', color: '#ff4444', threshold: 50 },
+  { key: 'hard_boiled_1', group: 'hard_boiled', name: 'Hardened', description: 'Play 20 hard runs', type: 'milestone', icon: 'flame', color: '#ff4444', threshold: 20 },
 
-  // Single-run achievements
-  { key: 'first_blood', group: 'single', name: 'First Blood', description: 'Play your first game', type: 'single_run', icon: '🩸', color: '#ff4444' },
-  { key: 'minuteman', group: 'single', name: 'Minuteman', description: 'Survive 60s in one run', type: 'single_run', icon: '⚡', color: '#00ff88' },
-  { key: 'untouchable', group: 'single', name: 'Untouchable', description: 'Survive 30s with 0 near misses', type: 'single_run', icon: '🛡️', color: '#cc44ff' },
-  { key: 'danger_zone', group: 'single', name: 'Danger Zone', description: '15+ near misses in one run', type: 'single_run', icon: '⚠️', color: '#ff9900' },
-  { key: 'hoarder', group: 'single', name: 'Hoarder', description: 'Collect 6+ bonuses in one run', type: 'single_run', icon: '💰', color: '#ffe600' },
-  { key: 'hard_debut', group: 'single', name: 'Hard Debut', description: 'Survive 30s on Hard difficulty', type: 'single_run', icon: '💀', color: '#ff4444' },
-  { key: 'pacifist', group: 'single', name: 'Pacifist', description: 'Survive 45s collecting no bonuses', type: 'single_run', icon: '☮️', color: '#00eeff' },
+  // --- CHALLENGES (Single-run achievements) ---
+  { key: 'first_blood', group: 'single', name: 'First Contact', description: 'Survive at least 5s', type: 'single_run', icon: 'play', color: '#ffffff' },
+  { key: 'minuteman', group: 'single', name: 'Endurance', description: 'Survive 60s in one run', type: 'single_run', icon: 'clock', color: '#00ff88' },
+  { key: 'untouchable', group: 'single', name: 'Untouchable', description: 'Survive 30s with 0 near misses', type: 'single_run', icon: 'shield-check', color: '#cc44ff' },
+  { key: 'danger_zone', group: 'single', name: 'Edge Case', description: '20 near misses in one run', type: 'single_run', icon: 'zap', color: '#ff9900' },
+  { key: 'hoarder', group: 'single', name: 'Collector', description: '10 bonuses in one run', type: 'single_run', icon: 'briefcase', color: '#ffe600' },
+  { key: 'hard_debut', group: 'single', name: 'Trial by Fire', description: 'Survive 45s on Hard', type: 'single_run', icon: 'skull', color: '#ff4444' },
+  { key: 'pacifist', group: 'single', name: 'Pacifist', description: 'Survive 60s with no bonuses', type: 'single_run', icon: 'heart', color: '#00eeff' },
+
+  // NEW advanced achievements
+  { key: 'close_call', group: 'single', name: 'Reflex Action', description: '3 near-misses in 1 second', type: 'single_run', icon: 'eye', color: '#ff00ff' },
+  { key: 'surgical_strike', group: 'single', name: 'Surgical Strike', description: 'Clear 20+ obstacles at once', type: 'single_run', icon: 'target', color: '#ff4dff' },
+  { key: 'risk_taker', group: 'single', name: 'Risk Taker', description: 'Stay in score zone for 8s', type: 'single_run', icon: 'trending-up', color: '#00ff88' },
+  { key: 'speed_demon', group: 'single', name: 'Speed Demon', description: 'Survive 20s at 3.0x+ difficulty', type: 'single_run', icon: 'fast-forward', color: '#ff9900' },
+  { key: 'perfectionist', group: 'single', name: 'Perfectionist', description: 'Bank 1000+ pts in one go', type: 'single_run', icon: 'diamond', color: '#ffe600' },
+  { key: 'time_bender', group: 'single', name: 'Time Bender', description: 'Collect 4 Slowmo in one run', type: 'single_run', icon: 'hourglass', color: '#0088ff' },
+  { key: 'immortal', group: 'single', name: 'Aegis', description: 'Collect 4 Shields in one run', type: 'single_run', icon: 'shield', color: '#ffe600' }
 ];
 
 // Toast timing constants
 const TOAST_SLIDE_MS = 150;
-const TOAST_VISIBLE_MS = 2500;
+const TOAST_VISIBLE_MS = 3000;
 const TOAST_GAP_MS = 80;
 
-// Internal toast queue state
 let _queue = [];
 let _processing = false;
 let _timerIds = [];
-
-// Keys fired mid-run this session — cleared on resetMidRunTracking()
 let _firedThisRun = new Set();
 
-// Tracks a timer ID so clearToastQueue can cancel it
-function _track(id) {
-  _timerIds.push(id);
-  return id;
-}
+function _track(id) { _timerIds.push(id); return id; }
 
-// Processes the next toast in the queue — builds DOM, animates in/out, recurses
 function _processNext() {
   if (_queue.length === 0) { _processing = false; return; }
   _processing = true;
 
   const ach = _queue.shift();
   const container = document.getElementById('toast-container');
+  if (!container) return;
 
   const toast = document.createElement('div');
   toast.className = 'achievement-toast';
   toast.style.borderColor = ach.color;
   toast.innerHTML = `
-    <span class="toast-icon">${ach.icon}</span>
+    <div class="toast-icon" style="color:${ach.color}"><i data-lucide="${ach.icon}"></i></div>
     <div class="toast-body">
       <div class="toast-title" style="color:${ach.color}">${ach.name}</div>
       <div class="toast-desc">${ach.description}</div>
     </div>
   `;
   container.appendChild(toast);
+
+  if (window.lucide) window.lucide.createIcons({ attrs: { class: 'lucide-toast-icon' } });
 
   requestAnimationFrame(() => { toast.classList.add('visible'); });
 
@@ -96,7 +83,6 @@ function _processNext() {
   }, TOAST_VISIBLE_MS));
 }
 
-// Enqueues achievements by key for sequential toast display
 export function queueToasts(keys) {
   if (!keys.length) return;
   for (const key of keys) {
@@ -106,7 +92,6 @@ export function queueToasts(keys) {
   if (!_processing) _processNext();
 }
 
-// Immediately empties the queue and removes any visible toast; cancels all pending timers
 export function clearToastQueue() {
   _queue = [];
   for (const id of _timerIds) clearTimeout(id);
@@ -116,37 +101,35 @@ export function clearToastQueue() {
   if (container) container.innerHTML = '';
 }
 
-// Resets the per-run fired-set — call on every restart so mid-run achievements can re-trigger
-export function resetMidRunTracking() {
-  _firedThisRun = new Set();
-}
+export function resetMidRunTracking() { _firedThisRun = new Set(); }
+export function getFiredMidRunKeys() { return [..._firedThisRun]; }
 
-// Returns keys that fired mid-run this session — used by evaluateAchievements to persist them
-export function getFiredMidRunKeys() {
-  return [..._firedThisRun];
-}
-
-// Checks mid-run single-run achievement conditions synchronously.
-// Returns newly-triggered keys not already in unlockedSet or fired this run.
-// state: { elapsed, difficulty }, nearMisses: number, bonusesCollected: number
-// unlockedSet: Set<string> of already-unlocked keys (cached at run start)
-export function checkMidRunAchievements(state, nearMisses, bonusesCollected, unlockedSet) {
+// Checks mid-run single-run achievement conditions.
+// state: current game state, stats: in-run stats from getRunStats()
+export function checkMidRunAchievements(state, stats, unlockedSet) {
   const candidates = [];
 
   if (state.elapsed >= 60000) candidates.push('minuteman');
-  if (state.elapsed >= 30000 && nearMisses === 0) candidates.push('untouchable');
-  if (nearMisses >= 15) candidates.push('danger_zone');
-  if (bonusesCollected >= 6) candidates.push('hoarder');
-  if (state.difficulty === 'hard' && state.elapsed >= 30000) candidates.push('hard_debut');
-  if (state.elapsed >= 45000 && bonusesCollected === 0) candidates.push('pacifist');
+  if (state.elapsed >= 30000 && stats.nearMisses === 0) candidates.push('untouchable');
+  if (stats.nearMisses >= 20) candidates.push('danger_zone');
+  if (stats.bonusesCollected >= 10) candidates.push('hoarder');
+  if (state.difficulty === 'hard' && state.elapsed >= 45000) candidates.push('hard_debut');
+  if (state.elapsed >= 60000 && stats.bonusesCollected === 0) candidates.push('pacifist');
+
+  // Advanced New Checks
+  if (stats.maxNearMissesInShortWindow >= 3) candidates.push('close_call');
+  if (stats.maxScreenclearKill >= 20) candidates.push('surgical_strike');
+  if (stats.maxZoneTimeContinuous >= 8000) candidates.push('risk_taker');
+  if (state.elapsed >= 20000 && stats.minSpeedInLast20s >= 3.0) candidates.push('speed_demon');
+  if (stats.maxPendingBanked >= 1000) candidates.push('perfectionist');
+  if (stats.bonusCounts?.slowmo >= 4) candidates.push('time_bender');
+  if (stats.bonusCounts?.invincibility >= 4) candidates.push('immortal');
 
   const newKeys = candidates.filter(k => !unlockedSet.has(k) && !_firedThisRun.has(k));
   for (const k of newKeys) _firedThisRun.add(k);
   return newKeys;
 }
 
-// Returns the current stat value for a milestone group — used for progress display
-// stats: object from fetchAllTimeStats()
 function _statForGroup(group, stats) {
   if (group === 'veteran') return stats.totalRuns ?? 0;
   if (group === 'survivor') return stats.totalElapsedMs ?? 0;
@@ -156,60 +139,59 @@ function _statForGroup(group, stats) {
   return 0;
 }
 
-// Formats a raw stat value for display next to a milestone threshold
-// survivor uses minutes, all others are plain counts
-function _formatStat(group, value) {
-  if (group === 'survivor') return `${Math.floor(value / 60000)}min`;
-  return String(value);
-}
-
 function _formatThreshold(group, threshold) {
-  if (group === 'survivor') return `${threshold / 60000}min`;
+  if (group === 'survivor') return `${threshold / 60000}m`;
   return String(threshold);
 }
 
-// Populates #ach-list with two sections: Milestones then Single Run
-// unlockedSet: Set<string>, stats: object from fetchAllTimeStats() or null
 export function renderAchievementsOverlay(unlockedSet, stats) {
   const list = document.getElementById('ach-list');
+  if (!list) return;
   list.innerHTML = '';
 
   const milestones = ACHIEVEMENTS.filter(a => a.type === 'milestone');
   const singleRuns = ACHIEVEMENTS.filter(a => a.type === 'single_run');
 
   _renderSection(list, 'Milestones', milestones, unlockedSet, stats);
-  _renderSection(list, 'Single Run', singleRuns, unlockedSet, null);
+  _renderSection(list, 'Single Run Challenges', singleRuns, unlockedSet, null);
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
-// Renders a labeled section of achievements into the given container element
 function _renderSection(container, label, achievements, unlockedSet, stats) {
   const heading = document.createElement('div');
   heading.className = 'htp-section';
   heading.textContent = label;
   container.appendChild(heading);
 
+  const grid = document.createElement('div');
+  grid.className = 'ach-grid';
+  container.appendChild(grid);
+
   for (const ach of achievements) {
     const unlocked = unlockedSet.has(ach.key);
-    const row = document.createElement('div');
-    row.className = 'htp-row';
-    row.style.opacity = unlocked ? '1' : '0.35';
+    const card = document.createElement('div');
+    card.className = `ach-card ${unlocked ? 'unlocked' : 'locked'}`;
+    card.style.setProperty('--ach-color', ach.color);
+    card.style.setProperty('--ach-color-dim', ach.color + '33');
 
-    // Progress counter for locked milestones when stats are available
     let progressHtml = '';
     if (!unlocked && stats && ach.type === 'milestone') {
       const current = _statForGroup(ach.group, stats);
-      const cur = _formatStat(ach.group, current);
-      const thr = _formatThreshold(ach.group, ach.threshold);
-      progressHtml = `<span class="ach-progress" style="color:${ach.color}">${cur} / ${thr}</span>`;
+      const percent = Math.min(100, Math.max(0, (current / ach.threshold) * 100));
+      progressHtml = `
+        <div class="ach-progress-container">
+          <div class="ach-progress-bar" style="width: ${percent}%"></div>
+        </div>
+      `;
     }
 
-    row.innerHTML = `
-      <span style="font-size:20px;flex-shrink:0">${ach.icon}</span>
-      <div style="flex:1;min-width:0">
-        <div class="htp-label" style="color:${ach.color}">${ach.name}</div>
-        <div class="htp-desc">${ach.description}${progressHtml}</div>
-      </div>
+    card.innerHTML = `
+      <div class="ach-card-icon"><i data-lucide="${ach.icon}"></i></div>
+      <div class="ach-card-name">${ach.name}</div>
+      <div class="ach-card-desc">${ach.description}</div>
+      ${progressHtml}
     `;
-    container.appendChild(row);
+    grid.appendChild(card);
   }
 }

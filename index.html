@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DODGE</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><circle cx='16' cy='16' r='6' fill='%2300ffff' filter='url(%23g)'/><defs><filter id='g'><feGaussianBlur stdDeviation='2' result='b'/><feMerge><feMergeNode in='b'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs></svg>" />
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; }
@@ -63,7 +64,52 @@
     #signout-btn:hover { color: #888; }
     #rename-screen { background: rgba(0,0,0,0.85); z-index: 40; }
     #stats-screen .htp-panel { width: min(320px, calc(100vw - 48px)); }
-    #achievements-screen .htp-panel { width: min(480px, calc(100vw - 48px)); }
+    #achievements-screen .htp-panel { width: min(640px, calc(100vw - 48px)); }
+
+    /* Achievements Grid */
+    .ach-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .ach-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      position: relative;
+      cursor: default;
+    }
+    .ach-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .ach-card.locked { opacity: 0.3; filter: grayscale(1); }
+    .ach-card.unlocked { opacity: 1; filter: none; border-color: var(--ach-color); box-shadow: 0 0 10px var(--ach-color-dim); }
+    .ach-card-icon { margin-bottom: 8px; color: var(--ach-color); }
+    .ach-card-name { font-size: 11px; font-weight: bold; color: #fff; margin-bottom: 4px; line-height: 1.2; }
+    .ach-card-desc { font-size: 9px; color: #888; line-height: 1.3; }
+
+    .ach-progress-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .ach-progress-bar {
+      height: 100%;
+      background: var(--ach-color);
+      box-shadow: 0 0 5px var(--ach-color);
+      transition: width 0.3s ease;
+    }
 
     .lb-tab { width:90px; padding:6px 0; font-size:13px; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-family:monospace; cursor:pointer; color:#fff; background:rgba(255,255,255,0.05); transition:background 0.15s,border-color 0.15s; }
     .lb-tab:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.4); }
