@@ -15,10 +15,14 @@ const SOUNDS = {
 
 const buffers = {};
 let audioCtx = null;
-let musicSource = null;
+let masterGain = null;
+let sfxGain = null;
 let musicGain = null;
+
+let musicSource = null;
 let musicOffset = 0;
 let musicStartedAt = 0;
+let musicFadeTimer = null;
 
 const MUSIC_FADE_OUT = 0.3; // seconds
 
@@ -30,44 +34,80 @@ export let musicEnabled = localStorage.getItem('dodge_music') !== 'false';
 export function setSfx(enabled) {
   sfxEnabled = enabled;
   localStorage.setItem('dodge_sfx', enabled);
+  if (sfxGain) sfxGain.gain.value = enabled ? 1 : 0;
 }
 
 // Toggles music on/off — fades out if playing, does not start (callers handle that)
 export function setMusic(enabled) {
   musicEnabled = enabled;
   localStorage.setItem('dodge_music', enabled);
-  if (!enabled) fadeOutMusic();
+  if (!enabled) {
+    fadeOutMusic();
+  } else {
+    if (musicGain) musicGain.gain.value = 1;
+  }
 }
 
+let loadingPromise = null;
+
 // Initializes AudioContext and loads all buffers — call on first user gesture; no-op if already initialized
-export async function initAudio() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  await Promise.all(
-    Object.entries(SOUNDS).map(async ([key, path]) => {
-      const res = await fetch(path);
-      const arr = await res.arrayBuffer();
-      buffers[key] = await audioCtx.decodeAudioData(arr);
-    })
-  );
+export function initAudio() {
+  if (loadingPromise) return loadingPromise;
+
+  loadingPromise = (async () => {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
+
+        sfxGain = audioCtx.createGain();
+        sfxGain.gain.value = sfxEnabled ? 1 : 0;
+        sfxGain.connect(masterGain);
+
+        musicGain = audioCtx.createGain();
+        musicGain.gain.value = musicEnabled ? 1 : 0;
+        musicGain.connect(masterGain);
+      }
+
+      await Promise.all(
+        Object.entries(SOUNDS).map(async ([key, path]) => {
+          if (buffers[key]) return;
+          const res = await fetch(path);
+          if (!res.ok) throw new Error(`Failed to load sound: ${path}`);
+          const arr = await res.arrayBuffer();
+          buffers[key] = await audioCtx.decodeAudioData(arr);
+        })
+      );
+    } catch (err) {
+      console.error('Audio initialization failed:', err);
+      loadingPromise = null; // Allow retry on failure
+      throw err;
+    }
+  })();
+
+  return loadingPromise;
 }
 
 // Plays a one-shot sound by key
 function play(key) {
   if (!sfxEnabled || !audioCtx || !buffers[key]) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
   const src = audioCtx.createBufferSource();
   src.buffer = buffers[key];
-  src.connect(audioCtx.destination);
+  src.connect(sfxGain);
   src.start();
 }
 
-// Starts music looping from the beginning, routed through a GainNode for fade control
+// Starts music looping from the beginning
 export function startMusic() {
   if (!musicEnabled || !audioCtx || !buffers.music) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
   stopMusic();
-  musicGain = audioCtx.createGain();
-  musicGain.gain.value = 1;
-  musicGain.connect(audioCtx.destination);
+
   musicSource = audioCtx.createBufferSource();
   musicSource.buffer = buffers.music;
   musicSource.loop = true;
@@ -82,16 +122,16 @@ export function pauseMusic() {
   if (musicSource) {
     musicOffset = (audioCtx.currentTime - musicStartedAt) % buffers.music.duration;
     musicSource.stop();
+    musicSource.disconnect();
     musicSource = null;
   }
 }
 
 // Resumes from saved offset if enabled, otherwise no-op
 export function resumeMusic() {
-  if (!musicEnabled || !audioCtx || !buffers.music) return;
-  musicGain = audioCtx.createGain();
-  musicGain.gain.value = 1;
-  musicGain.connect(audioCtx.destination);
+  if (!musicEnabled || !audioCtx || !buffers.music || musicSource) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
   musicSource = audioCtx.createBufferSource();
   musicSource.buffer = buffers.music;
   musicSource.loop = true;
@@ -100,24 +140,38 @@ export function resumeMusic() {
   musicStartedAt = audioCtx.currentTime - musicOffset;
 }
 
-let musicFadeTimer = null;
-
 // Stops music entirely — cancels any in-flight fade
 export function stopMusic() {
   if (musicFadeTimer) { clearTimeout(musicFadeTimer); musicFadeTimer = null; }
+  if (musicGain) {
+    musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    musicGain.gain.value = musicEnabled ? 1 : 0;
+  }
   if (!musicSource) return;
-  musicSource.stop();
+  try {
+    musicSource.stop();
+    musicSource.disconnect();
+  } catch (e) {
+    // Already stopped or other issue
+  }
   musicSource = null;
-  musicGain = null;
   musicOffset = 0;
 }
 
 // Fades music out over MUSIC_FADE_OUT seconds then stops — used when toggling music off
 function fadeOutMusic() {
-  if (!musicSource || !musicGain) return;
-  musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
-  musicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + MUSIC_FADE_OUT);
-  musicFadeTimer = setTimeout(() => { musicFadeTimer = null; stopMusic(); }, MUSIC_FADE_OUT * 1000);
+  if (!musicSource || !musicGain || musicFadeTimer) return;
+
+  const now = audioCtx.currentTime;
+  musicGain.gain.cancelScheduledValues(now);
+  musicGain.gain.setValueAtTime(musicGain.gain.value, now);
+  // exponentialRampToValueAtTime cannot ramp to 0, use a very small value instead
+  musicGain.gain.exponentialRampToValueAtTime(0.0001, now + MUSIC_FADE_OUT);
+
+  musicFadeTimer = setTimeout(() => {
+    musicFadeTimer = null;
+    stopMusic();
+  }, MUSIC_FADE_OUT * 1000);
 }
 
 export function playDeath() { play('death'); }
@@ -125,34 +179,40 @@ export function playPickup() { play('pickup'); }
 export function playScoreBank() { play('scoreBank'); }
 export function playGameStart() { play('gameStart'); }
 
-// Global near-miss cooldown — prevents stacking when multiple obstacles are close simultaneously
-let nearMissCooldown = 0;
+// Internal near-miss logic — manages its own cooldown using performance.now()
+let lastNearMissAt = 0;
 const NEAR_MISS_GLOBAL_COOLDOWN = 300; // ms
 
 export function playNearMiss() {
-  if (nearMissCooldown > 0) return;
+  const now = performance.now();
+  if (now - lastNearMissAt < NEAR_MISS_GLOBAL_COOLDOWN) return;
   play('nearMiss');
-  nearMissCooldown = NEAR_MISS_GLOBAL_COOLDOWN;
+  lastNearMissAt = now;
 }
 
-// Ticks the near-miss cooldown — call each frame with delta
-export function tickNearMissCooldown(delta) { nearMissCooldown = Math.max(0, nearMissCooldown - delta); }
+// Deprecated: Cooldown is now internalized. Kept for backward compatibility until call sites are updated.
+export function tickNearMissCooldown() {}
+
 export function playZoneAppear() { play('zoneAppear'); }
 
-// Guards against re-firing while multiplier stays at max or briefly dips below
+// Internal multiplier-max logic — manages its own state and cooldown
 let multiplierMaxFired = false;
-let multiplierMaxCooldown = 0;
+let lastMultiplierMaxBelowAt = 0;
 const MULTIPLIER_MAX_COOLDOWN = 2000; // ms before it can fire again after dropping below max
 
-export function playMultiplierMax(currentMultiplier, delta) {
-  if (multiplierMaxCooldown > 0) multiplierMaxCooldown -= delta;
-  if (currentMultiplier >= gameConfig.comboMultiplierMax) {
-    if (!multiplierMaxFired && multiplierMaxCooldown <= 0) {
+export function playMultiplierMax(currentMultiplier) {
+  const now = performance.now();
+  const max = window.gameConfig?.comboMultiplierMax ?? 5.0;
+
+  if (currentMultiplier >= max) {
+    if (!multiplierMaxFired && (now - lastMultiplierMaxBelowAt > MULTIPLIER_MAX_COOLDOWN)) {
       play('multiplierMax');
       multiplierMaxFired = true;
     }
   } else {
-    if (multiplierMaxFired) multiplierMaxCooldown = MULTIPLIER_MAX_COOLDOWN;
+    if (multiplierMaxFired) {
+      lastMultiplierMaxBelowAt = now;
+    }
     multiplierMaxFired = false;
   }
 }
