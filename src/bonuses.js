@@ -6,7 +6,7 @@ import { innerZone } from './zones.js';
 import { clearAll } from './obstacles.js';
 import { triggerBonusFlash, BONUS_COLORS } from './renderer.js';
 import { playPickup } from './audio.js'; // AUDIO
-import { onBonusCollected } from './stats.js';
+import { onBonusCollected, onScreenclear } from './stats.js';
 
 // Fixed hitbox radius for all bonus pickups
 const PICKUP_RADIUS = 12;
@@ -50,7 +50,7 @@ export function collectBonus(type, state, x = 0, y = 0) {
   const cfg = gameConfig.bonusTypes[type];
   triggerBonusFlash(x, y, BONUS_COLORS[type] ?? '#ffffff');
   playPickup(); // AUDIO
-  onBonusCollected();
+  onBonusCollected(type);
 
   if (type === 'slowmo') {
     const prev = state.slowmoMultiplier ?? 1;
@@ -61,7 +61,9 @@ export function collectBonus(type, state, x = 0, y = 0) {
     state.activeEffects.invincibility = { remaining: cfg.duration };
 
   } else if (type === 'screenclear') {
+    const count = state.obstacles.length;
     clearAll(state);
+    onScreenclear(count);
     // screenclear is instant — no duration to track
 
   } else if (type === 'shrink') {
