@@ -10,6 +10,7 @@ const SOUNDS = {
   gameStart: 'sounds/game-start.ogg',
   nearMiss: 'sounds/near-miss.wav',
   zoneAppear: 'sounds/zone-appear.wav',
+  achievement: 'sounds/achievement.wav',
   music: 'sounds/music.mp3',
 };
 
@@ -194,6 +195,7 @@ export function playNearMiss() {
 export function tickNearMissCooldown() {}
 
 export function playZoneAppear() { play('zoneAppear'); }
+export function playAchievement() { play('achievement'); }
 
 // Internal multiplier-max logic — manages its own state and cooldown
 let multiplierMaxFired = false;

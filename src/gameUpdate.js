@@ -44,8 +44,8 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
 
   // Mid-run achievement check — pure, synchronous, no DB
   if (onAchievement) {
-    const { nearMisses, bonusesCollected } = getRunStats();
-    const keys = checkMidRunAchievements(state, nearMisses, bonusesCollected, state._unlockedAchievements ?? new Set());
+    const runStats = getRunStats();
+    const keys = checkMidRunAchievements(state, runStats, state._unlockedAchievements ?? new Set());
     if (keys.length) onAchievement(keys);
   }
 

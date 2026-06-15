@@ -212,7 +212,7 @@ describe('insertRun', () => {
 describe('fetchAllTimeStats', () => {
   it('computes aggregates correctly from RPC response', async () => {
     const rpcRow = {
-      total_runs: 3, best_score_easy: 500, best_score_normal: 800, best_score_hard: 1200,
+      total_runs: 3, total_score: 3000, best_score_easy: 500, best_score_normal: 800, best_score_hard: 1200,
       avg_score_easy: 500, avg_score_normal: 800, avg_score_hard: 1200,
       total_near_misses: 8, total_bonuses: 4, best_combo_score: 500,
       total_elapsed_ms: 60000, avg_elapsed_ms: 20000, hard_runs_count: 1
@@ -223,6 +223,7 @@ describe('fetchAllTimeStats', () => {
     const stats = await fetchAllTimeStats();
 
     expect(stats.totalRuns).toBe(3);
+    expect(stats.totalScore).toBe(3000);
     expect(stats.bestScoreEasy).toBe(500);
     expect(stats.bestScoreNormal).toBe(800);
     expect(stats.bestScoreHard).toBe(1200);
@@ -405,10 +406,10 @@ describe('all-time overlay and Stats button', () => {
 // ─── evaluateAchievements helpers ────────────────────────────────────────────
 
 // Builds a runs array that produces exact aggregate values when summed
-function buildRuns(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount) {
+function buildRuns(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount, totalScore) {
   if (totalRuns === 0) return [];
   return Array.from({ length: totalRuns }, (_, i) => ({
-    score: 100,
+    score: i === 0 ? totalScore : 0,
     elapsed_ms: i === 0 ? totalElapsedMs : 0,
     difficulty: i < hardRunsCount ? 'hard' : 'normal',
     near_misses: i < totalNearMisses ? 1 : 0,
@@ -418,13 +419,15 @@ function buildRuns(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, har
 }
 
 // Computes the expected set of milestone achievement keys for given aggregate stats
-function expectedMilestoneKeys(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount) {
+function expectedMilestoneKeys(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount, totalScore, currentScore) {
   const keys = [];
-  [1, 5, 10, 25, 50, 100].forEach((t, i) => { if (totalRuns >= t) keys.push(`veteran_${i + 1}`); });
-  [300000, 900000, 1800000, 3600000, 7200000].forEach((t, i) => { if (totalElapsedMs >= t) keys.push(`survivor_${i + 1}`); });
-  [10, 50, 150, 300].forEach((t, i) => { if (totalBonuses >= t) keys.push(`collector_${i + 1}`); });
-  [25, 100, 300, 750].forEach((t, i) => { if (totalNearMisses >= t) keys.push(`ghost_${i + 1}`); });
-  [5, 15, 30, 50].forEach((t, i) => { if (hardRunsCount >= t) keys.push(`hard_boiled_${i + 1}`); });
+  [1, 5, 10, 25, 50, 100, 250, 500, 1000].forEach((t, i) => { if (totalRuns >= t) keys.push(`veteran_${i + 1}`); });
+  [300000, 900000, 1800000, 3600000, 7200000, 18000000, 36000000, 86400000].forEach((t, i) => { if (totalElapsedMs >= t) keys.push(`survivor_${i + 1}`); });
+  [10, 50, 150, 300, 750, 1500, 3000].forEach((t, i) => { if (totalBonuses >= t) keys.push(`collector_${i + 1}`); });
+  [25, 100, 300, 750, 2000, 5000, 10000].forEach((t, i) => { if (totalNearMisses >= t) keys.push(`ghost_${i + 1}`); });
+  [5, 15, 30, 50, 100, 250].forEach((t, i) => { if (hardRunsCount >= t) keys.push(`hard_boiled_${i + 1}`); });
+  [1000, 5000, 25000, 100000, 500000, 1000000, 5000000, 10000000].forEach((t, i) => { if (totalScore >= t) keys.push(`wealthy_${i + 1}`); });
+  [100, 500, 1000, 2500, 5000, 10000].forEach((t, i) => { if (currentScore >= t) keys.push(`high_score_${i + 1}`); });
   return new Set(keys);
 }
 
@@ -435,6 +438,7 @@ function rpcRowFromRuns(runs) {
   const avgScore = (d) => { const rs = byDiff(d); return rs.length ? rs.reduce((s, r) => s + (r.score ?? 0), 0) / rs.length : 0; };
   return {
     total_runs: runs.length,
+    total_score: runs.reduce((s, r) => s + (r.score ?? 0), 0),
     best_score_easy: maxScore('easy'),
     best_score_normal: maxScore('normal'),
     best_score_hard: maxScore('hard'),
@@ -526,17 +530,18 @@ describe('evaluateAchievements', () => {
       fc.integer({ min: 0, max: 400 }),     // totalBonuses
       fc.integer({ min: 0, max: 800 }),     // totalNearMisses
       fc.integer({ min: 0, max: 60 }),      // hardRunsCount (clamped to totalRuns)
-      async (totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCountRaw) => {
+      fc.integer({ min: 0, max: 1000000 }), // totalScore
+      async (totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCountRaw, totalScore) => {
         const hardRunsCount = Math.min(hardRunsCountRaw, totalRuns);
         const nearMissesCount = Math.min(totalNearMisses, totalRuns);
         const bonusesCount = Math.min(totalBonuses, totalRuns);
-        // No elapsed time is possible with zero runs
         const effectiveElapsedMs = totalRuns === 0 ? 0 : totalElapsedMs;
 
-        const runs = buildRuns(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount);
+        const runs = buildRuns(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount, totalScore);
+        const rpcRow = rpcRowFromRuns(runs);
 
         supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
-        supabase.rpc = vi.fn().mockResolvedValue({ data: [rpcRowFromRuns(runs)], error: null });
+        supabase.rpc = vi.fn().mockResolvedValue({ data: [rpcRow], error: null });
         supabase.from.mockImplementation((table) => {
           if (table === 'runs') return { insert: vi.fn().mockResolvedValue({ error: null }) };
           return {
@@ -548,9 +553,9 @@ describe('evaluateAchievements', () => {
         const state = { elapsed: 60000, difficulty: 'hard', score: 1000 };
         const result = await evaluateAchievements(state);
 
-        const singleRunKeys = new Set(['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist']);
+        const singleRunKeys = new Set(['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist', 'matrix', 'combo_king', 'slowmo_junkie', 'shield_master', 'clean_slate', 'tiny_but_mighty', 'jack_of_all_trades', 'near_death', 'early_departure']);
         const resultMilestones = new Set(result.filter(k => !singleRunKeys.has(k)));
-        const expected = expectedMilestoneKeys(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount);
+        const expected = expectedMilestoneKeys(rpcRow.total_runs, rpcRow.total_elapsed_ms, rpcRow.total_bonuses, rpcRow.total_near_misses, rpcRow.hard_runs_count, rpcRow.total_score, 1000);
 
         for (const k of expected) {
           if (!resultMilestones.has(k)) return false;
@@ -564,9 +569,8 @@ describe('evaluateAchievements', () => {
   });
 
   // Feature: achievements, Property 5: Single-run achievement correctness (post-run only)
-  // minuteman/untouchable/danger_zone/hoarder/hard_debut/pacifist moved to checkMidRunAchievements
-  it('Property 5: evaluateAchievements only returns first_blood from single-run keys', async () => {
-    const midRunKeys = new Set(['minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist']);
+  it('Property 5: evaluateAchievements post-run results do not include mid-run keys unless specifically checked', async () => {
+    const midRunKeys = new Set(['minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist', 'matrix', 'slowmo_junkie', 'shield_master', 'clean_slate', 'tiny_but_mighty', 'jack_of_all_trades']);
 
     await fc.assert(fc.asyncProperty(
       fc.integer({ min: 5000, max: 120000 }),
@@ -585,7 +589,6 @@ describe('evaluateAchievements', () => {
 
         const state = { elapsed, difficulty, score: 100 };
         const result = await evaluateAchievements(state);
-        // No mid-run keys should appear in post-run results
         return result.every(k => !midRunKeys.has(k));
       }
     ), { numRuns: 100 });

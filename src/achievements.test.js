@@ -38,31 +38,31 @@ describe('achievements', () => {
     ), { numRuns: 100 });
   });
 
-  // Feature: achievements, Property 7: Overlay renders all 30 achievements
-  it('Property 7: renderAchievementsOverlay always renders all 30 achievements', () => {
+  // Feature: achievements, Property 7: Overlay renders all achievements
+  it('Property 7: renderAchievementsOverlay always renders all achievements', () => {
     const allKeys = ACHIEVEMENTS.map(a => a.key);
     fc.assert(fc.property(
       fc.subarray(allKeys),
       (unlockedKeys) => {
         renderAchievementsOverlay(new Set(unlockedKeys));
-        const items = document.querySelectorAll('#ach-list .htp-row');
-        return items.length === 30;
+        const items = document.querySelectorAll('#ach-list .ach-card');
+        return items.length === ACHIEVEMENTS.length;
       }
     ), { numRuns: 100 });
   });
 
-  // Feature: achievements, Property 8: Render opacity matches unlock state
-  it('Property 8: render opacity matches unlock state', () => {
+  // Feature: achievements, Property 8: Render class matches unlock state
+  it('Property 8: render class matches unlock state', () => {
     const allKeys = ACHIEVEMENTS.map(a => a.key);
     fc.assert(fc.property(
       fc.subarray(allKeys),
       (unlockedKeys) => {
         const unlockedSet = new Set(unlockedKeys);
         renderAchievementsOverlay(unlockedSet);
-        const rows = [...document.querySelectorAll('#ach-list .htp-row')];
+        const rows = [...document.querySelectorAll('#ach-list .ach-card')];
         return rows.every((row, i) => {
-          const expected = unlockedSet.has(ACHIEVEMENTS[i].key) ? '1' : '0.35';
-          return row.style.opacity === expected;
+          const unlocked = unlockedSet.has(ACHIEVEMENTS[i].key);
+          return row.classList.contains(unlocked ? 'unlocked' : 'locked');
         });
       }
     ), { numRuns: 100 });
@@ -204,10 +204,9 @@ describe('stats integration', () => {
 
   it('first_blood is unlocked when totalRuns === 1', async () => {
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
-    const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
     supabase.rpc = vi.fn().mockResolvedValue({
       data: [{
-        total_runs: 1, best_score_easy: 0, best_score_normal: 100, best_score_hard: 0,
+        total_runs: 1, total_score: 0, best_score_easy: 0, best_score_normal: 100, best_score_hard: 0,
         avg_score_easy: 0, avg_score_normal: 100, avg_score_hard: 0,
         total_near_misses: 0, total_bonuses: 0, best_combo_score: 0,
         total_elapsed_ms: 10000, avg_elapsed_ms: 10000, hard_runs_count: 0
@@ -228,10 +227,9 @@ describe('stats integration', () => {
 
   it('evaluateAchievements does not throw when a Supabase insert fails', async () => {
     supabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
-    const oneRun = [{ score: 100, elapsed_ms: 10000, difficulty: 'normal', near_misses: 0, bonuses_collected: 0, combo_score: 0 }];
     supabase.rpc = vi.fn().mockResolvedValue({
       data: [{
-        total_runs: 1, best_score_easy: 0, best_score_normal: 100, best_score_hard: 0,
+        total_runs: 1, total_score: 0, best_score_easy: 0, best_score_normal: 100, best_score_hard: 0,
         avg_score_easy: 0, avg_score_normal: 100, avg_score_hard: 0,
         total_near_misses: 0, total_bonuses: 0, best_combo_score: 0,
         total_elapsed_ms: 10000, avg_elapsed_ms: 10000, hard_runs_count: 0

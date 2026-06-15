@@ -9,6 +9,7 @@ let nearMisses = 0;
 let bonusesCollected = 0;
 let maxCombo = 1.0;
 let comboScore = 0;
+let bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
 
 // Resets all counters to initial values — call on every restart
 export function resetRunStats() {
@@ -16,6 +17,7 @@ export function resetRunStats() {
   bonusesCollected = 0;
   maxCombo = 1.0;
   comboScore = 0;
+  bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
 }
 
 // Increments nearMisses by 1
@@ -23,9 +25,12 @@ export function onNearMiss() {
   nearMisses += 1;
 }
 
-// Increments bonusesCollected by 1
-export function onBonusCollected() {
+// Increments bonusesCollected by 1 (and type-specific counter)
+export function onBonusCollected(type) {
   bonusesCollected += 1;
+  if (type && bonusesByType[type] !== undefined) {
+    bonusesByType[type] += 1;
+  }
 }
 
 // Updates maxCombo if multiplier exceeds current max
@@ -40,7 +45,7 @@ export function onComboBank(amount) {
 
 // Returns current run counter values — used by main.js to populate the per-run panel
 export function getRunStats() {
-  return { nearMisses, bonusesCollected, maxCombo, comboScore };
+  return { nearMisses, bonusesCollected, maxCombo, comboScore, bonusesByType };
 }
 
 // Checks auth, inserts run record if authenticated and run lasted at least 5s — fire-and-forget, swallows errors
@@ -99,6 +104,7 @@ export async function fetchAllTimeStats() {
   const r = data[0];
   return {
     totalRuns: Number(r.total_runs),
+    totalScore: Number(r.total_score || 0),
     bestScoreEasy: Number(r.best_score_easy),
     bestScoreNormal: Number(r.best_score_normal),
     bestScoreHard: Number(r.best_score_hard),
@@ -131,7 +137,7 @@ export async function fetchUnlockedAchievements() {
   }
 }
 
-// Evaluates all 30 achievement conditions after a run. Calls insertRun internally.
+// Evaluates all achievement conditions after a run. Calls insertRun internally.
 // Returns array of newly-unlocked achievement keys, or [] if not eligible.
 export async function evaluateAchievements(state) {
   if (state.elapsed < 5000) return [];
@@ -142,42 +148,32 @@ export async function evaluateAchievements(state) {
     await insertRun(state);
     const stats = await fetchAllTimeStats();
     const alreadyUnlocked = new Set(await fetchUnlockedAchievements());
-    const { nearMisses, bonusesCollected } = getRunStats();
+    const runStats = getRunStats();
 
     const earned = [];
 
-    // Milestone: veteran (totalRuns)
-    const veteranThresholds = [1, 5, 10, 25, 50, 100];
-    veteranThresholds.forEach((t, i) => {
-      if (stats.totalRuns >= t) earned.push(`veteran_${i + 1}`);
-    });
+    // Automatic Milestone evaluation
+    for (const ach of ACHIEVEMENTS) {
+      if (ach.type !== 'milestone') continue;
 
-    // Milestone: survivor (totalElapsedMs)
-    const survivorThresholds = [300000, 900000, 1800000, 3600000, 7200000];
-    survivorThresholds.forEach((t, i) => {
-      if (stats.totalElapsedMs >= t) earned.push(`survivor_${i + 1}`);
-    });
+      let val = 0;
+      if (ach.group === 'veteran') val = stats.totalRuns;
+      else if (ach.group === 'survivor') val = stats.totalElapsedMs;
+      else if (ach.group === 'collector') val = stats.totalBonuses;
+      else if (ach.group === 'ghost') val = stats.totalNearMisses;
+      else if (ach.group === 'hard_boiled') val = stats.hardRunsCount;
+      else if (ach.group === 'wealthy') val = stats.totalScore;
+      else if (ach.group === 'high_score') val = Math.round(state.score);
 
-    // Milestone: collector (totalBonuses)
-    const collectorThresholds = [10, 50, 150, 300];
-    collectorThresholds.forEach((t, i) => {
-      if (stats.totalBonuses >= t) earned.push(`collector_${i + 1}`);
-    });
+      if (val >= ach.threshold) earned.push(ach.key);
+    }
 
-    // Milestone: ghost (totalNearMisses)
-    const ghostThresholds = [25, 100, 300, 750];
-    ghostThresholds.forEach((t, i) => {
-      if (stats.totalNearMisses >= t) earned.push(`ghost_${i + 1}`);
-    });
-
-    // Milestone: hard_boiled (hardRunsCount)
-    const hardBoiledThresholds = [5, 15, 30, 50];
-    hardBoiledThresholds.forEach((t, i) => {
-      if (stats.hardRunsCount >= t) earned.push(`hard_boiled_${i + 1}`);
-    });
-
-    // Single-run achievements (post-run only — mid-run ones handled by checkMidRunAchievements)
+    // Single-run post-game checks
     if (stats.totalRuns >= 1) earned.push('first_blood');
+    if (runStats.comboScore >= 500) earned.push('combo_king');
+    if (Math.round(state.score) >= 1000 && state.pendingScore >= 1000) earned.push('near_death');
+    // If died before 10.5s (10s after grace)
+    if (state.elapsed < 10500 && state.elapsed >= 5000) earned.push('early_departure');
 
     // Include mid-run achievements that fired this run so they get persisted
     const midRunFired = new Set(getFiredMidRunKeys());

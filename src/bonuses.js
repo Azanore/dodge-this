@@ -50,7 +50,7 @@ export function collectBonus(type, state, x = 0, y = 0) {
   const cfg = gameConfig.bonusTypes[type];
   triggerBonusFlash(x, y, BONUS_COLORS[type] ?? '#ffffff');
   playPickup(); // AUDIO
-  onBonusCollected();
+  onBonusCollected(type);
 
   if (type === 'slowmo') {
     const prev = state.slowmoMultiplier ?? 1;
