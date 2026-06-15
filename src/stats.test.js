@@ -23,8 +23,7 @@ import {
   onComboBank,
   insertRun,
   fetchAllTimeStats,
-  evaluateAchievements,
-  getRunStats
+  evaluateAchievements
 } from './stats.js';
 
 // Expose internal counter values for testing via re-import trick — we read them
@@ -109,7 +108,7 @@ describe('property tests', () => {
           resetRunStats();
           for (const m of multipliers) onComboUpdate(m);
           // maxCombo is tracked internally but no longer in the insert payload — verify via getRunStats
-          const { maxCombo } = getRunStats();
+          const { maxCombo } = (await import('./stats.js')).getRunStats();
           expect(maxCombo).toBeCloseTo(Math.max(...multipliers), 5);
         }
       ),
@@ -421,11 +420,11 @@ function buildRuns(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, har
 // Computes the expected set of milestone achievement keys for given aggregate stats
 function expectedMilestoneKeys(totalRuns, totalElapsedMs, totalBonuses, totalNearMisses, hardRunsCount) {
   const keys = [];
-  [5, 25, 100].forEach((t, i) => { if (totalRuns >= t) keys.push(`veteran_${i + 1}`); });
-  [900000, 3600000].forEach((t, i) => { if (totalElapsedMs >= t) keys.push(`survivor_${i + 1}`); });
-  [50, 250].forEach((t, i) => { if (totalBonuses >= t) keys.push(`collector_${i + 1}`); });
-  [100, 500].forEach((t, i) => { if (totalNearMisses >= t) keys.push(`ghost_${i + 1}`); });
-  [20].forEach((t, i) => { if (hardRunsCount >= t) keys.push(`hard_boiled_${i + 1}`); });
+  [1, 5, 10, 25, 50, 100].forEach((t, i) => { if (totalRuns >= t) keys.push(`veteran_${i + 1}`); });
+  [300000, 900000, 1800000, 3600000, 7200000].forEach((t, i) => { if (totalElapsedMs >= t) keys.push(`survivor_${i + 1}`); });
+  [10, 50, 150, 300].forEach((t, i) => { if (totalBonuses >= t) keys.push(`collector_${i + 1}`); });
+  [25, 100, 300, 750].forEach((t, i) => { if (totalNearMisses >= t) keys.push(`ghost_${i + 1}`); });
+  [5, 15, 30, 50].forEach((t, i) => { if (hardRunsCount >= t) keys.push(`hard_boiled_${i + 1}`); });
   return new Set(keys);
 }
 
@@ -549,7 +548,7 @@ describe('evaluateAchievements', () => {
         const state = { elapsed: 60000, difficulty: 'hard', score: 1000 };
         const result = await evaluateAchievements(state);
 
-        const singleRunKeys = new Set(['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist', 'close_call', 'surgical_strike', 'risk_taker', 'speed_demon', 'perfectionist', 'time_bender', 'immortal']);
+        const singleRunKeys = new Set(['first_blood', 'minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist']);
         const resultMilestones = new Set(result.filter(k => !singleRunKeys.has(k)));
         const expected = expectedMilestoneKeys(totalRuns, effectiveElapsedMs, bonusesCount, nearMissesCount, hardRunsCount);
 
@@ -565,8 +564,9 @@ describe('evaluateAchievements', () => {
   });
 
   // Feature: achievements, Property 5: Single-run achievement correctness (post-run only)
+  // minuteman/untouchable/danger_zone/hoarder/hard_debut/pacifist moved to checkMidRunAchievements
   it('Property 5: evaluateAchievements only returns first_blood from single-run keys', async () => {
-    const midRunKeys = new Set(['minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist', 'close_call', 'surgical_strike', 'risk_taker', 'speed_demon', 'perfectionist', 'time_bender', 'immortal']);
+    const midRunKeys = new Set(['minuteman', 'untouchable', 'danger_zone', 'hoarder', 'hard_debut', 'pacifist']);
 
     await fc.assert(fc.asyncProperty(
       fc.integer({ min: 5000, max: 120000 }),

@@ -7,7 +7,7 @@ import { spawnObstacle, updateObstacles } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
 import { triggerNearMiss, triggerScoreFloat } from './renderer.js';
-import { onNearMiss, onComboBank, getRunStats, onZoneEntry, onZoneExit } from './stats.js';
+import { onNearMiss, onComboBank, getRunStats } from './stats.js';
 import { checkMidRunAchievements } from './achievements.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { updateScoreZone } from './combo.js';
@@ -44,25 +44,12 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
 
   // Mid-run achievement check — pure, synchronous, no DB
   if (onAchievement) {
-    const stats = getRunStats(state);
-    const keys = checkMidRunAchievements(state, stats, state._unlockedAchievements ?? new Set());
+    const { nearMisses, bonusesCollected } = getRunStats();
+    const keys = checkMidRunAchievements(state, nearMisses, bonusesCollected, state._unlockedAchievements ?? new Set());
     if (keys.length) onAchievement(keys);
   }
 
-  const wasInZone = state.scoreZone?.active && (() => {
-    const dx = state.player.x - state.scoreZone.x, dy = state.player.y - state.scoreZone.y;
-    return dx * dx + dy * dy <= state.scoreZone.radius * state.scoreZone.radius;
-  })();
-
   updateScoreZone(delta, state, accumulators);
-
-  const isInZone = state.scoreZone?.active && (() => {
-    const dx = state.player.x - state.scoreZone.x, dy = state.player.y - state.scoreZone.y;
-    return dx * dx + dy * dy <= state.scoreZone.radius * state.scoreZone.radius;
-  })();
-
-  if (isInZone && !wasInZone) onZoneEntry();
-  if (!isInZone && wasInZone) onZoneExit();
 
   const baseTick = (delta / 1000) * 10;
   state.score += baseTick; // always ticks

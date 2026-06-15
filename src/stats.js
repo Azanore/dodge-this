@@ -4,21 +4,11 @@
 
 import { supabase } from './supabase.js';
 import { ACHIEVEMENTS, getFiredMidRunKeys } from './achievements.js';
-import { getCurrentSpeedMultiplier } from './difficulty.js';
 
 let nearMisses = 0;
 let bonusesCollected = 0;
 let maxCombo = 1.0;
 let comboScore = 0;
-
-// Tracking for new advanced achievements
-let nearMissTimestamps = [];
-let bonusCounts = { slowmo: 0, invincibility: 0, screenclear: 0, shrink: 0 };
-let maxScreenclearKill = 0;
-let zoneStayStartTime = null;
-let maxZoneTimeContinuous = 0;
-let maxPendingBanked = 0;
-let speedHistory = []; // { time, speed }
 
 // Resets all counters to initial values — call on every restart
 export function resetRunStats() {
@@ -26,33 +16,16 @@ export function resetRunStats() {
   bonusesCollected = 0;
   maxCombo = 1.0;
   comboScore = 0;
-
-  nearMissTimestamps = [];
-  bonusCounts = { slowmo: 0, invincibility: 0, screenclear: 0, shrink: 0 };
-  maxScreenclearKill = 0;
-  zoneStayStartTime = null;
-  maxZoneTimeContinuous = 0;
-  maxPendingBanked = 0;
-  speedHistory = [];
 }
 
 // Increments nearMisses by 1
 export function onNearMiss() {
   nearMisses += 1;
-  nearMissTimestamps.push(performance.now());
 }
 
 // Increments bonusesCollected by 1
-export function onBonusCollected(type) {
+export function onBonusCollected() {
   bonusesCollected += 1;
-  if (type && bonusCounts[type] !== undefined) {
-    bonusCounts[type]++;
-  }
-}
-
-// Called by bonuses.js during screenclear
-export function onScreenclear(count) {
-  if (count > maxScreenclearKill) maxScreenclearKill = count;
 }
 
 // Updates maxCombo if multiplier exceeds current max
@@ -63,75 +36,11 @@ export function onComboUpdate(multiplier) {
 // Adds amount to comboScore
 export function onComboBank(amount) {
   comboScore += amount;
-  if (amount > maxPendingBanked) maxPendingBanked = amount;
 }
 
-// Returns current run counter values — used by main.js and achievements.js
-export function getRunStats(state) {
-  const now = performance.now();
-
-  // Update zone continuous time if currently in zone
-  let currentZoneTime = 0;
-  if (zoneStayStartTime !== null) {
-    currentZoneTime = now - zoneStayStartTime;
-  }
-  const effectiveMaxZoneTime = Math.max(maxZoneTimeContinuous, currentZoneTime);
-
-  // Near miss window: 3 in 1 second
-  const windowMs = 1000;
-  nearMissTimestamps = nearMissTimestamps.filter(t => now - t < 5000); // keep 5s for safety
-  let maxShortWindow = 0;
-  for (let i = 0; i < nearMissTimestamps.length; i++) {
-    let count = 0;
-    for (let j = i; j < nearMissTimestamps.length; j++) {
-      if (nearMissTimestamps[j] - nearMissTimestamps[i] <= windowMs) count++;
-      else break;
-    }
-    if (count > maxShortWindow) maxShortWindow = count;
-  }
-
-  // Speed history tracking
-  if (state) {
-    const speed = getCurrentSpeedMultiplier(state.elapsed, state.difficulty);
-    speedHistory.push({ time: state.elapsed, speed });
-    // prune history older than 20s
-    speedHistory = speedHistory.filter(h => state.elapsed - h.time <= 20000);
-  }
-
-  let minSpeedInLast20s = 0;
-  if (speedHistory.length > 0 && state && state.elapsed >= 20000) {
-     // Check if the history actually covers 20s
-     const duration = speedHistory[speedHistory.length - 1].time - speedHistory[0].time;
-     if (duration >= 19000) { // close enough to 20s
-        minSpeedInLast20s = Math.min(...speedHistory.map(h => h.speed));
-     }
-  }
-
-  return {
-    nearMisses,
-    bonusesCollected,
-    maxCombo,
-    comboScore,
-    maxNearMissesInShortWindow: maxShortWindow,
-    maxScreenclearKill,
-    maxZoneTimeContinuous: effectiveMaxZoneTime,
-    maxPendingBanked,
-    minSpeedInLast20s,
-    bonusCounts
-  };
-}
-
-// Track zone entry/exit
-export function onZoneEntry() {
-  if (zoneStayStartTime === null) zoneStayStartTime = performance.now();
-}
-
-export function onZoneExit() {
-  if (zoneStayStartTime !== null) {
-    const duration = performance.now() - zoneStayStartTime;
-    if (duration > maxZoneTimeContinuous) maxZoneTimeContinuous = duration;
-    zoneStayStartTime = null;
-  }
+// Returns current run counter values — used by main.js to populate the per-run panel
+export function getRunStats() {
+  return { nearMisses, bonusesCollected, maxCombo, comboScore };
 }
 
 // Checks auth, inserts run record if authenticated and run lasted at least 5s — fire-and-forget, swallows errors
@@ -160,10 +69,12 @@ export async function insertRun(state) {
 }
 
 // Fetches top 10 best scores per player for a given difficulty via RPC — throws on error
+// POLISH: player rank — also fetches current user's rank; remove playerRank from return to revert
 export async function fetchLeaderboard(difficulty) {
   const { data, error } = await supabase.rpc('get_leaderboard', { diff: difficulty });
   if (error) throw error;
 
+  // Fetch current user's rank for this difficulty (best score rank among all players)
   let playerRank = null;
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -171,7 +82,7 @@ export async function fetchLeaderboard(difficulty) {
       const { data: rankData } = await supabase.rpc('get_player_rank', { p_user_id: user.id, p_difficulty: difficulty });
       playerRank = rankData ?? null;
     }
-  } catch (_) { }
+  } catch (_) { /* rank is optional — silently skip */ }
 
   return { rows: data, playerRank };
 }
@@ -184,6 +95,7 @@ export async function fetchAllTimeStats() {
   const { data, error } = await supabase.rpc('get_user_stats', { p_user_id: user.id });
   if (error) throw error;
 
+  // RPC returns an array with one row
   const r = data[0];
   return {
     totalRuns: Number(r.total_runs),
@@ -206,6 +118,7 @@ export async function fetchAllTimeStats() {
   };
 }
 
+// Queries user_achievements for the authenticated user — returns array of unlocked keys, or [] if not authenticated/error
 export async function fetchUnlockedAchievements() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
@@ -218,7 +131,8 @@ export async function fetchUnlockedAchievements() {
   }
 }
 
-// Evaluates all achievement conditions after a run. Calls insertRun internally.
+// Evaluates all 30 achievement conditions after a run. Calls insertRun internally.
+// Returns array of newly-unlocked achievement keys, or [] if not eligible.
 export async function evaluateAchievements(state) {
   if (state.elapsed < 5000) return [];
   const { data: { user } } = await supabase.auth.getUser();
@@ -228,28 +142,44 @@ export async function evaluateAchievements(state) {
     await insertRun(state);
     const stats = await fetchAllTimeStats();
     const alreadyUnlocked = new Set(await fetchUnlockedAchievements());
-    const runStats = getRunStats(state);
+    const { nearMisses, bonusesCollected } = getRunStats();
 
     const earned = [];
 
-    // Milestones
-    const veteranThresholds = [5, 25, 100];
-    veteranThresholds.forEach((t, i) => { if (stats.totalRuns >= t) earned.push(`veteran_${i + 1}`); });
+    // Milestone: veteran (totalRuns)
+    const veteranThresholds = [1, 5, 10, 25, 50, 100];
+    veteranThresholds.forEach((t, i) => {
+      if (stats.totalRuns >= t) earned.push(`veteran_${i + 1}`);
+    });
 
-    const survivorThresholds = [900000, 3600000];
-    survivorThresholds.forEach((t, i) => { if (stats.totalElapsedMs >= t) earned.push(`survivor_${i + 1}`); });
+    // Milestone: survivor (totalElapsedMs)
+    const survivorThresholds = [300000, 900000, 1800000, 3600000, 7200000];
+    survivorThresholds.forEach((t, i) => {
+      if (stats.totalElapsedMs >= t) earned.push(`survivor_${i + 1}`);
+    });
 
-    const collectorThresholds = [50, 250];
-    collectorThresholds.forEach((t, i) => { if (stats.totalBonuses >= t) earned.push(`collector_${i + 1}`); });
+    // Milestone: collector (totalBonuses)
+    const collectorThresholds = [10, 50, 150, 300];
+    collectorThresholds.forEach((t, i) => {
+      if (stats.totalBonuses >= t) earned.push(`collector_${i + 1}`);
+    });
 
-    const ghostThresholds = [100, 500];
-    ghostThresholds.forEach((t, i) => { if (stats.totalNearMisses >= t) earned.push(`ghost_${i + 1}`); });
+    // Milestone: ghost (totalNearMisses)
+    const ghostThresholds = [25, 100, 300, 750];
+    ghostThresholds.forEach((t, i) => {
+      if (stats.totalNearMisses >= t) earned.push(`ghost_${i + 1}`);
+    });
 
-    if (stats.hardRunsCount >= 20) earned.push(`hard_boiled_1`);
+    // Milestone: hard_boiled (hardRunsCount)
+    const hardBoiledThresholds = [5, 15, 30, 50];
+    hardBoiledThresholds.forEach((t, i) => {
+      if (stats.hardRunsCount >= t) earned.push(`hard_boiled_${i + 1}`);
+    });
 
-    // Single-run
+    // Single-run achievements (post-run only — mid-run ones handled by checkMidRunAchievements)
     if (stats.totalRuns >= 1) earned.push('first_blood');
 
+    // Include mid-run achievements that fired this run so they get persisted
     const midRunFired = new Set(getFiredMidRunKeys());
     for (const k of midRunFired) earned.push(k);
 
@@ -258,15 +188,19 @@ export async function evaluateAchievements(state) {
     for (const key of newKeys) {
       try {
         await supabase.from('user_achievements').insert({ user_id: user.id, achievement_key: key });
-      } catch (_) { }
+      } catch (_) {
+        // silently discard individual insert failures
+      }
     }
 
+    // Don't re-toast keys that already fired mid-run — they were shown in real-time
     return newKeys.filter(k => !midRunFired.has(k));
   } catch (_) {
     return [];
   }
 }
 
+// Updates the authenticated user's username in profiles — throws on error
 export async function updateUsername(name) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -274,6 +208,7 @@ export async function updateUsername(name) {
   if (!trimmed) throw new Error('Username cannot be empty');
   if (trimmed.length < 2) throw new Error('Username must be at least 2 characters');
   if (trimmed.length > 30) throw new Error('Username must be 30 characters or fewer');
+  if (/[\x00-\x1F\x7F\u200B\u200C\u200D\uFEFF]/.test(trimmed)) throw new Error('Username contains invalid characters');
   const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', user.id);
   if (error) {
     if (error.code === '23505') throw new Error('Username already taken');
@@ -282,10 +217,13 @@ export async function updateUsername(name) {
   return trimmed;
 }
 
+// Deletes all user_achievements rows for the authenticated user — for testing only
 export async function resetMyAchievements() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   try {
     await supabase.from('user_achievements').delete().eq('user_id', user.id);
-  } catch (_) { }
+  } catch (_) {
+    // silently discard
+  }
 }
