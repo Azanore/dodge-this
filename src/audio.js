@@ -25,7 +25,8 @@ let musicOffset = 0;
 let musicStartedAt = 0;
 let musicFadeTimer = null;
 
-const MUSIC_FADE_OUT = 0.3; // seconds
+const MUSIC_FADE_TIME = 0.3; // seconds
+const MUSIC_DUCK_VOLUME = 0.2;
 
 // User preferences — persisted in localStorage
 export let sfxEnabled = localStorage.getItem('dodge_sfx') !== 'false';
@@ -35,7 +36,10 @@ export let musicEnabled = localStorage.getItem('dodge_music') !== 'false';
 export function setSfx(enabled) {
   sfxEnabled = enabled;
   localStorage.setItem('dodge_sfx', enabled);
-  if (sfxGain) sfxGain.gain.value = enabled ? 1 : 0;
+  if (sfxGain) {
+    sfxGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    sfxGain.gain.setTargetAtTime(enabled ? 1 : 0, audioCtx.currentTime, 0.05);
+  }
 }
 
 // Toggles music on/off — fades out if playing, does not start (callers handle that)
@@ -43,9 +47,12 @@ export function setMusic(enabled) {
   musicEnabled = enabled;
   localStorage.setItem('dodge_music', enabled);
   if (!enabled) {
-    fadeOutMusic();
+    stopMusic(true);
   } else {
-    if (musicGain) musicGain.gain.value = 1;
+    if (musicGain) {
+      musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      musicGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.1);
+    }
   }
 }
 
@@ -75,26 +82,46 @@ export function initAudio() {
       await Promise.all(
         Object.entries(SOUNDS).map(async ([key, path]) => {
           if (buffers[key]) return;
-          const res = await fetch(path);
-          if (!res.ok) throw new Error(`Failed to load sound: ${path}`);
-          const arr = await res.arrayBuffer();
-          buffers[key] = await audioCtx.decodeAudioData(arr);
+          try {
+            const res = await fetch(path);
+            if (!res.ok) {
+              console.warn(`Failed to fetch sound: ${path} (status: ${res.status})`);
+              return;
+            }
+            const contentType = res.headers ? res.headers.get('content-type') : null;
+            if (contentType && contentType.includes('text/html')) {
+              console.warn(`Skipping sound: ${path} (returned HTML instead of audio)`);
+              return;
+            }
+            const arr = await res.arrayBuffer();
+            buffers[key] = await audioCtx.decodeAudioData(arr);
+          } catch (err) {
+            console.warn(`Failed to decode sound: ${path}`, err);
+            // Non-blocking: we continue loading other sounds
+          }
         })
       );
     } catch (err) {
-      console.error('Audio initialization failed:', err);
+      console.error('Audio context initialization failed:', err);
       loadingPromise = null; // Allow retry on failure
-      throw err;
+      // We don't re-throw here to allow the game to start even if audio fails
     }
   })();
 
   return loadingPromise;
 }
 
+// Resumes AudioContext if suspended — call on user interaction
+export function resumeAudioContext() {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
 // Plays a one-shot sound by key
 function play(key) {
   if (!sfxEnabled || !audioCtx || !buffers[key]) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  resumeAudioContext();
 
   const src = audioCtx.createBufferSource();
   src.buffer = buffers[key];
@@ -113,66 +140,74 @@ export function startMusic() {
   musicSource.buffer = buffers.music;
   musicSource.loop = true;
   musicSource.connect(musicGain);
+
+  // Ensure gain is reset to full if we were ducked or faded
+  musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  musicGain.gain.setValueAtTime(1, audioCtx.currentTime);
+
   musicSource.start();
   musicStartedAt = audioCtx.currentTime;
   musicOffset = 0;
 }
 
-// Records pause offset and stops source — always called on game pause
+// Professional ducking: Lower music volume when paused
 export function pauseMusic() {
-  if (musicSource) {
-    musicOffset = (audioCtx.currentTime - musicStartedAt) % buffers.music.duration;
-    musicSource.stop();
-    musicSource.disconnect();
-    musicSource = null;
+  if (!musicSource || !musicGain) return;
+  const now = audioCtx.currentTime;
+  musicGain.gain.cancelScheduledValues(now);
+  musicGain.gain.setTargetAtTime(MUSIC_DUCK_VOLUME, now, 0.1);
+}
+
+// Professional unducking: Restore music volume when resuming
+export function resumeMusic() {
+  if (!musicEnabled || !audioCtx || !buffers.music) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  // If music was stopped while paused (e.g. toggled off then on), restart it
+  if (!musicSource) {
+    startMusic();
+    return;
+  }
+
+  const now = audioCtx.currentTime;
+  musicGain.gain.cancelScheduledValues(now);
+  musicGain.gain.setTargetAtTime(1.0, now, 0.1);
+}
+
+// Stops music with an optional fade
+export function stopMusic(fadeOut = false) {
+  if (musicFadeTimer) { clearTimeout(musicFadeTimer); musicFadeTimer = null; }
+
+  if (!musicSource) return;
+
+  if (fadeOut) {
+    const now = audioCtx.currentTime;
+    musicGain.gain.cancelScheduledValues(now);
+    musicGain.gain.setTargetAtTime(0, now, MUSIC_FADE_TIME / 3); // Fast fade
+
+    musicFadeTimer = setTimeout(() => {
+      musicFadeTimer = null;
+      actuallyStopMusic();
+    }, MUSIC_FADE_TIME * 1000);
+  } else {
+    actuallyStopMusic();
   }
 }
 
-// Resumes from saved offset if enabled, otherwise no-op
-export function resumeMusic() {
-  if (!musicEnabled || !audioCtx || !buffers.music || musicSource) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  musicSource = audioCtx.createBufferSource();
-  musicSource.buffer = buffers.music;
-  musicSource.loop = true;
-  musicSource.connect(musicGain);
-  musicSource.start(0, musicOffset);
-  musicStartedAt = audioCtx.currentTime - musicOffset;
-}
-
-// Stops music entirely — cancels any in-flight fade
-export function stopMusic() {
-  if (musicFadeTimer) { clearTimeout(musicFadeTimer); musicFadeTimer = null; }
+// Internal helper to stop source and reset gain
+function actuallyStopMusic() {
+  if (musicSource) {
+    try {
+      musicSource.stop();
+      musicSource.disconnect();
+    } catch (e) {}
+    musicSource = null;
+  }
   if (musicGain) {
     musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
     musicGain.gain.value = musicEnabled ? 1 : 0;
   }
-  if (!musicSource) return;
-  try {
-    musicSource.stop();
-    musicSource.disconnect();
-  } catch (e) {
-    // Already stopped or other issue
-  }
-  musicSource = null;
   musicOffset = 0;
-}
-
-// Fades music out over MUSIC_FADE_OUT seconds then stops — used when toggling music off
-function fadeOutMusic() {
-  if (!musicSource || !musicGain || musicFadeTimer) return;
-
-  const now = audioCtx.currentTime;
-  musicGain.gain.cancelScheduledValues(now);
-  musicGain.gain.setValueAtTime(musicGain.gain.value, now);
-  // exponentialRampToValueAtTime cannot ramp to 0, use a very small value instead
-  musicGain.gain.exponentialRampToValueAtTime(0.0001, now + MUSIC_FADE_OUT);
-
-  musicFadeTimer = setTimeout(() => {
-    musicFadeTimer = null;
-    stopMusic();
-  }, MUSIC_FADE_OUT * 1000);
 }
 
 export function playDeath() { play('death'); }

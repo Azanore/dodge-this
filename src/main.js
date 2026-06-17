@@ -13,7 +13,7 @@ import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
 import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, fetchAPLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
-import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
+import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, resumeAudioContext, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
 
 validateConfig(gameConfig);
 
@@ -28,6 +28,10 @@ function updateScale() {
 }
 updateScale();
 window.addEventListener('resize', updateScale);
+
+// Global user interaction listener to resume AudioContext (handles browser auto-play blocks)
+window.addEventListener('mousedown', resumeAudioContext);
+window.addEventListener('keydown', resumeAudioContext);
 
 // Persist last selected difficulty across sessions
 const DIFF_KEY = 'dodge_difficulty';
@@ -60,6 +64,7 @@ function update(delta) {
   });
   if (result === 'dead') {
     triggerShake();
+    stopMusic(true); // AUDIO — fade out music on death
     // Populate run stats immediately — data is synchronous, no reason to wait for the timeout
     const { nearMisses, bonusesCollected, comboScore } = getRunStats();
     document.getElementById('go-elapsed').textContent = `${(state.elapsed / 1000).toFixed(1)}s`;
