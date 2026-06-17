@@ -10,7 +10,7 @@ import { update as updatePlayer } from './player.js';
 import { gameUpdate } from './gameUpdate.js';
 import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
-import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
+import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, fetchAPLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
 import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
@@ -36,6 +36,7 @@ let activeDifficulty = localStorage.getItem(DIFF_KEY) ?? 'normal';
 // localStorage cache keys
 const ACH_CACHE_KEY = 'dodge_unlocked_achievements';
 const STATS_CACHE_KEY = 'dodge_stats_cache';
+const SEEN_ACH_KEY = 'dodge_seen_achievements';
 
 let state = resetState(activeDifficulty);
 state.graceRemaining = gameConfig.gracePeriod;
@@ -510,15 +511,21 @@ document.getElementById('achievements-btn').addEventListener('click', async () =
   const achScreen = document.getElementById('achievements-screen');
   achScreen.classList.add('open');
 
+  const seen = JSON.parse(localStorage.getItem(SEEN_ACH_KEY) ?? '[]');
+  const seenSet = new Set(seen);
+
   // Render from cache immediately — no layout shift
   const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
-  renderAchievementsOverlay(new Set(cached), null);
+  renderAchievementsOverlay(new Set(cached), null, seenSet);
 
   // Fetch fresh data in background and re-render silently
   try {
     const [keys, stats] = await Promise.all([fetchUnlockedAchievements(), fetchAllTimeStats().catch(() => null)]);
     localStorage.setItem(ACH_CACHE_KEY, JSON.stringify(keys));
-    renderAchievementsOverlay(new Set(keys), stats);
+    renderAchievementsOverlay(new Set(keys), stats, seenSet);
+
+    // Mark all currently unlocked as seen after viewing the panel
+    localStorage.setItem(SEEN_ACH_KEY, JSON.stringify([...new Set([...seen, ...keys])]));
   } catch (_) {
     // cache render stays — no error shown
   }
@@ -541,10 +548,11 @@ async function loadLeaderboard(difficulty) {
   document.querySelectorAll('.lb-tab').forEach(t => t.classList.toggle('selected', t.dataset.diff === difficulty));
   let loadingTimer = setTimeout(() => { lbList.textContent = 'Loading...'; }, 150);
   try {
-    const { rows, playerRank } = await fetchLeaderboard(difficulty); // POLISH: player rank
+    const isAP = difficulty === 'ap';
+    const { rows, playerRank } = isAP ? await fetchAPLeaderboard() : await fetchLeaderboard(difficulty);
     clearTimeout(loadingTimer);
     lbList.innerHTML = '';
-    if (!rows.length) { lbList.textContent = 'No runs yet for this difficulty.'; return; }
+    if (!rows.length) { lbList.textContent = 'No data yet.'; return; }
     const rankColors = ['#ffe600', '#aaa', '#cd7f32'];
     rows.forEach((r, i) => {
       const row = document.createElement('div');
@@ -560,18 +568,17 @@ async function loadLeaderboard(difficulty) {
       name.textContent = r.username ?? 'Anonymous';
 
       const score = document.createElement('span');
-      score.style.color = '#00ff88';
-      score.textContent = `${Math.round(r.score)} pts`;
+      score.style.color = isAP ? '#ffe600' : '#00ff88';
+      score.textContent = isAP ? `${r.total_ap} AP` : `${Math.round(r.score)} pts`;
 
       const time = document.createElement('span');
       time.style.cssText = 'color:#666;margin-left:10px';
-      time.textContent = `${(r.elapsed_ms / 1000).toFixed(1)}s`;
+      time.textContent = isAP ? '' : `${(r.elapsed_ms / 1000).toFixed(1)}s`;
 
       row.append(rank, name, score, time);
       lbList.appendChild(row);
     });
 
-    // POLISH: player rank — show current user's rank below the list; remove this block to revert
     if (playerRank !== null) {
       const rankEl = document.createElement('div');
       rankEl.style.cssText = 'margin-top:12px;font:11px monospace;color:#555;text-align:center';

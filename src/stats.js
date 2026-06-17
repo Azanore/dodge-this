@@ -9,6 +9,7 @@ let nearMisses = 0;
 let bonusesCollected = 0;
 let maxCombo = 1.0;
 let comboScore = 0;
+let maxSingleCombo = 0;
 let bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
 
 // Resets all counters to initial values — call on every restart
@@ -17,6 +18,7 @@ export function resetRunStats() {
   bonusesCollected = 0;
   maxCombo = 1.0;
   comboScore = 0;
+  maxSingleCombo = 0;
   bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
 }
 
@@ -41,11 +43,12 @@ export function onComboUpdate(multiplier) {
 // Adds amount to comboScore
 export function onComboBank(amount) {
   comboScore += amount;
+  if (amount > maxSingleCombo) maxSingleCombo = amount;
 }
 
 // Returns current run counter values — used by main.js to populate the per-run panel
 export function getRunStats() {
-  return { nearMisses, bonusesCollected, maxCombo, comboScore, bonusesByType };
+  return { nearMisses, bonusesCollected, maxCombo, comboScore, maxSingleCombo, bonusesByType };
 }
 
 // Checks auth, inserts run record if authenticated and run lasted at least 5s — fire-and-forget, swallows errors
@@ -85,6 +88,23 @@ export async function fetchLeaderboard(difficulty) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: rankData } = await supabase.rpc('get_player_rank', { p_user_id: user.id, p_difficulty: difficulty });
+      playerRank = rankData ?? null;
+    }
+  } catch (_) { /* rank is optional — silently skip */ }
+
+  return { rows: data, playerRank };
+}
+
+// Fetches top 10 players by total achievement points — throws on error
+export async function fetchAPLeaderboard() {
+  const { data, error } = await supabase.rpc('get_ap_leaderboard');
+  if (error) throw error;
+
+  let playerRank = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: rankData } = await supabase.rpc('get_player_ap_rank', { p_user_id: user.id });
       playerRank = rankData ?? null;
     }
   } catch (_) { /* rank is optional — silently skip */ }
@@ -170,8 +190,8 @@ export async function evaluateAchievements(state) {
 
     // Single-run post-game checks
     if (stats.totalRuns >= 1) earned.push('first_blood');
-    if (runStats.comboScore >= 500) earned.push('combo_king');
-    if (Math.round(state.score) >= 1000 && state.pendingScore >= 1000) earned.push('near_death');
+    if (runStats.maxSingleCombo >= 500) earned.push('combo_king');
+    if (state.pendingScore >= 1000) earned.push('near_death');
     // If died before 10.5s (10s after grace)
     if (state.elapsed < 10500 && state.elapsed >= 5000) earned.push('early_departure');
 

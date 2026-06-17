@@ -158,7 +158,7 @@ export function getFiredMidRunKeys() {
   return [..._firedThisRun];
 }
 
-let _nearMissTimes = [];
+let _nearMissTimes = []; // Elements are { elapsed: number }
 
 // Formats a raw stat value for display next to a milestone threshold
 function _formatStat(group, value) {
@@ -175,7 +175,7 @@ function _formatStat(group, value) {
 
 // Checks mid-run single-run achievement conditions synchronously.
 export function checkMidRunAchievements(state, runStats, unlockedSet) {
-  const { nearMisses, bonusesCollected, bonusesByType, maxCombo, comboScore } = runStats;
+  const { nearMisses, bonusesCollected, bonusesByType, maxCombo, comboScore, maxSingleCombo } = runStats;
   const candidates = [];
 
   if (state.elapsed >= 60000) candidates.push('minuteman');
@@ -185,16 +185,24 @@ export function checkMidRunAchievements(state, runStats, unlockedSet) {
   if (state.difficulty === 'hard' && state.elapsed >= 30000) candidates.push('hard_debut');
   if (state.elapsed >= 45000 && bonusesCollected === 0) candidates.push('pacifist');
 
-  // Matrix: 10 near misses in 5 seconds
-  // Need to track timestamps of near misses.
-  // This function is called every frame, so we check if nearMisses count increased.
+  // High Score milestones mid-run
+  const score = Math.floor(state.score);
+  if (score >= 100) candidates.push('high_score_1');
+  if (score >= 500) candidates.push('high_score_2');
+  if (score >= 1000) candidates.push('high_score_3');
+  if (score >= 2500) candidates.push('high_score_4');
+  if (score >= 5000) candidates.push('high_score_5');
+  if (score >= 10000) candidates.push('high_score_6');
+
+  if (maxSingleCombo >= 500) candidates.push('combo_king');
+
+  // Matrix: 10 near misses in 5 seconds of IN-GAME time
   if (nearMisses > _nearMissTimes.length) {
     for (let i = 0; i < nearMisses - _nearMissTimes.length; i++) {
-        _nearMissTimes.push(performance.now());
+        _nearMissTimes.push(state.elapsed);
     }
   }
-  const now = performance.now();
-  const recentNearMisses = _nearMissTimes.filter(t => now - t <= 5000).length;
+  const recentNearMisses = _nearMissTimes.filter(t => state.elapsed - t <= 5000).length;
   if (recentNearMisses >= 10) candidates.push('matrix');
 
   if (bonusesByType.slowmo >= 4) candidates.push('slowmo_junkie');
@@ -221,7 +229,7 @@ function _statForGroup(group, stats, runStats = null) {
 }
 
 // Populates #ach-list with two sections: Milestones then Single Run
-export function renderAchievementsOverlay(unlockedSet, stats) {
+export function renderAchievementsOverlay(unlockedSet, stats, seenSet = new Set()) {
   const list = document.getElementById('ach-list');
   list.innerHTML = '';
 
@@ -245,8 +253,9 @@ export function renderAchievementsOverlay(unlockedSet, stats) {
 
   for (const ach of ACHIEVEMENTS) {
     const unlocked = unlockedSet.has(ach.key);
+    const isNew = unlocked && !seenSet.has(ach.key);
     const card = document.createElement('div');
-    card.className = `ach-card rarity-${ach.rarity} ${unlocked ? 'unlocked' : 'locked'}`;
+    card.className = `ach-card rarity-${ach.rarity} ${unlocked ? 'unlocked' : 'locked'} ${isNew ? 'is-new' : ''}`;
 
     let icon = ach.icon;
     let name = ach.name;
@@ -272,7 +281,10 @@ export function renderAchievementsOverlay(unlockedSet, stats) {
         `;
     }
 
+    const newBadge = isNew ? '<div class="ach-new-badge">NEW</div>' : '';
+
     card.innerHTML = `
+      ${newBadge}
       <div class="ach-icon-box" style="color: ${ach.color}; filter: drop-shadow(0 0 5px ${ach.color})">
         <i data-lucide="${icon}"></i>
       </div>

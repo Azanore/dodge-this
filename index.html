@@ -200,6 +200,27 @@
     .ach-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
     .ach-card.locked { opacity: 0.4; filter: grayscale(1); }
     .ach-card.unlocked { opacity: 1; filter: none; background: rgba(255,255,255,0.06); }
+    .ach-card.is-new { border-color: #00eeff; box-shadow: 0 0 10px rgba(0,238,255,0.2); animation: new-pulse 2s infinite; }
+
+    @keyframes new-pulse {
+      0% { box-shadow: 0 0 5px rgba(0,238,255,0.1); }
+      50% { box-shadow: 0 0 15px rgba(0,238,255,0.3); }
+      100% { box-shadow: 0 0 5px rgba(0,238,255,0.1); }
+    }
+
+    .ach-new-badge {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        background: #00eeff;
+        color: #000;
+        font-size: 9px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+        z-index: 2;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
 
     .ach-icon-box { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(0,0,0,0.3); }
     .ach-info { flex: 1; display: flex; flex-direction: column; gap: 4px; text-align: left; }
@@ -442,6 +463,7 @@
         <button class="lb-tab selected" data-diff="easy">Easy</button>
         <button class="lb-tab" data-diff="normal">Normal</button>
         <button class="lb-tab" data-diff="hard">Hard</button>
+        <button class="lb-tab" data-diff="ap" style="width:50px">AP</button>
       </div>
       <div id="lb-list" style="font:12px monospace;color:#aaa;min-height:120px"></div>
       <p class="htp-hint">click outside or press Escape to close</p>
