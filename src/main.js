@@ -49,7 +49,14 @@ updatePlayer(state);
 
 function update(delta) {
   lastDelta = delta;
-  const result = gameUpdate(delta, state, accumulators, queueToasts);
+  const result = gameUpdate(delta, state, accumulators, (keys) => {
+    queueToasts(keys);
+    if (keys.length) {
+      const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
+      localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([...new Set([...cached, ...keys])]));
+      state._unlockedAchievements = new Set([...state._unlockedAchievements, ...keys]);
+    }
+  });
   if (result === 'dead') {
     triggerShake();
     // Populate run stats immediately — data is synchronous, no reason to wait for the timeout
