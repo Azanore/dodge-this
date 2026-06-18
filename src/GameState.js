@@ -25,7 +25,8 @@ export function resetState(difficulty = 'normal') {
     pendingScore: 0,
     comboMultiplier: 1.0,
     scoreZone: { active: false },
-    deathCause: null
+    deathCause: null,
+    _unlockedAchievements: new Set()
   };
 }
 
