@@ -76,7 +76,7 @@ describe('audio manager', () => {
     const p2 = audio.initAudio();
     expect(p1).toBe(p2);
     await p1;
-    expect(global.fetch).toHaveBeenCalledTimes(8); // number of sounds
+    expect(global.fetch).toHaveBeenCalledTimes(9); // number of sounds
   });
 
   it('playNearMiss should have a cooldown', async () => {
