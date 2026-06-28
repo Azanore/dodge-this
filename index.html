@@ -116,7 +116,7 @@
     .btn-row { display: flex; gap: 12px; margin-top: 4px; }
     .toggle-btn {
       padding: 8px 0;
-      width: 150px;
+      width: 130px;
       border: none;
       border-radius: 6px;
       font: 13px monospace;
@@ -126,6 +126,19 @@
     .toggle-btn:hover { opacity: 0.85; }
     .toggle-btn.on  { background: #00ff88; color: #000; }
     .toggle-btn.off { background: #333;    color: #888; }
+
+    /* Custom range input styling */
+    .volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      width: 150px;
+    }
+    .volume-slider::-webkit-slider-runnable-track { background: #333; height: 6px; border-radius: 3px; }
+    .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -5px; background-color: #00eeff; height: 16px; width: 16px; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 0 8px rgba(0,238,255,0.4); }
+    .volume-slider:focus { outline: none; }
+    .volume-slider:focus::-webkit-slider-runnable-track { background: #444; }
 
     .htp-panel {
       background: #0d0d1a;
@@ -328,9 +341,15 @@
       </div>
       <button id="resume-btn" class="overlay-btn primary">Resume</button>
       <div class="overlay-label">or press Esc</div>
-      <div class="btn-row" style="margin-top:8px">
-        <button id="sfx-btn" class="toggle-btn">SFX: ON</button>
-        <button id="music-btn" class="toggle-btn">MUSIC: ON</button>
+      <div style="display:flex;flex-direction:column;gap:12px;margin:8px 0;background:rgba(255,255,255,0.03);padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.05)">
+        <div style="display:flex;align-items:center;gap:16px;justify-content:space-between">
+          <button id="sfx-btn" class="toggle-btn">SFX: ON</button>
+          <input type="range" id="sfx-vol-slider" class="volume-slider" min="0" max="1" step="0.05" value="1">
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;justify-content:space-between">
+          <button id="music-btn" class="toggle-btn">MUSIC: ON</button>
+          <input type="range" id="music-vol-slider" class="volume-slider" min="0" max="1" step="0.05" value="1">
+        </div>
       </div>
       <button id="pause-menu-btn" class="overlay-btn overlay-secondary-btn" style="margin-top:4px">Menu</button>
     </div>

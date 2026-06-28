@@ -31,15 +31,28 @@ const MUSIC_DUCK_VOLUME = 0.2;
 // User preferences — persisted in localStorage
 export let sfxEnabled = localStorage.getItem('dodge_sfx') !== 'false';
 export let musicEnabled = localStorage.getItem('dodge_music') !== 'false';
+export let sfxVolume = parseFloat(localStorage.getItem('dodge_sfx_vol') ?? '1.0');
+export let musicVolume = parseFloat(localStorage.getItem('dodge_music_vol') ?? '1.0');
 
 // Toggles SFX on/off
 export function setSfx(enabled) {
   sfxEnabled = enabled;
   localStorage.setItem('dodge_sfx', enabled);
-  if (sfxGain) {
-    sfxGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    sfxGain.gain.setTargetAtTime(enabled ? 1 : 0, audioCtx.currentTime, 0.05);
-  }
+  updateSfxVolume();
+}
+
+// Sets SFX volume (0.0 to 1.0)
+export function setSfxVolume(vol) {
+  sfxVolume = vol;
+  localStorage.setItem('dodge_sfx_vol', vol);
+  updateSfxVolume();
+}
+
+function updateSfxVolume() {
+  if (!sfxGain || !audioCtx) return;
+  const target = sfxEnabled ? sfxVolume : 0;
+  sfxGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  sfxGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.05);
 }
 
 // Toggles music on/off — fades out if playing, does not start (callers handle that)
@@ -49,11 +62,22 @@ export function setMusic(enabled) {
   if (!enabled) {
     stopMusic(true);
   } else {
-    if (musicGain) {
-      musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
-      musicGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.1);
-    }
+    updateMusicVolume();
   }
+}
+
+// Sets music volume (0.0 to 1.0)
+export function setMusicVolume(vol) {
+  musicVolume = vol;
+  localStorage.setItem('dodge_music_vol', vol);
+  updateMusicVolume();
+}
+
+function updateMusicVolume() {
+  if (!musicGain || !audioCtx) return;
+  const target = musicEnabled ? musicVolume : 0;
+  musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  musicGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.1);
 }
 
 let loadingPromise = null;
@@ -71,11 +95,11 @@ export function initAudio() {
         masterGain.connect(audioCtx.destination);
 
         sfxGain = audioCtx.createGain();
-        sfxGain.gain.value = sfxEnabled ? 1 : 0;
+        sfxGain.gain.value = sfxEnabled ? sfxVolume : 0;
         sfxGain.connect(masterGain);
 
         musicGain = audioCtx.createGain();
-        musicGain.gain.value = musicEnabled ? 1 : 0;
+        musicGain.gain.value = musicEnabled ? musicVolume : 0;
         musicGain.connect(masterGain);
       }
 
@@ -141,9 +165,9 @@ export function startMusic() {
   musicSource.loop = true;
   musicSource.connect(musicGain);
 
-  // Ensure gain is reset to full if we were ducked or faded
+  // Ensure gain is reset to current user preference if we were ducked or faded
   musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
-  musicGain.gain.setValueAtTime(1, audioCtx.currentTime);
+  musicGain.gain.setValueAtTime(musicEnabled ? musicVolume : 0, audioCtx.currentTime);
 
   musicSource.start();
   musicStartedAt = audioCtx.currentTime;
@@ -155,7 +179,8 @@ export function pauseMusic() {
   if (!musicSource || !musicGain) return;
   const now = audioCtx.currentTime;
   musicGain.gain.cancelScheduledValues(now);
-  musicGain.gain.setTargetAtTime(MUSIC_DUCK_VOLUME, now, 0.1);
+  // Duck relative to the user's volume preference
+  musicGain.gain.setTargetAtTime(musicVolume * MUSIC_DUCK_VOLUME, now, 0.1);
 }
 
 // Professional unducking: Restore music volume when resuming
@@ -171,7 +196,8 @@ export function resumeMusic() {
 
   const now = audioCtx.currentTime;
   musicGain.gain.cancelScheduledValues(now);
-  musicGain.gain.setTargetAtTime(1.0, now, 0.1);
+  // Restore to full user-defined volume
+  musicGain.gain.setTargetAtTime(musicVolume, now, 0.1);
 }
 
 // Stops music with an optional fade
@@ -205,7 +231,7 @@ function actuallyStopMusic() {
   }
   if (musicGain) {
     musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    musicGain.gain.value = musicEnabled ? 1 : 0;
+    musicGain.gain.value = musicEnabled ? musicVolume : 0;
   }
   musicOffset = 0;
 }
