@@ -13,7 +13,7 @@ import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
 import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, fetchAPLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
 import { supabase } from './supabase.js';
-import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, resumeAudioContext, playGameStart, sfxEnabled, musicEnabled, setSfx, setMusic } from './audio.js'; // AUDIO
+import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, resumeAudioContext, playGameStart, sfxEnabled, musicEnabled, sfxVolume, musicVolume, setSfx, setMusic, setSfxVolume, setMusicVolume } from './audio.js'; // AUDIO
 
 validateConfig(gameConfig);
 
@@ -210,10 +210,12 @@ function resumeGame() {
   loop.start();
 }
 
-// Pause screen — audio toggle buttons
+// Pause screen — audio toggle buttons and sliders
 const pauseScreenEl = document.getElementById('pause-screen');
 const sfxBtn = document.getElementById('sfx-btn');
 const musicBtn = document.getElementById('music-btn');
+const sfxSlider = document.getElementById('sfx-vol-slider');
+const musicSlider = document.getElementById('music-vol-slider');
 
 // Returns to difficulty screen — resets state, stops loop and music, re-shows selector
 function goToMenu() {
@@ -250,24 +252,34 @@ document.getElementById('resume-btn').addEventListener('click', resumeGame);
 document.getElementById('pause-menu-btn').addEventListener('click', goToMenu);
 document.getElementById('go-menu-btn').addEventListener('click', goToMenu);
 
-// Syncs toggle button appearance to current enabled state
-function syncAudioBtns() {
+// Syncs toggle button and slider appearance to current enabled/volume state
+function syncAudioControls() {
   sfxBtn.textContent = `SFX: ${sfxEnabled ? 'ON' : 'OFF'}`;
   sfxBtn.className = `toggle-btn ${sfxEnabled ? 'on' : 'off'}`;
   musicBtn.textContent = `MUSIC: ${musicEnabled ? 'ON' : 'OFF'}`;
   musicBtn.className = `toggle-btn ${musicEnabled ? 'on' : 'off'}`;
+  sfxSlider.value = sfxVolume;
+  musicSlider.value = musicVolume;
 }
-syncAudioBtns();
+syncAudioControls();
 
-sfxBtn.addEventListener('click', () => { setSfx(!sfxEnabled); syncAudioBtns(); }); // AUDIO
+sfxBtn.addEventListener('click', () => { setSfx(!sfxEnabled); syncAudioControls(); }); // AUDIO
 musicBtn.addEventListener('click', () => {
   setMusic(!musicEnabled);
   if (musicEnabled) {
     if (state.status === 'paused') resumeMusic();
     else if (state.status === 'active' || state.status === 'grace') startMusic();
   }
-  syncAudioBtns();
+  syncAudioControls();
 }); // AUDIO
+
+sfxSlider.addEventListener('input', (e) => {
+  setSfxVolume(parseFloat(e.target.value));
+});
+
+musicSlider.addEventListener('input', (e) => {
+  setMusicVolume(parseFloat(e.target.value));
+});
 
 // How-to-play modal
 const helpBtn = document.getElementById('help-btn');
