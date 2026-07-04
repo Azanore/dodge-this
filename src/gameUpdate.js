@@ -19,14 +19,20 @@ import { playDeath, playMultiplierMax, playPickup } from './audio.js'; // AUDIO
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
 
-// Dispatches the currently selected ability
-export function executeAbility(state, mousePos) {
-  const cfg = gameConfig.battery.abilities[state.selectedAbility];
+// Dispatches a specific ability by key
+export function executeAbility(state, abilityKey, mousePos) {
+  const cfg = gameConfig.battery.abilities[abilityKey];
   if (!cfg || state.battery < cfg.cost) return null;
 
+  // Global cooldown: 500ms
+  const now = performance.now();
+  if (now - state.lastAbilityUsedAt < 500) return null;
+
   state.battery -= cfg.cost;
-  onAbilityUsed();
-  const ability = ABILITIES[state.selectedAbility];
+  state.lastAbilityUsedAt = now;
+  onAbilityUsed(abilityKey);
+
+  const ability = ABILITIES[abilityKey];
   if (!ability) return null;
 
   return ability.execute(state, mousePos);

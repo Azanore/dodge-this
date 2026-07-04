@@ -312,14 +312,6 @@
       </div>
       <!-- POLISH: difficulty descriptions — remove this div to revert -->
       <div id="diff-desc" style="font:11px monospace;color:#555;min-height:1.2em;margin-bottom:4px"></div>
-
-      <div class="htp-section" style="margin: 8px 0">Ability</div>
-      <div class="diff-btn-row">
-        <button class="diff-btn ability-btn selected" data-ability="dash" style="width:70px;padding:8px 0;font-size:12px">Dash</button>
-        <button class="diff-btn ability-btn" data-ability="pulse" style="width:70px;padding:8px 0;font-size:12px">Pulse</button>
-        <button class="diff-btn ability-btn" data-ability="chrono" style="width:70px;padding:8px 0;font-size:12px">Time</button>
-      </div>
-
       <button id="play-btn" class="overlay-btn primary" style="margin-top:4px">Play</button>
       <div class="overlay-label" style="margin-bottom:16px">or press Space</div>
       <button id="leaderboard-btn" class="overlay-btn overlay-secondary-btn">Leaderboard</button>
@@ -386,11 +378,16 @@
     <div class="htp-panel">
       <h2>HOW TO PLAY</h2>
 
-      <div class="htp-section">You</div>
+      <div class="htp-section">Control</div>
       <div class="htp-row">
         <canvas id="htp-player" width="32" height="32"></canvas>
-        <span class="htp-label">Your dot</span>
-        <span class="htp-desc">move with your mouse — don't get hit</span>
+        <span class="htp-label">Movement</span>
+        <span class="htp-desc">Follows mouse — don't get hit</span>
+      </div>
+      <div class="htp-row">
+        <div style="width:32px;text-align:center;color:#00eeff;font-weight:bold;font-size:18px">1-3</div>
+        <span class="htp-label">Abilities</span>
+        <span class="htp-desc">Spend KU (Battery) to Dash/Pulse/Slow</span>
       </div>
 
       <div class="htp-section">Obstacles — avoid all of them</div>
@@ -470,6 +467,8 @@
       <div class="htp-section">Highlights</div>
       <div class="stats-row"><span class="htp-label">Near Misses</span><span id="st-near-misses" class="htp-desc" style="color:#00eeff"></span></div>
       <div class="stats-row"><span class="htp-label">Bonuses Collected</span><span id="st-bonuses" class="htp-desc" style="color:#00ff88"></span></div>
+      <div class="stats-row"><span class="htp-label">Abilities Used</span><span id="st-abilities-used" class="htp-desc" style="color:#00eeff"></span></div>
+      <div class="stats-row"><span class="htp-label">Total KU Earned</span><span id="st-ku-earned" class="htp-desc" style="color:#ffe600"></span></div>
       <div class="stats-row"><span class="htp-label">Best Combo Score</span><span id="st-best-combo-score" class="htp-desc" style="color:#ffe600"></span></div>
 
       <div class="htp-section">Killed By</div>

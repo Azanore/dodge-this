@@ -13,6 +13,7 @@ let maxSingleCombo = 0;
 let bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
 let abilitiesUsed = 0;
 let kuEarned = 0;
+let lastAbilityType = null;
 
 // Resets all counters to initial values — call on every restart
 export function resetRunStats() {
@@ -24,6 +25,7 @@ export function resetRunStats() {
   bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
   abilitiesUsed = 0;
   kuEarned = 0;
+  lastAbilityType = null;
 }
 
 // Increments nearMisses by 1
@@ -51,8 +53,9 @@ export function onComboBank(amount) {
 }
 
 // Increments abilitiesUsed by 1
-export function onAbilityUsed() {
+export function onAbilityUsed(type) {
   abilitiesUsed += 1;
+  lastAbilityType = type;
 }
 
 // Adds amount to kuEarned
@@ -149,6 +152,8 @@ export async function fetchAllTimeStats() {
     avgScoreHard: Number(r.avg_score_hard),
     totalNearMisses: Number(r.total_near_misses),
     totalBonuses: Number(r.total_bonuses),
+    totalAbilitiesUsed: Number(r.total_abilities_used),
+    totalKUEarned: Number(r.total_ku_earned),
     bestComboScore: Number(r.best_combo_score),
     totalElapsedMs: Number(r.total_elapsed_ms),
     avgElapsedMs: Number(r.avg_elapsed_ms),
