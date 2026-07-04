@@ -73,7 +73,8 @@ export const ACHIEVEMENTS = [
   { "key": "near_death", "group": "single", "name": "Near-Death Experience", "description": "Die with 1000+ score pending", "type": "single_run", "icon": "skull-2", "rarity": "rare", "secret": true, "color": "#00ff88", "ap": 50 },
     {'key': 'early_departure', 'group': 'single', 'name': 'Early Departure', 'description': 'Die within 10 seconds', 'type': 'single_run', 'icon': 'door-open', 'rarity': 'common', 'secret': true, 'color': "#ffffff", 'ap': 10 },
   { "key": "battery_powered", "group": "single", "name": "Battery Powered", "description": "Use 10 abilities in one run", "type": "single_run", "icon": "zap", "rarity": "uncommon", "color": "#00eeff", "ap": 25 },
-  { "key": "overcharged", "group": "single", "name": "Overcharged", "description": "Stay at 100% battery for 30s", "type": "single_run", "icon": "battery-charging", "rarity": "rare", "color": "#ffe600", "ap": 50 }
+  { "key": "overcharged", "group": "single", "name": "Overcharged", "description": "Stay at 100% battery for 30s", "type": "single_run", "icon": "battery-charging", "rarity": "rare", "color": "#ffe600", "ap": 50 },
+  { "key": "skill_issue", "group": "single", "name": "Skill Issue", "description": "Use all 3 abilities in 5 seconds", "type": "single_run", "icon": "swords", "rarity": "epic", "color": "#cc44ff", "ap": 100 }
 ];
 
 // Toast timing constants
@@ -89,6 +90,7 @@ let _timerIds = [];
 // Keys fired mid-run this session — cleared on resetMidRunTracking()
 let _firedThisRun = new Set();
 let _overchargeStartTime = null;
+let _abilityUseTimes = []; // Elements are { type: string, elapsed: number }
 
 // Tracks a timer ID so clearToastQueue can cancel it
 function _track(id) {
@@ -155,6 +157,7 @@ export function resetMidRunTracking() {
   _firedThisRun = new Set();
   _nearMissTimes = [];
   _overchargeStartTime = null;
+  _abilityUseTimes = [];
 }
 
 // Returns keys that fired mid-run this session — used by evaluateAchievements to persist them
@@ -179,7 +182,7 @@ function _formatStat(group, value) {
 
 // Checks mid-run single-run achievement conditions synchronously.
 export function checkMidRunAchievements(state, runStats, unlockedSet) {
-  const { nearMisses, bonusesCollected, bonusesByType, maxCombo, comboScore, maxSingleCombo, abilitiesUsed } = runStats;
+  const { nearMisses, bonusesCollected, bonusesByType, maxCombo, comboScore, maxSingleCombo, abilitiesUsed, lastAbilityType } = runStats;
   const candidates = [];
 
   if (state.elapsed >= 60000) candidates.push('minuteman');
@@ -216,6 +219,15 @@ export function checkMidRunAchievements(state, runStats, unlockedSet) {
   if (Object.values(bonusesByType).every(count => count >= 1)) candidates.push('jack_of_all_trades');
 
   if (abilitiesUsed >= 10) candidates.push('battery_powered');
+
+  // Skill Issue: Use all 3 types in 5s
+  if (lastAbilityType) {
+    _abilityUseTimes.push({ type: lastAbilityType, elapsed: state.elapsed });
+    // Keep only last 5s
+    _abilityUseTimes = _abilityUseTimes.filter(a => state.elapsed - a.elapsed <= 5000);
+    const typesUsed = new Set(_abilityUseTimes.map(a => a.type));
+    if (typesUsed.size >= 3) candidates.push('skill_issue');
+  }
 
   // Overcharged: 100% battery for 30s
   if (state.battery >= gameConfig.battery.max) {

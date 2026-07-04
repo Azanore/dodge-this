@@ -59,39 +59,95 @@ function drawBonusPill(ctx, type, effect, x, y) {
   ctx.restore();
 }
 
+function drawSkillSlot(ctx, state, x, y, key, label, cost) {
+  const ready = state.battery >= cost;
+  const color = ready ? '#00eeff' : '#444';
+  const w = 50, h = 32;
+
+  ctx.save();
+  // Border
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = ready ? 8 : 0;
+  ctx.strokeRect(x, y, w, h);
+
+  // Fill if ready
+  if (ready) {
+    ctx.fillStyle = 'rgba(0, 238, 255, 0.05)';
+    ctx.fillRect(x, y, w, h);
+  }
+
+  // Key hint
+  ctx.font = 'bold 10px monospace';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.fillText(`[${key}]`, x + w/2, y + 12);
+
+  // Label
+  ctx.font = '9px monospace';
+  ctx.fillText(label, x + w/2, y + 20);
+
+  // Cost
+  ctx.font = 'bold 8px monospace';
+  ctx.fillStyle = ready ? '#ffe600' : '#444';
+  ctx.fillText(`${cost} KU`, x + w/2, y + 28);
+
+  ctx.restore();
+}
+
 function drawBattery(ctx, state, x, y) {
   const cfg = gameConfig.battery;
   const ratio = state.battery / cfg.max;
-  const ready = state.battery >= (cfg.abilities[state.selectedAbility]?.cost ?? 0);
-  const color = state.battery >= cfg.max ? '#ffe600' : ready ? '#00eeff' : '#444';
+  const isOvercharged = state.battery >= cfg.max;
+  const color = isOvercharged ? '#ffe600' : '#00eeff';
 
-  const w = 130, h = 10;
+  const w = 160, h = 12;
 
   ctx.save();
   // Label
-  ctx.font = 'bold 10px monospace';
+  ctx.font = 'bold 11px monospace';
   ctx.fillStyle = color;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
   ctx.shadowColor = color;
-  ctx.shadowBlur = ready ? 8 : 0;
-  const abilityName = cfg.abilities[state.selectedAbility]?.name?.toUpperCase() ?? 'NONE';
-  ctx.fillText(`BATTERY: ${Math.floor(state.battery)}% [${abilityName}]`, x, y - 4);
+  ctx.shadowBlur = 10;
+  ctx.fillText(`KINETIC BATTERY: ${Math.floor(state.battery)}%`, x, y - 6);
+  if (isOvercharged) {
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('OVERCHARGED! +1.0x', x + w, y - 6);
+  }
 
   // Meter background
-  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(x, y, w, h);
 
-  // Fill segments
-  const segments = 10;
-  const segW = (w - (segments - 1)) / segments;
-  for (let i = 0; i < segments; i++) {
-    const segRatio = (i + 1) / segments;
-    if (ratio >= segRatio - 0.05) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x + i * (segW + 1), y, segW, h);
-    }
+  // High-visibility fill
+  if (ratio > 0) {
+    const grd = ctx.createLinearGradient(x, 0, x + w, 0);
+    grd.addColorStop(0, color);
+    grd.addColorStop(1, '#ffffff');
+    ctx.fillStyle = grd;
+    ctx.fillRect(x, y, w * ratio, h);
+
+    // Shine effect
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x, y, w * ratio, h / 2);
   }
+
+  // Border
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
+
+  // Skills
+  const abilities = gameConfig.battery.abilities;
+  drawSkillSlot(ctx, state, x, y + h + 8, '1', 'DASH', abilities.dash.cost);
+  drawSkillSlot(ctx, state, x + 55, y + h + 8, '2', 'PULSE', abilities.pulse.cost);
+  drawSkillSlot(ctx, state, x + 110, y + h + 8, '3', 'TIME', abilities.chrono.cost);
+
   ctx.restore();
 }
 
@@ -189,8 +245,8 @@ export function renderHUD(ctx, state, delta) {
     pillY += PILL_H + PILL_GAP;
   }
 
-  // Battery — left of center, balanced with pills
-  drawBattery(ctx, state, cx - PILL_OFFSET_X - 130, 14);
+  // Battery & Skills — left of center, balanced with pills
+  drawBattery(ctx, state, cx - PILL_OFFSET_X - 160, 14);
 
   ctx.restore();
 }

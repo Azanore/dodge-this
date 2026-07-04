@@ -173,13 +173,6 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
   });
 });
 
-// Ability selector
-document.querySelectorAll('.ability-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    state.selectedAbility = e.currentTarget.dataset.ability;
-    document.querySelectorAll('.ability-btn').forEach(b => b.classList.toggle('selected', b === e.currentTarget));
-  });
-});
 
 // Returns true if any modal overlay is currently open
 function isAnyModalOpen() {
@@ -293,10 +286,10 @@ musicSlider.addEventListener('input', (e) => {
 const helpBtn = document.getElementById('help-btn');
 const howToPlayEl = document.getElementById('how-to-play');
 
-// Triggers the selected ability
-function triggerAbility() {
+// Triggers a specific ability
+function triggerAbility(key) {
   if (state.status !== 'active' && state.status !== 'grace') return;
-  const result = executeAbility(state, { x: rawX, y: rawY });
+  const result = executeAbility(state, key, { x: rawX, y: rawY });
   if (result) triggerAbilityFlash(result);
 }
 
@@ -309,11 +302,11 @@ window.addEventListener('mousemove', e => {
   rawY = (e.clientY - rect.top) / scale;
 });
 
-// Right-click is also mapped to ability
+// Right-click is mapped to Dash (Key 1)
 window.addEventListener('contextmenu', e => {
   if (state.status === 'active' || state.status === 'grace') {
     e.preventDefault();
-    triggerAbility();
+    triggerAbility('dash');
   }
 });
 
@@ -374,10 +367,10 @@ function closeRenameModal() { renameScreen.classList.remove('open'); }
 
 // KeydownRegistry — single handler for all global keyboard shortcuts
 window.addEventListener('keydown', (e) => {
-  if (e.key === ' ' && (state.status === 'active' || state.status === 'grace')) {
-    e.preventDefault();
-    triggerAbility();
-    return;
+  if (state.status === 'active' || state.status === 'grace') {
+    if (e.key === '1' || e.key === 'q' || e.key === 'a') { e.preventDefault(); triggerAbility('dash'); return; }
+    if (e.key === '2' || e.key === 'w' || e.key === 'z') { e.preventDefault(); triggerAbility('pulse'); return; }
+    if (e.key === '3' || e.key === 'e') { e.preventDefault(); triggerAbility('chrono'); return; }
   }
   if (e.key !== 'Escape') return;
   if (howToPlayEl.classList.contains('open')) { howToPlayEl.classList.remove('open'); return; }
@@ -524,6 +517,8 @@ function renderStatsOverlay(s) {
     document.getElementById('st-total-time').textContent = `${(s.totalElapsedMs / 1000).toFixed(0)}s`;
     document.getElementById('st-near-misses').textContent = s.totalNearMisses;
     document.getElementById('st-bonuses').textContent = s.totalBonuses;
+    document.getElementById('st-abilities-used').textContent = s.totalAbilitiesUsed || 0;
+    document.getElementById('st-ku-earned').textContent = Math.round(s.totalKUEarned || 0);
     document.getElementById('st-best-combo-score').textContent = Math.round(s.bestComboScore);
     document.getElementById('st-deaths-ball').textContent = s.deathsBall ?? 0;
     document.getElementById('st-deaths-bullet').textContent = s.deathsBullet ?? 0;
