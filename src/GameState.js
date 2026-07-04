@@ -24,6 +24,9 @@ export function resetState(difficulty = 'normal') {
     score: 0,
     pendingScore: 0,
     comboMultiplier: 1.0,
+    battery: 0,
+    selectedAbility: 'dash',
+    abilityActive: null, // null or { type, remaining }
     scoreZone: { active: false },
     deathCause: null,
     _unlockedAchievements: new Set()

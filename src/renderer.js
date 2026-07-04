@@ -75,6 +75,9 @@ export let nearMissText = { remaining: 0 };
 const FLOAT_DURATION = 800;
 const scoreFloats = [];
 
+// Ability execution effects
+let abilityFlash = null; // { type, x, y, tx, ty, remaining }
+
 // Spawns a floating "+X" label at (x, y) — call when pending score banks
 export function triggerScoreFloat(amount, x, y) {
   scoreFloats.push({ amount: Math.round(amount), x, y, remaining: FLOAT_DURATION });
@@ -199,9 +202,19 @@ const OBSTACLE_DRAW = {
 };
 
 // Dispatches to the correct draw function per obstacle type
-function drawObstacle(ctx, obs) {
-  const color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
+function drawObstacle(ctx, obs, phased) {
+  let color = OBSTACLE_COLORS[obs.type] ?? '#ffffff';
+  if (phased) {
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    color = '#ffffff';
+  }
   (OBSTACLE_DRAW[obs.type] ?? drawBall)(ctx, obs, color);
+  if (phased) ctx.restore();
+}
+
+export function triggerAbilityFlash(effect) {
+  abilityFlash = { ...effect, remaining: effect.type === 'dash' ? 400 : 600 };
 }
 
 export function render(ctx, state, delta) {
@@ -288,7 +301,7 @@ export function render(ctx, state, delta) {
       ctx.restore();
       continue;
     }
-    drawObstacle(ctx, obs);
+    drawObstacle(ctx, obs, state.phasedRemaining > 0);
     if (showHitboxes) drawHitbox(ctx, obs.x, obs.y, obs.radius);
   }
 
@@ -448,6 +461,53 @@ export function render(ctx, state, delta) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     ctx.fillText(`+${f.amount}`, f.x, f.y - 20 - t * 40); // floats upward 40px
+    ctx.restore();
+  }
+
+  // 8c. Ability Flashes
+  if (abilityFlash) {
+    const f = abilityFlash;
+    f.remaining -= delta;
+    if (f.remaining <= 0) {
+      abilityFlash = null;
+    } else {
+      const t = 1 - f.remaining / (f.type === 'dash' ? 400 : 600);
+      ctx.save();
+      if (f.type === 'dash') {
+        // Line from start to end
+        ctx.strokeStyle = '#00eeff';
+        ctx.setLineDash([10, 10]);
+        ctx.lineDashOffset = -t * 100;
+        ctx.globalAlpha = (1 - t) * 0.5;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(f.x, f.y);
+        ctx.lineTo(f.tx, f.ty);
+        ctx.stroke();
+        // Nova at destination
+        glowCircle(ctx, f.tx, f.ty, 20 + t * 40, '#00eeff', 30 * (1 - t));
+      } else if (f.type === 'pulse') {
+        // Expanding ring
+        ctx.strokeStyle = '#cc44ff';
+        ctx.lineWidth = 4;
+        ctx.globalAlpha = (1 - t);
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, t * 500, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // 8d. Chrono Tint
+  if (state.abilityActive?.type === 'chrono') {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 230, 0, 0.05)';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.strokeStyle = '#ffe600';
+    ctx.lineWidth = 10;
+    ctx.globalAlpha = 0.2 + 0.1 * Math.sin(pulseT * 5);
+    ctx.strokeRect(0, 0, cw, ch);
     ctx.restore();
   }
 

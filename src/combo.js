@@ -4,6 +4,7 @@
 
 import { innerZone } from './zones.js';
 import { playZoneAppear } from './audio.js'; // AUDIO
+import { onKUEarned } from './stats.js';
 
 // Picks a random spawn position inside the inner zone, padded by zone radius
 function randomZoneSpawn() {
@@ -94,6 +95,10 @@ export function updateScoreZone(delta, state, accumulators) {
       state.comboMultiplier + cfg.comboBuildRate * ds,
       cfg.comboMultiplierMax
     );
+    // Charge battery
+    const charge = cfg.battery.chargeRates.zonePerSec * ds;
+    state.battery = Math.min(cfg.battery.max, state.battery + charge);
+    onKUEarned(charge);
   } else {
     state.comboMultiplier = Math.max(
       state.comboMultiplier - cfg.comboFastDecayRate * ds,

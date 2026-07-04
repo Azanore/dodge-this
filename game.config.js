@@ -20,33 +20,61 @@ window.gameConfig = {
 
   slowmoFadeDuration: 1500,    // ms to ease slowmoMultiplier back to 1 after expiry
 
+  battery: {
+    max: 100,
+    chargeRates: {
+      passivePerSec: 0.5,
+      nearMiss: 3,
+      zonePerSec: 5,
+      bonus: 10
+    },
+    overchargeMultiplierBonus: 1.0,
+    abilities: {
+      dash: {
+        name: 'Blink Dash',
+        cost: 40,
+        params: { dist: 200, novaRadius: 60 }
+      },
+      pulse: {
+        name: 'Kinetic Pulse',
+        cost: 60,
+        params: { pushForce: 0.8, duration: 1000, phasedDuration: 500 }
+      },
+      chrono: {
+        name: 'Temporal Shift',
+        cost: 90,
+        params: { timeScale: 0.1, duration: 3000 }
+      }
+    }
+  },
+
   // Difficulty presets — same logarithmic curve shape, different ceiling and ramp rate
-  // Existing scores (dodge_pb) are migrated to 'hard' on first load
+  // Rebalanced for longer sessions (flattened curves)
   difficultyPresets: {
     easy: {
-      speedScaleFactor: 0.3,
-      spawnRateDecayRate: 0.067,
-      spawnRateMin: 700,
-      baseSpawnInterval: 1800,
+      speedScaleFactor: 0.18,
+      spawnRateDecayRate: 0.035,
+      spawnRateMin: 750,
+      baseSpawnInterval: 2000,
       maxObstaclesOnScreen: 12,
       maxSpeedMultiplier: 2.0,
       maxTrackers: 1,
     },
     normal: {
-      speedScaleFactor: 0.4,
-      spawnRateDecayRate: 0.09,
-      spawnRateMin: 550,
-      baseSpawnInterval: 1500,
-      maxObstaclesOnScreen: 18,
+      speedScaleFactor: 0.24,
+      spawnRateDecayRate: 0.045,
+      spawnRateMin: 600,
+      baseSpawnInterval: 1700,
+      maxObstaclesOnScreen: 20,
       maxSpeedMultiplier: 2.8,
       maxTrackers: 3,
     },
     hard: {
-      speedScaleFactor: 0.5,
-      spawnRateDecayRate: 0.113,
-      spawnRateMin: 400,
-      baseSpawnInterval: 1200,
-      maxObstaclesOnScreen: 25,
+      speedScaleFactor: 0.3,
+      spawnRateDecayRate: 0.06,
+      spawnRateMin: 450,
+      baseSpawnInterval: 1400,
+      maxObstaclesOnScreen: 35,
       maxSpeedMultiplier: 3.5,
       maxTrackers: 5,
     },

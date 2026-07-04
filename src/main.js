@@ -7,8 +7,8 @@ import { resetState } from './GameState.js';
 import { createGameLoop } from './GameLoop.js';
 import { recomputeZones } from './zones.js';
 import { update as updatePlayer } from './player.js';
-import { gameUpdate } from './gameUpdate.js';
-import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker } from './renderer.js';
+import { gameUpdate, executeAbility } from './gameUpdate.js';
+import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker, triggerAbilityFlash } from './renderer.js';
 import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
 import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, fetchAPLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
 import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
@@ -173,6 +173,14 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
   });
 });
 
+// Ability selector
+document.querySelectorAll('.ability-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    state.selectedAbility = e.currentTarget.dataset.ability;
+    document.querySelectorAll('.ability-btn').forEach(b => b.classList.toggle('selected', b === e.currentTarget));
+  });
+});
+
 // Returns true if any modal overlay is currently open
 function isAnyModalOpen() {
   return ['#how-to-play', '#leaderboard-screen', '#stats-screen', '#achievements-screen', '#rename-screen']
@@ -285,6 +293,30 @@ musicSlider.addEventListener('input', (e) => {
 const helpBtn = document.getElementById('help-btn');
 const howToPlayEl = document.getElementById('how-to-play');
 
+// Triggers the selected ability
+function triggerAbility() {
+  if (state.status !== 'active' && state.status !== 'grace') return;
+  const result = executeAbility(state, { x: rawX, y: rawY });
+  if (result) triggerAbilityFlash(result);
+}
+
+// Raw mouse position in logical space (mirrored from player.js logic)
+let rawX = 0, rawY = 0;
+window.addEventListener('mousemove', e => {
+  const rect = container.getBoundingClientRect();
+  const scale = rect.width / 1600;
+  rawX = (e.clientX - rect.left) / scale;
+  rawY = (e.clientY - rect.top) / scale;
+});
+
+// Right-click is also mapped to ability
+window.addEventListener('contextmenu', e => {
+  if (state.status === 'active' || state.status === 'grace') {
+    e.preventDefault();
+    triggerAbility();
+  }
+});
+
 // Draws all shape icons into their inline canvases — clears first to prevent glow accumulation
 function drawHtpIcons() {
   const ids = ['htp-player', 'htp-ball', 'htp-bullet', 'htp-shard', 'htp-tracker', 'htp-zone', 'htp-slowmo', 'htp-shield', 'htp-clear', 'htp-shrink'];
@@ -342,6 +374,11 @@ function closeRenameModal() { renameScreen.classList.remove('open'); }
 
 // KeydownRegistry — single handler for all global keyboard shortcuts
 window.addEventListener('keydown', (e) => {
+  if (e.key === ' ' && (state.status === 'active' || state.status === 'grace')) {
+    e.preventDefault();
+    triggerAbility();
+    return;
+  }
   if (e.key !== 'Escape') return;
   if (howToPlayEl.classList.contains('open')) { howToPlayEl.classList.remove('open'); return; }
   if (lbScreen.classList.contains('open')) { lbScreen.classList.remove('open'); return; }

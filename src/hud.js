@@ -59,6 +59,42 @@ function drawBonusPill(ctx, type, effect, x, y) {
   ctx.restore();
 }
 
+function drawBattery(ctx, state, x, y) {
+  const cfg = gameConfig.battery;
+  const ratio = state.battery / cfg.max;
+  const ready = state.battery >= (cfg.abilities[state.selectedAbility]?.cost ?? 0);
+  const color = state.battery >= cfg.max ? '#ffe600' : ready ? '#00eeff' : '#444';
+
+  const w = 130, h = 10;
+
+  ctx.save();
+  // Label
+  ctx.font = 'bold 10px monospace';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = ready ? 8 : 0;
+  const abilityName = cfg.abilities[state.selectedAbility]?.name?.toUpperCase() ?? 'NONE';
+  ctx.fillText(`BATTERY: ${Math.floor(state.battery)}% [${abilityName}]`, x, y - 4);
+
+  // Meter background
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(x, y, w, h);
+
+  // Fill segments
+  const segments = 10;
+  const segW = (w - (segments - 1)) / segments;
+  for (let i = 0; i < segments; i++) {
+    const segRatio = (i + 1) / segments;
+    if (ratio >= segRatio - 0.05) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x + i * (segW + 1), y, segW, h);
+    }
+  }
+  ctx.restore();
+}
+
 // Renders score top-center, bonus pills top-right
 export function renderHUD(ctx, state, delta) {
   const cw = ctx.canvas.width;
@@ -145,15 +181,16 @@ export function renderHUD(ctx, state, delta) {
   ctx.fillText(`${(state.elapsed / 1000).toFixed(1)}s`, cx, 66);
 
   // Bonus pills — right of center, stacking downward, top-aligned with score
+  const pillX = cx + PILL_OFFSET_X;
+  let pillY = 14;
   const effects = Object.entries(state.activeEffects);
-  if (effects.length > 0) {
-    const pillX = cx + PILL_OFFSET_X;
-    let pillY = 14;
-    for (const [type, effect] of effects) {
-      drawBonusPill(ctx, type, effect, pillX, pillY);
-      pillY += PILL_H + PILL_GAP;
-    }
+  for (const [type, effect] of effects) {
+    drawBonusPill(ctx, type, effect, pillX, pillY);
+    pillY += PILL_H + PILL_GAP;
   }
+
+  // Battery — left of center, balanced with pills
+  drawBattery(ctx, state, cx - PILL_OFFSET_X - 130, 14);
 
   ctx.restore();
 }

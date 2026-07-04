@@ -2,10 +2,14 @@
 // Related: combo.js, gameUpdate.js, game.config.js, GameState.js, zones.js
 // Tests Properties 1–6 from score-zone design.md
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fc from 'fast-check';
 import { updateScoreZone } from './combo.js';
 import { innerZone } from './zones.js';
+
+vi.mock('./stats.js', () => ({
+  onKUEarned: vi.fn()
+}));
 
 // These are isolated test values — not the real game.config.js values.
 // gameConfig is overridden in beforeEach so tests are self-consistent.
@@ -27,7 +31,11 @@ const TEST_CONFIG = {
   comboBuildRate: TEST_BUILD,
   comboDecayRate: TEST_DECAY,
   comboFastDecayRate: TEST_FAST_DECAY,
-  comboMultiplierMax: TEST_MAX
+  comboMultiplierMax: TEST_MAX,
+  battery: {
+    max: 100,
+    chargeRates: { zonePerSec: 5 }
+  }
 };
 
 // Sets innerZone to a fixed 800x600 area for deterministic bounds tests

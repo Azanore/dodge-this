@@ -71,7 +71,9 @@ export const ACHIEVEMENTS = [
   { "key": "tiny_but_mighty", "group": "single", "name": "Tiny but Mighty", "description": "Collect 3 shrink bonuses in one run", "type": "single_run", "icon": "minimize-2", "rarity": "rare", "color": "#00ff88", "ap": 50 },
   { "key": "jack_of_all_trades", "group": "single", "name": "Jack of All Trades", "description": "Collect all 4 bonus types in one run", "type": "single_run", "icon": "layers", "rarity": "epic", "color": "#cc44ff", "ap": 100 },
   { "key": "near_death", "group": "single", "name": "Near-Death Experience", "description": "Die with 1000+ score pending", "type": "single_run", "icon": "skull-2", "rarity": "rare", "secret": true, "color": "#00ff88", "ap": 50 },
-    {'key': 'early_departure', 'group': 'single', 'name': 'Early Departure', 'description': 'Die within 10 seconds', 'type': 'single_run', 'icon': 'door-open', 'rarity': 'common', 'secret': true, 'color': "#ffffff", 'ap': 10 }
+    {'key': 'early_departure', 'group': 'single', 'name': 'Early Departure', 'description': 'Die within 10 seconds', 'type': 'single_run', 'icon': 'door-open', 'rarity': 'common', 'secret': true, 'color': "#ffffff", 'ap': 10 },
+  { "key": "battery_powered", "group": "single", "name": "Battery Powered", "description": "Use 10 abilities in one run", "type": "single_run", "icon": "zap", "rarity": "uncommon", "color": "#00eeff", "ap": 25 },
+  { "key": "overcharged", "group": "single", "name": "Overcharged", "description": "Stay at 100% battery for 30s", "type": "single_run", "icon": "battery-charging", "rarity": "rare", "color": "#ffe600", "ap": 50 }
 ];
 
 // Toast timing constants
@@ -86,6 +88,7 @@ let _timerIds = [];
 
 // Keys fired mid-run this session — cleared on resetMidRunTracking()
 let _firedThisRun = new Set();
+let _overchargeStartTime = null;
 
 // Tracks a timer ID so clearToastQueue can cancel it
 function _track(id) {
@@ -151,6 +154,7 @@ export function clearToastQueue() {
 export function resetMidRunTracking() {
   _firedThisRun = new Set();
   _nearMissTimes = [];
+  _overchargeStartTime = null;
 }
 
 // Returns keys that fired mid-run this session — used by evaluateAchievements to persist them
@@ -175,7 +179,7 @@ function _formatStat(group, value) {
 
 // Checks mid-run single-run achievement conditions synchronously.
 export function checkMidRunAchievements(state, runStats, unlockedSet) {
-  const { nearMisses, bonusesCollected, bonusesByType, maxCombo, comboScore, maxSingleCombo } = runStats;
+  const { nearMisses, bonusesCollected, bonusesByType, maxCombo, comboScore, maxSingleCombo, abilitiesUsed } = runStats;
   const candidates = [];
 
   if (state.elapsed >= 60000) candidates.push('minuteman');
@@ -210,6 +214,16 @@ export function checkMidRunAchievements(state, runStats, unlockedSet) {
   if (bonusesByType.clear >= 3) candidates.push('clean_slate');
   if (bonusesByType.shrink >= 3) candidates.push('tiny_but_mighty');
   if (Object.values(bonusesByType).every(count => count >= 1)) candidates.push('jack_of_all_trades');
+
+  if (abilitiesUsed >= 10) candidates.push('battery_powered');
+
+  // Overcharged: 100% battery for 30s
+  if (state.battery >= gameConfig.battery.max) {
+    if (_overchargeStartTime === null) _overchargeStartTime = state.elapsed;
+    else if (state.elapsed - _overchargeStartTime >= 30000) candidates.push('overcharged');
+  } else {
+    _overchargeStartTime = null;
+  }
 
   const newKeys = candidates.filter(k => !unlockedSet.has(k) && !_firedThisRun.has(k));
   for (const k of newKeys) _firedThisRun.add(k);

@@ -10,26 +10,22 @@ import { getCurrentSpeedMultiplier, getCurrentSpawnInterval, getPreset } from '.
 const arbElapsed = fc.integer({ min: 0, max: 600000 });
 const arbDifficulty = fc.constantFrom('easy', 'normal', 'hard');
 
-describe('difficulty — new decay rate config values', () => {
-  // Task 7.1 — Requirements: 2.1, 2.2, 2.3, 2.5, 2.6
-  it('easy preset has spawnRateDecayRate 0.067', () => {
-    expect(getPreset('easy').spawnRateDecayRate).toBe(0.067);
+describe('difficulty — rebalanced curves (Longer Sessions)', () => {
+  it('easy preset has spawnRateDecayRate 0.035', () => {
+    expect(getPreset('easy').spawnRateDecayRate).toBe(0.035);
   });
 
-  it('normal preset has spawnRateDecayRate 0.09', () => {
-    expect(getPreset('normal').spawnRateDecayRate).toBe(0.09);
+  it('normal preset has spawnRateDecayRate 0.045', () => {
+    expect(getPreset('normal').spawnRateDecayRate).toBe(0.045);
   });
 
-  it('hard preset has spawnRateDecayRate 0.113', () => {
-    expect(getPreset('hard').spawnRateDecayRate).toBe(0.113);
+  it('hard preset has spawnRateDecayRate 0.06', () => {
+    expect(getPreset('hard').spawnRateDecayRate).toBe(0.06);
   });
 
-  it('normal interval at t=60s equals spawnRateMin (floor reached)', () => {
-    expect(getCurrentSpawnInterval(60000, 'normal')).toBe(550);
-  });
-
-  it('normal interval at t=90s equals spawnRateMin (floor sustained)', () => {
-    expect(getCurrentSpawnInterval(90000, 'normal')).toBe(550);
+  it('normal interval at t=300s equals spawnRateMin (floor reached)', () => {
+    // base (1700) * exp(-0.045 * 300) = 1700 * exp(-13.5) = tiny, so floor
+    expect(getCurrentSpawnInterval(300000, 'normal')).toBe(600);
   });
 });
 
