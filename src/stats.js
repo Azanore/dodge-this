@@ -11,6 +11,8 @@ let maxCombo = 1.0;
 let comboScore = 0;
 let maxSingleCombo = 0;
 let bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
+let abilitiesUsed = 0;
+let kuEarned = 0;
 
 // Resets all counters to initial values — call on every restart
 export function resetRunStats() {
@@ -20,6 +22,8 @@ export function resetRunStats() {
   comboScore = 0;
   maxSingleCombo = 0;
   bonusesByType = { slowmo: 0, shield: 0, clear: 0, shrink: 0 };
+  abilitiesUsed = 0;
+  kuEarned = 0;
 }
 
 // Increments nearMisses by 1
@@ -46,9 +50,19 @@ export function onComboBank(amount) {
   if (amount > maxSingleCombo) maxSingleCombo = amount;
 }
 
+// Increments abilitiesUsed by 1
+export function onAbilityUsed() {
+  abilitiesUsed += 1;
+}
+
+// Adds amount to kuEarned
+export function onKUEarned(amount) {
+  kuEarned += amount;
+}
+
 // Returns current run counter values — used by main.js to populate the per-run panel
 export function getRunStats() {
-  return { nearMisses, bonusesCollected, maxCombo, comboScore, maxSingleCombo, bonusesByType };
+  return { nearMisses, bonusesCollected, maxCombo, comboScore, maxSingleCombo, bonusesByType, abilitiesUsed, kuEarned };
 }
 
 // Checks auth, inserts run record if authenticated and run lasted at least 5s — fire-and-forget, swallows errors
@@ -65,6 +79,8 @@ export async function insertRun(state) {
     near_misses: nearMisses,
     combo_score: Math.round(comboScore),
     bonuses_collected: bonusesCollected,
+    abilities_used: abilitiesUsed,
+    ku_earned: Math.round(kuEarned),
     played_at: new Date().toISOString(),
     death_cause: state.deathCause ?? null
   };

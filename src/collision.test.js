@@ -2,9 +2,13 @@
 // Related: collision.js
 // Tests Property 6 from dodge-game design.md; Properties 1-3 from near-miss-feedback design.md
 
-import { describe, it, beforeEach, afterEach } from 'vitest';
+import { describe, it, beforeEach, afterEach, vi } from 'vitest';
 import * as fc from 'fast-check';
 import { circlesOverlap, checkNearMisses } from './collision.js';
+
+vi.mock('./stats.js', () => ({
+  onKUEarned: vi.fn()
+}));
 
 // Arbitrary: a circle with position and radius (32-bit float bounds required by fast-check)
 const arbCircle = fc.record({
@@ -37,7 +41,13 @@ describe('collision', () => {
 
   beforeEach(() => {
     origConfig = globalThis.gameConfig;
-    globalThis.gameConfig = { nearMissThreshold: THRESHOLD };
+    globalThis.gameConfig = {
+      nearMissThreshold: THRESHOLD,
+      battery: {
+        max: 100,
+        chargeRates: { nearMiss: 5 }
+      }
+    };
   });
 
   afterEach(() => {

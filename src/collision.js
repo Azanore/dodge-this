@@ -2,6 +2,8 @@
 // Related: player.js, obstacles.js, bonuses.js, GameState.js
 // Does not handle rendering or state transitions beyond setting status/removing pickups.
 
+import { onKUEarned } from './stats.js';
+
 // Returns true iff the Euclidean distance between circle centers is less than the sum of their radii
 export function circlesOverlap(a, b) {
   const dx = a.x - b.x;
@@ -12,7 +14,7 @@ export function circlesOverlap(a, b) {
 // Checks player vs all obstacles; triggers death if overlap and invincibility is not active.
 // Sets state.deathCause to the obstacle type that killed the player.
 export function checkPlayerObstacles(state) {
-  if (state.activeEffects.invincibility) return;
+  if (state.activeEffects.invincibility || state.phasedRemaining > 0) return;
   const player = state.player;
   for (const obs of state.obstacles) {
     if (obs.pending > 0) continue; // POLISH: tracker spawn warning — skip pending obstacles
@@ -42,6 +44,10 @@ export function checkNearMisses(state, onNearMiss, now) {
     if (gap > 0 && gap <= threshold && now - obs.lastNearMissAt > NEAR_MISS_COOLDOWN) {
       onNearMiss(player.x, player.y);
       obs.lastNearMissAt = now;
+      // Charge battery
+      const charge = gameConfig.battery.chargeRates.nearMiss;
+      state.battery = Math.min(gameConfig.battery.max, state.battery + charge);
+      onKUEarned(charge);
     }
   }
 }
@@ -52,6 +58,10 @@ export function checkPlayerBonusPickups(state, collectBonus) {
   state.bonuses = state.bonuses.filter(pickup => {
     if (circlesOverlap(player, pickup)) {
       collectBonus(pickup.type, state, pickup.x, pickup.y);
+      // Charge battery
+      const charge = gameConfig.battery.chargeRates.bonus;
+      state.battery = Math.min(gameConfig.battery.max, state.battery + charge);
+      onKUEarned(charge);
       return false;
     }
     return true;

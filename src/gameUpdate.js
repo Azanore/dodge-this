@@ -3,20 +3,34 @@
 // Does not start/stop the loop or render anything.
 
 import { update as updatePlayer } from './player.js';
-import { spawnObstacle, updateObstacles } from './obstacles.js';
+import { spawnObstacle, updateObstacles, clearAll } from './obstacles.js';
 import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
 import { triggerNearMiss, triggerScoreFloat } from './renderer.js';
-import { onNearMiss, onComboBank, getRunStats } from './stats.js';
+import { onNearMiss, onComboBank, getRunStats, onAbilityUsed, onKUEarned } from './stats.js';
 import { checkMidRunAchievements } from './achievements.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
 import { updateScoreZone } from './combo.js';
 import { triggerScoreBump } from './hud.js';
+import { ABILITIES } from './abilities.js';
 
-import { playDeath, playMultiplierMax } from './audio.js'; // AUDIO
+import { playDeath, playMultiplierMax, playPickup } from './audio.js'; // AUDIO
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;
+
+// Dispatches the currently selected ability
+export function executeAbility(state, mousePos) {
+  const cfg = gameConfig.battery.abilities[state.selectedAbility];
+  if (!cfg || state.battery < cfg.cost) return null;
+
+  state.battery -= cfg.cost;
+  onAbilityUsed();
+  const ability = ABILITIES[state.selectedAbility];
+  if (!ability) return null;
+
+  return ability.execute(state, mousePos);
+}
 
 // Called each frame — mutates state, returns 'dead' if player just died (so caller can react)
 // onAchievement(keys): optional callback fired when mid-run achievements trigger
@@ -51,12 +65,28 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
 
   updateScoreZone(delta, state, accumulators);
 
-  const baseTick = (delta / 1000) * 10;
-  state.score += baseTick; // always ticks
+  // Update Ability effects
+  if (state.abilityActive) {
+    state.abilityActive.remaining -= delta;
+    if (state.abilityActive.remaining <= 0) state.abilityActive = null;
+  }
+  if (state.phasedRemaining > 0) state.phasedRemaining -= delta;
 
-  if (state.comboMultiplier > 1.0) {
-    // Only the bonus delta accumulates as pending — lost on death, banked when multiplier returns to 1x
-    state.pendingScore += baseTick * (state.comboMultiplier - 1);
+  // Update Battery
+  const batCfg = gameConfig.battery;
+  const charge = (batCfg.chargeRates.passivePerSec * delta) / 1000;
+  state.battery = Math.min(batCfg.max, state.battery + charge);
+  onKUEarned(charge);
+
+  const baseTick = (delta / 1000) * 10;
+  let multiplierBonus = 0;
+  if (state.battery >= batCfg.max) multiplierBonus = batCfg.overchargeMultiplierBonus;
+
+  state.score += baseTick * (1 + multiplierBonus / state.comboMultiplier); // always ticks, balanced for overcharge
+
+  if (state.comboMultiplier + multiplierBonus > 1.0) {
+    // Only the bonus delta accumulates as pending
+    state.pendingScore += baseTick * (state.comboMultiplier + multiplierBonus - 1);
   } else if (state.pendingScore > 0) {
     const banked = state.pendingScore;
     state.score += banked;
@@ -72,7 +102,10 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
   const speedMult = getCurrentSpeedMultiplier(state.elapsed, state.difficulty);
   const spawnInterval = getCurrentSpawnInterval(state.elapsed, state.difficulty);
 
-  accumulators.spawn += delta * state.slowmoMultiplier; // slowmo stretches spawn intervals too
+  // Chrono effect also slows time for obstacles
+  const chronoMult = (state.abilityActive?.type === 'chrono') ? gameConfig.battery.abilities.chrono.params.timeScale : 1.0;
+
+  accumulators.spawn += delta * state.slowmoMultiplier * chronoMult; // slowmo stretches spawn intervals too
   while (accumulators.spawn >= spawnInterval) {
     spawnObstacle(state, speedMult);
     accumulators.spawn -= spawnInterval;
@@ -84,7 +117,11 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
     accumulators.bonus = 0;
   }
 
+  // Update obstacles with chrono scale
+  const originalSlowmo = state.slowmoMultiplier;
+  state.slowmoMultiplier *= chronoMult;
   updateObstacles(delta, state);
+  state.slowmoMultiplier = originalSlowmo;
   updateEffects(delta, state);
   checkPlayerBonusPickups(state, collectBonus);
   checkPlayerObstacles(state);
