@@ -302,17 +302,17 @@ window.addEventListener('mousemove', e => {
   rawY = (e.clientY - rect.top) / scale;
 });
 
-// Right-click is mapped to Dash (Key 1)
+// Right-click is mapped to Phase Cloak (Key 1)
 window.addEventListener('contextmenu', e => {
   if (state.status === 'active' || state.status === 'grace') {
     e.preventDefault();
-    triggerAbility('dash');
+    triggerAbility('cloak');
   }
 });
 
 // Draws all shape icons into their inline canvases — clears first to prevent glow accumulation
 function drawHtpIcons() {
-  const ids = ['htp-player', 'htp-ball', 'htp-bullet', 'htp-shard', 'htp-tracker', 'htp-zone', 'htp-slowmo', 'htp-shield', 'htp-clear', 'htp-shrink'];
+  const ids = ['htp-player', 'htp-battery', 'htp-ball', 'htp-bullet', 'htp-shard', 'htp-tracker', 'htp-zone', 'htp-slowmo', 'htp-shield', 'htp-clear', 'htp-shrink'];
   const cx2d = (id) => document.getElementById(id).getContext('2d');
   const cx = 16, cy = 16;
   for (const id of ids) { const c = cx2d(id); c.clearRect(0, 0, 32, 32); }
@@ -320,6 +320,14 @@ function drawHtpIcons() {
   const pc = cx2d('htp-player');
   glowCircle(pc, cx, cy, 9, '#00eeff', 12);
   glowCircle(pc, cx, cy, 3, '#ffffff', 5);
+
+  const bc2 = cx2d('htp-battery');
+  bc2.fillStyle = '#00eeff';
+  bc2.fillRect(4, 10, 24, 12);
+  bc2.strokeStyle = '#fff';
+  bc2.lineWidth = 1;
+  bc2.strokeRect(4, 10, 24, 12);
+  bc2.fillRect(28, 13, 2, 6);
 
   drawBall(cx2d('htp-ball'), { x: cx, y: cy, radius: 10 }, '#ff4444');
   drawBullet(cx2d('htp-bullet'), { x: cx, y: cy, radius: 5, vx: 1, vy: 0 }, '#ffffff');
@@ -368,7 +376,7 @@ function closeRenameModal() { renameScreen.classList.remove('open'); }
 // KeydownRegistry — single handler for all global keyboard shortcuts
 window.addEventListener('keydown', (e) => {
   if (state.status === 'active' || state.status === 'grace') {
-    if (e.key === '1' || e.key === 'q' || e.key === 'a') { e.preventDefault(); triggerAbility('dash'); return; }
+    if (e.key === '1' || e.key === 'q' || e.key === 'a') { e.preventDefault(); triggerAbility('cloak'); return; }
     if (e.key === '2' || e.key === 'w' || e.key === 'z') { e.preventDefault(); triggerAbility('pulse'); return; }
     if (e.key === '3' || e.key === 'e') { e.preventDefault(); triggerAbility('chrono'); return; }
   }

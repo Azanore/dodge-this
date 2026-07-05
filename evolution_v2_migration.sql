@@ -1,8 +1,11 @@
--- Migration to add battery-related columns to the runs table
+-- DODGE: EVOLUTION UPDATE MIGRATION
+-- Current database schema requirements for the Kinetic Battery system.
+
+-- 1. Extend runs table
 ALTER TABLE runs ADD COLUMN IF NOT EXISTS abilities_used INTEGER DEFAULT 0;
 ALTER TABLE runs ADD COLUMN IF NOT EXISTS ku_earned INTEGER DEFAULT 0;
 
--- Update get_user_stats to include the new columns
+-- 2. Update stats aggregation function
 CREATE OR REPLACE FUNCTION get_user_stats(p_user_id uuid)
 RETURNS TABLE (
   total_runs bigint,
@@ -54,6 +57,9 @@ BEGIN
 END;
 $$;
 
--- Optional: Update existing aggregate functions/RPCs if they exist and need these columns.
--- Since the agent doesn't have direct access to modify RPC definitions easily,
--- we provide the column additions as the primary requirement.
+-- 3. Seed new achievements (Safe for repeated execution)
+INSERT INTO achievements (key, name, description) VALUES
+('battery_powered', 'Battery Powered', 'Use 10 abilities in one run'),
+('overcharged', 'Overcharged', 'Stay at 100% battery for 30s'),
+('skill_issue', 'Skill Issue', 'Use all 3 abilities in 5 seconds')
+ON CONFLICT (key) DO NOTHING;
