@@ -91,6 +91,7 @@ window.gameConfig = {
     slowmo: { enabled: true, duration: 5000, spawnWeight: 3 },
     invincibility: { enabled: true, duration: 4000, spawnWeight: 2 },
     screenclear: { enabled: true, duration: 0, spawnWeight: 1 },
-    shrink: { enabled: true, duration: 6000, spawnWeight: 3 }
+    shrink: { enabled: true, duration: 6000, spawnWeight: 3 },
+    cloak: { enabled: false, duration: 2000, spawnWeight: 0 } // Ability-only bonus
   }
 };

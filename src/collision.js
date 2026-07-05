@@ -14,7 +14,7 @@ export function circlesOverlap(a, b) {
 // Checks player vs all obstacles; triggers death if overlap and invincibility is not active.
 // Sets state.deathCause to the obstacle type that killed the player.
 export function checkPlayerObstacles(state) {
-  if (state.activeEffects.invincibility || state.phasedRemaining > 0) return;
+  if (state.activeEffects.invincibility || state.activeEffects.cloak || state.phasedRemaining > 0) return;
   const player = state.player;
   for (const obs of state.obstacles) {
     if (obs.pending > 0) continue; // POLISH: tracker spawn warning — skip pending obstacles
@@ -33,7 +33,7 @@ const NEAR_MISS_COOLDOWN = 600; // ms — matches nearMissText duration
 // Suppressed during invincibility — no risk, no reward.
 // now: current timestamp in ms (pass performance.now() from the game loop)
 export function checkNearMisses(state, onNearMiss, now) {
-  if (state.activeEffects.invincibility) return;
+  if (state.activeEffects.invincibility || state.activeEffects.cloak) return;
   const player = state.player;
   const threshold = gameConfig.nearMissThreshold;
   for (const obs of state.obstacles) {

@@ -9,7 +9,8 @@ export const ABILITIES = {
     execute: (state) => {
       const cfg = gameConfig.battery.abilities.cloak.params;
       state.abilityActive = { type: 'cloak', remaining: cfg.duration };
-      state.phasedRemaining = cfg.duration; // Cloak makes you phased (invincible)
+      // Add cloak to activeEffects so it shows a pill and provides logic
+      state.activeEffects.cloak = { remaining: cfg.duration };
       return { type: 'cloak', duration: cfg.duration };
     }
   },

@@ -74,8 +74,14 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
   // Update Ability effects
   if (state.abilityActive) {
     state.abilityActive.remaining -= delta;
-    if (state.abilityActive.remaining <= 0) state.abilityActive = null;
+    if (state.abilityActive.remaining <= 0) {
+      if (state.abilityActive.type === 'chrono') {
+        state.chronoFadeRemaining = 1000; // 1s fade out
+      }
+      state.abilityActive = null;
+    }
   }
+  if (state.chronoFadeRemaining > 0) state.chronoFadeRemaining -= delta;
   if (state.phasedRemaining > 0) state.phasedRemaining -= delta;
 
   // Update Battery
@@ -109,7 +115,14 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
   const spawnInterval = getCurrentSpawnInterval(state.elapsed, state.difficulty);
 
   // Chrono effect also slows time for obstacles
-  const chronoMult = (state.abilityActive?.type === 'chrono') ? gameConfig.battery.abilities.chrono.params.timeScale : 1.0;
+  let chronoMult = 1.0;
+  if (state.abilityActive?.type === 'chrono') {
+    chronoMult = gameConfig.battery.abilities.chrono.params.timeScale;
+  } else if (state.chronoFadeRemaining > 0) {
+    const t = state.chronoFadeRemaining / 1000; // 1 -> 0
+    // Lerp from chrono scale back to 1
+    chronoMult = gameConfig.battery.abilities.chrono.params.timeScale + (1 - t) * (1 - gameConfig.battery.abilities.chrono.params.timeScale);
+  }
 
   accumulators.spawn += delta * state.slowmoMultiplier * chronoMult; // slowmo stretches spawn intervals too
   while (accumulators.spawn >= spawnInterval) {

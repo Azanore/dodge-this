@@ -27,6 +27,7 @@ export function resetState(difficulty = 'normal') {
     battery: 0,
     lastAbilityUsedAt: 0,
     abilityActive: null, // null or { type, remaining }
+    chronoFadeRemaining: 0,
     scoreZone: { active: false },
     deathCause: null,
     _unlockedAchievements: new Set()

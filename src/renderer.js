@@ -403,10 +403,12 @@ export function render(ctx, state, delta) {
   if (state.status !== 'start') {
     const { x: px, y: py, radius: pr } = state.player;
     const pulse = 0.6 + 0.4 * Math.sin(pulseT);
-    const isInvincible = !!state.activeEffects.invincibility;
-    const isCloaked = state.abilityActive?.type === 'cloak';
-    const playerColor = isInvincible ? '#ffe600' : isCloaked ? '#ffffff' : '#00eeff';
-    const playerBlur = isInvincible ? 28 + 12 * pulse : isCloaked ? 35 + 5 * pulse : 14 + 10 * pulse;
+    const isShielded = !!state.activeEffects.invincibility;
+    const isCloaked = !!state.activeEffects.cloak;
+
+    // Cloak is white (priority), Shield is yellow
+    const playerColor = isCloaked ? '#ffffff' : isShielded ? '#ffe600' : '#00eeff';
+    const playerBlur = isCloaked ? 35 + 5 * pulse : isShielded ? 28 + 12 * pulse : 14 + 10 * pulse;
 
     if (isCloaked) ctx.globalAlpha = 0.6 + 0.2 * Math.sin(pulseT * 10);
     glowCircle(ctx, px, py, pr, playerColor, playerBlur);
