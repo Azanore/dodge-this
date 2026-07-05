@@ -30,15 +30,15 @@ window.gameConfig = {
     },
     overchargeMultiplierBonus: 1.0,
     abilities: {
-      dash: {
-        name: 'Blink Dash',
+      cloak: {
+        name: 'Phase Cloak',
         cost: 40,
-        params: { dist: 200, novaRadius: 60 }
+        params: { duration: 2000 }
       },
       pulse: {
         name: 'Kinetic Pulse',
         cost: 60,
-        params: { pushForce: 0.8, duration: 1000, phasedDuration: 500 }
+        params: { pushForce: 1.2, duration: 1000, phasedDuration: 500 }
       },
       chrono: {
         name: 'Temporal Shift',
@@ -52,30 +52,30 @@ window.gameConfig = {
   // Rebalanced for longer sessions (flattened curves)
   difficultyPresets: {
     easy: {
-      speedScaleFactor: 0.18,
-      spawnRateDecayRate: 0.035,
-      spawnRateMin: 750,
-      baseSpawnInterval: 2000,
+      speedScaleFactor: 0.12,
+      spawnRateDecayRate: 0.025,
+      spawnRateMin: 800,
+      baseSpawnInterval: 2200,
       maxObstaclesOnScreen: 12,
-      maxSpeedMultiplier: 2.0,
+      maxSpeedMultiplier: 1.8,
       maxTrackers: 1,
     },
     normal: {
-      speedScaleFactor: 0.24,
-      spawnRateDecayRate: 0.045,
-      spawnRateMin: 600,
-      baseSpawnInterval: 1700,
+      speedScaleFactor: 0.16,
+      spawnRateDecayRate: 0.035,
+      spawnRateMin: 650,
+      baseSpawnInterval: 1800,
       maxObstaclesOnScreen: 20,
-      maxSpeedMultiplier: 2.8,
+      maxSpeedMultiplier: 2.4,
       maxTrackers: 3,
     },
     hard: {
-      speedScaleFactor: 0.3,
-      spawnRateDecayRate: 0.06,
-      spawnRateMin: 450,
-      baseSpawnInterval: 1400,
+      speedScaleFactor: 0.22,
+      spawnRateDecayRate: 0.05,
+      spawnRateMin: 500,
+      baseSpawnInterval: 1500,
       maxObstaclesOnScreen: 35,
-      maxSpeedMultiplier: 3.5,
+      maxSpeedMultiplier: 3.0,
       maxTrackers: 5,
     },
   },

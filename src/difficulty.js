@@ -8,9 +8,11 @@ export function getPreset(difficulty) {
 }
 
 // Returns speed multiplier at a given elapsed time (ms) — logarithmic ramp, capped per preset
+// Further dampened for longer sessions: log(1 + t/2) instead of log(1 + t)
 export function getCurrentSpeedMultiplier(elapsed, difficulty) {
   const p = getPreset(difficulty);
-  const raw = 1 + p.speedScaleFactor * Math.log(1 + elapsed / 1000);
+  const t = elapsed / 1000;
+  const raw = 1 + p.speedScaleFactor * Math.log(1 + t / 2);
   return Math.min(raw, p.maxSpeedMultiplier);
 }
 

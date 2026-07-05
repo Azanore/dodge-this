@@ -404,10 +404,13 @@ export function render(ctx, state, delta) {
     const { x: px, y: py, radius: pr } = state.player;
     const pulse = 0.6 + 0.4 * Math.sin(pulseT);
     const isInvincible = !!state.activeEffects.invincibility;
-    const playerColor = isInvincible ? '#ffe600' : '#00eeff';
-    const playerBlur = isInvincible ? 28 + 12 * pulse : 14 + 10 * pulse;
+    const isCloaked = state.abilityActive?.type === 'cloak';
+    const playerColor = isInvincible ? '#ffe600' : isCloaked ? '#ffffff' : '#00eeff';
+    const playerBlur = isInvincible ? 28 + 12 * pulse : isCloaked ? 35 + 5 * pulse : 14 + 10 * pulse;
 
+    if (isCloaked) ctx.globalAlpha = 0.6 + 0.2 * Math.sin(pulseT * 10);
     glowCircle(ctx, px, py, pr, playerColor, playerBlur);
+    if (isCloaked) ctx.globalAlpha = 1.0;
     // Bright core dot
     glowCircle(ctx, px, py, pr * 0.4, '#ffffff', 6);
     if (showHitboxes) drawHitbox(ctx, px, py, pr);
@@ -473,19 +476,14 @@ export function render(ctx, state, delta) {
     } else {
       const t = 1 - f.remaining / (f.type === 'dash' ? 400 : 600);
       ctx.save();
-      if (f.type === 'dash') {
-        // Line from start to end
+      if (f.type === 'cloak') {
+        // Subtle expansion ring at start
         ctx.strokeStyle = '#00eeff';
-        ctx.setLineDash([10, 10]);
-        ctx.lineDashOffset = -t * 100;
+        ctx.lineWidth = 2;
         ctx.globalAlpha = (1 - t) * 0.5;
-        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(f.x, f.y);
-        ctx.lineTo(f.tx, f.ty);
+        ctx.arc(f.x, f.y, 20 + t * 60, 0, Math.PI * 2);
         ctx.stroke();
-        // Nova at destination
-        glowCircle(ctx, f.tx, f.ty, 20 + t * 40, '#00eeff', 30 * (1 - t));
       } else if (f.type === 'pulse') {
         // Expanding ring
         ctx.strokeStyle = '#cc44ff';

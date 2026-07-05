@@ -5,36 +5,12 @@
 import { innerZone } from './zones.js';
 
 export const ABILITIES = {
-  dash: {
-    execute: (state, mousePos) => {
-      const cfg = gameConfig.battery.abilities.dash.params;
-      const { x: px, y: py } = state.player;
-
-      // Calculate direction to mouse
-      const dx = mousePos.x - px;
-      const dy = mousePos.y - py;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      let tx = px, ty = py;
-      if (dist > 0) {
-        const moveDist = Math.min(dist, cfg.dist);
-        tx += (dx / dist) * moveDist;
-        ty += (dy / dist) * moveDist;
-      }
-
-      // Clamp to inner zone with radius margin
-      const r = state.player.radius;
-      state.player.x = Math.max(innerZone.x + r, Math.min(innerZone.x + innerZone.width - r, tx));
-      state.player.y = Math.max(innerZone.y + r, Math.min(innerZone.y + innerZone.height - r, ty));
-
-      // Kinetic Nova: Destroy obstacles at destination
-      state.obstacles = state.obstacles.filter(obs => {
-        const ddx = obs.x - state.player.x;
-        const ddy = obs.y - state.player.y;
-        return (ddx * ddx + ddy * ddy) > (cfg.novaRadius + obs.radius) ** 2;
-      });
-
-      return { type: 'dash', x: px, y: py, tx: state.player.x, ty: state.player.y };
+  cloak: {
+    execute: (state) => {
+      const cfg = gameConfig.battery.abilities.cloak.params;
+      state.abilityActive = { type: 'cloak', remaining: cfg.duration };
+      state.phasedRemaining = cfg.duration; // Cloak makes you phased (invincible)
+      return { type: 'cloak', duration: cfg.duration };
     }
   },
 

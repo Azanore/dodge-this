@@ -61,37 +61,58 @@ function drawBonusPill(ctx, type, effect, x, y) {
 
 function drawSkillSlot(ctx, state, x, y, key, label, cost) {
   const ready = state.battery >= cost;
-  const color = ready ? '#00eeff' : '#444';
-  const w = 50, h = 32;
+  const now = performance.now();
+  const onCooldown = (now - state.lastAbilityUsedAt < 500);
+
+  const baseColor = ready ? (onCooldown ? '#0088aa' : '#00eeff') : '#333';
+  const textColor = ready ? (onCooldown ? '#aaa' : '#fff') : '#555';
+  const w = 60, h = 42;
 
   ctx.save();
-  // Border
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = ready ? 8 : 0;
-  ctx.strokeRect(x, y, w, h);
 
-  // Fill if ready
-  if (ready) {
-    ctx.fillStyle = 'rgba(0, 238, 255, 0.05)';
-    ctx.fillRect(x, y, w, h);
+  // Outer glow and border
+  if (ready && !onCooldown) {
+    ctx.shadowColor = baseColor;
+    ctx.shadowBlur = 12;
+  }
+  ctx.strokeStyle = baseColor;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 4);
+  ctx.stroke();
+
+  // Background fill
+  ctx.fillStyle = ready ? 'rgba(0, 238, 255, 0.1)' : 'rgba(0,0,0,0.4)';
+  ctx.fill();
+
+  // Cooldown overlay
+  if (onCooldown && ready) {
+    const cdRatio = (now - state.lastAbilityUsedAt) / 500;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath();
+    ctx.moveTo(x + w/2, y + h/2);
+    ctx.arc(x + w/2, y + h/2, w, -Math.PI/2, -Math.PI/2 + (1-cdRatio) * Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
   }
 
-  // Key hint
-  ctx.font = 'bold 10px monospace';
-  ctx.fillStyle = color;
+  // Key hint (Top left)
+  ctx.font = 'bold 11px monospace';
+  ctx.fillStyle = baseColor;
+  ctx.textAlign = 'left';
+  ctx.fillText(key, x + 6, y + 14);
+
+  // Label (Center)
+  ctx.font = 'bold 12px monospace';
+  ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
-  ctx.fillText(`[${key}]`, x + w/2, y + 12);
+  ctx.fillText(label, x + w/2, y + 26);
 
-  // Label
-  ctx.font = '9px monospace';
-  ctx.fillText(label, x + w/2, y + 20);
-
-  // Cost
-  ctx.font = 'bold 8px monospace';
+  // Cost (Bottom right)
+  ctx.font = 'bold 9px monospace';
   ctx.fillStyle = ready ? '#ffe600' : '#444';
-  ctx.fillText(`${cost} KU`, x + w/2, y + 28);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${cost}KU`, x + w - 6, y + h - 6);
 
   ctx.restore();
 }
@@ -144,9 +165,9 @@ function drawBattery(ctx, state, x, y) {
 
   // Skills
   const abilities = gameConfig.battery.abilities;
-  drawSkillSlot(ctx, state, x, y + h + 8, '1', 'DASH', abilities.dash.cost);
-  drawSkillSlot(ctx, state, x + 55, y + h + 8, '2', 'PULSE', abilities.pulse.cost);
-  drawSkillSlot(ctx, state, x + 110, y + h + 8, '3', 'TIME', abilities.chrono.cost);
+  drawSkillSlot(ctx, state, x, y + h + 8, '1', 'CLOAK', abilities.cloak.cost);
+  drawSkillSlot(ctx, state, x + 65, y + h + 8, '2', 'PULSE', abilities.pulse.cost);
+  drawSkillSlot(ctx, state, x + 130, y + h + 8, '3', 'TIME', abilities.chrono.cost);
 
   ctx.restore();
 }
@@ -246,7 +267,7 @@ export function renderHUD(ctx, state, delta) {
   }
 
   // Battery & Skills — left of center, balanced with pills
-  drawBattery(ctx, state, cx - PILL_OFFSET_X - 160, 14);
+  drawBattery(ctx, state, cx - PILL_OFFSET_X - 195, 14);
 
   ctx.restore();
 }
