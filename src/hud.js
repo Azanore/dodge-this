@@ -64,9 +64,9 @@ function drawSkillSlot(ctx, state, x, y, key, label, cost) {
   const now = performance.now();
   const onCooldown = (now - state.lastAbilityUsedAt < 500);
 
-  const baseColor = ready ? (onCooldown ? '#0088aa' : '#00eeff') : '#333';
-  const textColor = ready ? (onCooldown ? '#aaa' : '#fff') : '#555';
-  const w = 60, h = 42;
+  const baseColor = ready ? (onCooldown ? '#0088aa' : '#00eeff') : '#222';
+  const textColor = ready ? (onCooldown ? '#aaa' : '#fff') : '#444';
+  const w = 75, h = 42;
 
   ctx.save();
 
@@ -97,22 +97,22 @@ function drawSkillSlot(ctx, state, x, y, key, label, cost) {
   }
 
   // Key hint (Top left)
-  ctx.font = 'bold 11px monospace';
+  ctx.font = 'bold 12px monospace';
   ctx.fillStyle = baseColor;
   ctx.textAlign = 'left';
-  ctx.fillText(key, x + 6, y + 14);
+  ctx.fillText(key, x + 8, y + 16);
 
   // Label (Center)
-  ctx.font = 'bold 12px monospace';
+  ctx.font = 'bold 13px monospace';
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
   ctx.fillText(label, x + w/2, y + 26);
 
   // Cost (Bottom right)
-  ctx.font = 'bold 9px monospace';
+  ctx.font = 'bold 10px monospace';
   ctx.fillStyle = ready ? '#ffe600' : '#444';
   ctx.textAlign = 'right';
-  ctx.fillText(`${cost}KU`, x + w - 6, y + h - 6);
+  ctx.fillText(`${cost}KU`, x + w - 8, y + h - 8);
 
   ctx.restore();
 }
@@ -123,26 +123,28 @@ function drawBattery(ctx, state, x, y) {
   const isOvercharged = state.battery >= cfg.max;
   const color = isOvercharged ? '#ffe600' : '#00eeff';
 
-  const w = 160, h = 12;
+  const w = 240, h = 16;
 
   ctx.save();
   // Label
-  ctx.font = 'bold 11px monospace';
+  ctx.font = 'bold 13px monospace';
   ctx.fillStyle = color;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
   ctx.shadowColor = color;
   ctx.shadowBlur = 10;
-  ctx.fillText(`KINETIC BATTERY: ${Math.floor(state.battery)}%`, x, y - 6);
+  ctx.fillText(`KINETIC ENERGY: ${Math.floor(state.battery)}%`, x, y - 10);
   if (isOvercharged) {
-    ctx.font = 'bold 9px monospace';
+    ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('OVERCHARGED! +1.0x', x + w, y - 6);
+    ctx.fillText('OVERCHARGED!', x + w, y - 10);
   }
 
   // Meter background
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 3);
+  ctx.fill();
 
   // High-visibility fill
   if (ratio > 0) {
@@ -150,24 +152,29 @@ function drawBattery(ctx, state, x, y) {
     grd.addColorStop(0, color);
     grd.addColorStop(1, '#ffffff');
     ctx.fillStyle = grd;
-    ctx.fillRect(x, y, w * ratio, h);
+    ctx.beginPath();
+    ctx.roundRect(x, y, w * ratio, h, 3);
+    ctx.fill();
 
     // Shine effect
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.4;
     ctx.fillStyle = '#fff';
-    ctx.fillRect(x, y, w * ratio, h / 2);
+    ctx.fillRect(x, y, w * ratio, h / 2.5);
   }
 
   // Border
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x, y, w, h);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 3);
+  ctx.stroke();
 
-  // Skills
+  // Skills row below battery
   const abilities = gameConfig.battery.abilities;
-  drawSkillSlot(ctx, state, x, y + h + 8, '1', 'CLOAK', abilities.cloak.cost);
-  drawSkillSlot(ctx, state, x + 65, y + h + 8, '2', 'PULSE', abilities.pulse.cost);
-  drawSkillSlot(ctx, state, x + 130, y + h + 8, '3', 'TIME', abilities.chrono.cost);
+  const slotW = 75, gap = 7.5;
+  drawSkillSlot(ctx, state, x, y + h + 12, '1', 'CLOAK', abilities.cloak.cost);
+  drawSkillSlot(ctx, state, x + slotW + gap, y + h + 12, '2', 'PULSE', abilities.pulse.cost);
+  drawSkillSlot(ctx, state, x + (slotW + gap) * 2, y + h + 12, '3', 'CHRONO', abilities.chrono.cost);
 
   ctx.restore();
 }
@@ -266,8 +273,8 @@ export function renderHUD(ctx, state, delta) {
     pillY += PILL_H + PILL_GAP;
   }
 
-  // Battery & Skills — left of center, balanced with pills
-  drawBattery(ctx, state, cx - PILL_OFFSET_X - 195, 14);
+  // Battery & Skills — repositioned to bottom center for pro action-bar look
+  drawBattery(ctx, state, cx - 120, ctx.canvas.height - 85);
 
   ctx.restore();
 }

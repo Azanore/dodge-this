@@ -77,6 +77,8 @@ export function spawnObstacle(state, speedMultiplier = 1) {
     vy,
     radius: TYPE_RADIUS[type] ?? 10,
     lastNearMissAt: 0,
+    // Store intended speed to prevent permanent speed creep from Pulse/Ability force
+    speed,
     // POLISH: tracker spawn warning — pending:true delays tracker activation 500ms; remove pending logic in obstacles.js, renderer.js to revert
     pending: type === 'tracker' ? 2000 : 0
   });
@@ -101,18 +103,27 @@ export function updateObstacles(delta, state) {
       const dy = state.player.y - obs.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist > 0) {
+        // Slowmo and Chrono should also affect turn rate
         const turnRate = gameConfig.obstacleTypes.tracker.turnRatePerMs * delta * slowmo;
-        const speed = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
         // Blend current direction toward player direction — delta-scaled and slowmo-aware
-        const tx = (dx / dist) * speed;
-        const ty = (dy / dist) * speed;
+        const tx = (dx / dist) * obs.speed;
+        const ty = (dy / dist) * obs.speed;
         obs.vx += (tx - obs.vx) * turnRate;
         obs.vy += (ty - obs.vy) * turnRate;
-        // Renormalize to preserve speed
-        const newSpeed = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
-        obs.vx = (obs.vx / newSpeed) * speed;
-        obs.vy = (obs.vy / newSpeed) * speed;
+        // Renormalize to the stored intended speed to prevent speed creep from Pulse/force
+        const currentSpeed = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
+        if (currentSpeed > 0) {
+          obs.vx = (obs.vx / currentSpeed) * obs.speed;
+          obs.vy = (obs.vy / currentSpeed) * obs.speed;
+        }
       }
+    }
+
+    // Explicit clamp for outliers (sanity check)
+    const currentVel = Math.sqrt(obs.vx * obs.vx + obs.vy * obs.vy);
+    if (currentVel > 0.6) { // 0.6 is roughly 2x-3x normal speed
+       obs.vx = (obs.vx / currentVel) * 0.6;
+       obs.vy = (obs.vy / currentVel) * 0.6;
     }
 
     obs.x += obs.vx * delta * slowmo;
