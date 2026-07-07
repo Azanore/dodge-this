@@ -11,21 +11,21 @@ const arbElapsed = fc.integer({ min: 0, max: 600000 });
 const arbDifficulty = fc.constantFrom('easy', 'normal', 'hard');
 
 describe('difficulty — rebalanced curves (Longer Sessions)', () => {
-  it('easy preset has spawnRateDecayRate 0.035', () => {
-    expect(getPreset('easy').spawnRateDecayRate).toBe(0.035);
+  it('easy preset has spawnRateDecayRate 0.025', () => {
+    expect(getPreset('easy').spawnRateDecayRate).toBe(0.025);
   });
 
-  it('normal preset has spawnRateDecayRate 0.045', () => {
-    expect(getPreset('normal').spawnRateDecayRate).toBe(0.045);
+  it('normal preset has spawnRateDecayRate 0.035', () => {
+    expect(getPreset('normal').spawnRateDecayRate).toBe(0.035);
   });
 
-  it('hard preset has spawnRateDecayRate 0.06', () => {
-    expect(getPreset('hard').spawnRateDecayRate).toBe(0.06);
+  it('hard preset has spawnRateDecayRate 0.05', () => {
+    expect(getPreset('hard').spawnRateDecayRate).toBe(0.05);
   });
 
   it('normal interval at t=300s equals spawnRateMin (floor reached)', () => {
-    // base (1700) * exp(-0.045 * 300) = 1700 * exp(-13.5) = tiny, so floor
-    expect(getCurrentSpawnInterval(300000, 'normal')).toBe(600);
+    // base (1800) * exp(-0.035 * 300) = tiny, so floor at 650
+    expect(getCurrentSpawnInterval(300000, 'normal')).toBe(650);
   });
 });
 
