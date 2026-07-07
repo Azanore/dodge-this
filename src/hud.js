@@ -59,60 +59,82 @@ function drawBonusPill(ctx, type, effect, x, y) {
   ctx.restore();
 }
 
+// Draws a single ability slot. Charge fill shows progress toward cost.
+// No shadowBlur on text — shadow = unreadable blur at canvas scale.
 function drawSkillSlot(ctx, state, x, y, key, label, cost) {
-  const ready = state.battery >= cost;
+  const battery = state.battery;
+  const ready = battery >= cost;
   const now = performance.now();
-  const onCooldown = (now - state.lastAbilityUsedAt < 500);
+  const CD_MS = 500;
+  const onCooldown = (now - state.lastAbilityUsedAt) < CD_MS;
 
-  const baseColor = ready ? (onCooldown ? '#0088aa' : '#00eeff') : '#222';
-  const textColor = ready ? (onCooldown ? '#aaa' : '#fff') : '#444';
-  const w = 75, h = 42;
+  const w = 82, h = 48;
+
+  // Charge progress toward this ability's cost (0→1, capped at 1)
+  const chargeRatio = Math.min(1, battery / cost);
+
+  // Colors: ready = cyan, charging = dimmed cyan, cooldown = blue
+  const borderColor = ready
+    ? (onCooldown ? '#0088aa' : '#00eeff')
+    : chargeRatio > 0 ? '#005566' : '#1a1a1a';
+  const keyColor = ready ? (onCooldown ? '#55aacc' : '#00eeff') : '#444';
+  const labelColor = ready ? (onCooldown ? '#aaa' : '#ffffff') : '#555';
 
   ctx.save();
 
-  // Outer glow and border
-  if (ready && !onCooldown) {
-    ctx.shadowColor = baseColor;
-    ctx.shadowBlur = 12;
-  }
-  ctx.strokeStyle = baseColor;
-  ctx.lineWidth = 2;
+  // Border glow only when ready and not cooling down — no text shadow
+  ctx.shadowColor = (ready && !onCooldown) ? '#00eeff' : 'transparent';
+  ctx.shadowBlur = (ready && !onCooldown) ? 10 : 0;
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = ready ? 2 : 1;
   ctx.beginPath();
-  ctx.roundRect(x, y, w, h, 4);
+  ctx.roundRect(x, y, w, h, 5);
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  // Background fill
-  ctx.fillStyle = ready ? 'rgba(0, 238, 255, 0.1)' : 'rgba(0,0,0,0.4)';
+  // Background
+  ctx.fillStyle = ready ? 'rgba(0,238,255,0.07)' : 'rgba(0,0,0,0.5)';
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 5);
   ctx.fill();
 
-  // Cooldown overlay
-  if (onCooldown && ready) {
-    const cdRatio = (now - state.lastAbilityUsedAt) / 500;
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  // Charge fill bar — thin strip at bottom, shows progress toward unlock
+  if (!ready && chargeRatio > 0) {
+    ctx.fillStyle = 'rgba(0,200,220,0.25)';
     ctx.beginPath();
-    ctx.moveTo(x + w/2, y + h/2);
-    ctx.arc(x + w/2, y + h/2, w, -Math.PI/2, -Math.PI/2 + (1-cdRatio) * Math.PI * 2);
-    ctx.closePath();
+    ctx.roundRect(x, y + h - 4, w * chargeRatio, 4, 2);
     ctx.fill();
   }
 
-  // Key hint (Top left)
-  ctx.font = 'bold 12px monospace';
-  ctx.fillStyle = baseColor;
+  // Cooldown overlay — darkens slot, sweeps away as CD expires
+  if (onCooldown && ready) {
+    const cdProgress = (now - state.lastAbilityUsedAt) / CD_MS; // 0→1
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.beginPath();
+    ctx.roundRect(x, y, w * (1 - cdProgress), h, 5);
+    ctx.fill();
+  }
+
+  // Key number — top-left, no shadow
+  ctx.font = 'bold 14px monospace';
+  ctx.fillStyle = keyColor;
   ctx.textAlign = 'left';
-  ctx.fillText(key, x + 8, y + 16);
+  ctx.textBaseline = 'top';
+  ctx.fillText(key, x + 8, y + 8);
 
-  // Label (Center)
-  ctx.font = 'bold 13px monospace';
-  ctx.fillStyle = textColor;
+  // Ability name — center, no shadow; 11px to fit longer names in 82px slot
+  ctx.font = 'bold 11px monospace';
+  ctx.fillStyle = labelColor;
   ctx.textAlign = 'center';
-  ctx.fillText(label, x + w/2, y + 26);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x + w / 2, y + h / 2 + 4);
 
-  // Cost (Bottom right)
-  ctx.font = 'bold 10px monospace';
-  ctx.fillStyle = ready ? '#ffe600' : '#444';
+  // Cost badge — top-right; yellow when ready, dim otherwise
+  ctx.font = 'bold 11px monospace';
+  ctx.fillStyle = ready ? '#ffe600' : '#333';
   ctx.textAlign = 'right';
-  ctx.fillText(`${cost}KU`, x + w - 8, y + h - 8);
+  ctx.textBaseline = 'top';
+  ctx.fillText(`${cost}`, x + w - 7, y + 8);
 
   ctx.restore();
 }
@@ -123,19 +145,21 @@ function drawBattery(ctx, state, x, y) {
   const isOvercharged = state.battery >= cfg.max;
   const color = isOvercharged ? '#ffe600' : '#00eeff';
 
-  const w = 240, h = 16;
+  // Widen bar to match 3 slots (3×82 + 2×8 gap = 262)
+  const w = 262, h = 16;
 
   ctx.save();
-  // Label
+
+  // Label — no shadowBlur on text to keep it sharp
   ctx.font = 'bold 13px monospace';
   ctx.fillStyle = color;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 10;
-  ctx.fillText(`KINETIC ENERGY: ${Math.floor(state.battery)}%`, x, y - 10);
+  ctx.shadowColor = 'transparent';
+  ctx.fillText(`KINETIC ENERGY  ${Math.floor(state.battery)}%`, x, y - 10);
   if (isOvercharged) {
-    ctx.font = 'bold 11px monospace';
+    ctx.font = 'bold 12px monospace';
+    ctx.fillStyle = '#ffe600';
     ctx.textAlign = 'right';
     ctx.fillText('OVERCHARGED!', x + w, y - 10);
   }
@@ -146,7 +170,7 @@ function drawBattery(ctx, state, x, y) {
   ctx.roundRect(x, y, w, h, 3);
   ctx.fill();
 
-  // High-visibility fill
+  // Fill
   if (ratio > 0) {
     const grd = ctx.createLinearGradient(x, 0, x + w, 0);
     grd.addColorStop(0, color);
@@ -156,25 +180,57 @@ function drawBattery(ctx, state, x, y) {
     ctx.roundRect(x, y, w * ratio, h, 3);
     ctx.fill();
 
-    // Shine effect
-    ctx.globalAlpha = 0.4;
+    // Shine
+    ctx.globalAlpha = 0.35;
     ctx.fillStyle = '#fff';
     ctx.fillRect(x, y, w * ratio, h / 2.5);
+    ctx.globalAlpha = 1;
   }
 
   // Border
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 3);
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  // Skills row below battery
-  const abilities = gameConfig.battery.abilities;
-  const slotW = 75, gap = 7.5;
-  drawSkillSlot(ctx, state, x, y + h + 12, '1', 'CLOAK', abilities.cloak.cost);
-  drawSkillSlot(ctx, state, x + slotW + gap, y + h + 12, '2', 'PULSE', abilities.pulse.cost);
-  drawSkillSlot(ctx, state, x + (slotW + gap) * 2, y + h + 12, '3', 'CHRONO', abilities.chrono.cost);
+  // Threshold ticks — mark unlock points for each ability on the bar
+  const abilities = cfg.abilities;
+  const thresholds = [
+    { pct: abilities.cloak.cost, label: '1' },
+    { pct: abilities.pulse.cost, label: '2' },
+    { pct: abilities.chrono.cost, label: '3' },
+  ];
+  for (const t of thresholds) {
+    const tx = x + (t.pct / cfg.max) * w;
+    const unlocked = state.battery >= t.pct;
+    const tickColor = unlocked ? '#00eeff' : '#334';
+
+    // Tick line
+    ctx.strokeStyle = tickColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tx, y - 1);
+    ctx.lineTo(tx, y + h + 1);
+    ctx.stroke();
+
+    // Tick label below bar — no shadow
+    ctx.font = 'bold 10px monospace';
+    ctx.fillStyle = unlocked ? '#00eeff' : '#444';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(t.label, tx, y + h + 3);
+  }
+
+  // Ability slots — 3×82px + 8px gap = 262px total, aligns with bar
+  const slotW = 82, gap = 8;
+  const slotY = y + h + 22;
+  drawSkillSlot(ctx, state, x, slotY, '1', 'PHASE CLOAK', abilities.cloak.cost);
+  drawSkillSlot(ctx, state, x + slotW + gap, slotY, '2', 'KIN. PULSE', abilities.pulse.cost);
+  drawSkillSlot(ctx, state, x + (slotW + gap) * 2, slotY, '3', 'TEMPORAL SHIFT', abilities.chrono.cost);
 
   ctx.restore();
 }
@@ -273,8 +329,8 @@ export function renderHUD(ctx, state, delta) {
     pillY += PILL_H + PILL_GAP;
   }
 
-  // Battery & Skills — repositioned to bottom center for pro action-bar look
-  drawBattery(ctx, state, cx - 120, ctx.canvas.height - 85);
+  // Battery & Skills — bottom center; bar is 262px wide so anchor at cx - 131
+  drawBattery(ctx, state, cx - 131, ctx.canvas.height - 85);
 
   ctx.restore();
 }
