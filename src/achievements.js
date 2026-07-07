@@ -50,12 +50,6 @@ export const ACHIEVEMENTS = [
   { "key": "wealthy_6", "group": "wealthy", "name": "Wealthy VI", "description": "Accumulate 1000000 total points", "type": "milestone", "icon": "coins", "rarity": "rare", "threshold": 1000000, "color": "#00ff88", "ap": 50 },
   { "key": "wealthy_7", "group": "wealthy", "name": "Wealthy VII", "description": "Accumulate 5000000 total points", "type": "milestone", "icon": "coins", "rarity": "epic", "threshold": 5000000, "color": "#cc44ff", "ap": 100 },
   { "key": "wealthy_8", "group": "wealthy", "name": "Wealthy VIII", "description": "Accumulate 10000000 total points", "type": "milestone", "icon": "coins", "rarity": "legendary", "threshold": 10000000, "color": "#ffe600", "ap": 250 },
-  { "key": "high_score_1", "group": "high_score", "name": "High Score I", "description": "Reach 100 points in one run", "type": "milestone", "icon": "trophy", "rarity": "common", "threshold": 100, "color": "#ffffff", "ap": 10 },
-  { "key": "high_score_2", "group": "high_score", "name": "High Score II", "description": "Reach 500 points in one run", "type": "milestone", "icon": "trophy", "rarity": "uncommon", "threshold": 500, "color": "#00eeff", "ap": 25 },
-  { "key": "high_score_3", "group": "high_score", "name": "High Score III", "description": "Reach 1000 points in one run", "type": "milestone", "icon": "trophy", "rarity": "rare", "threshold": 1000, "color": "#00ff88", "ap": 50 },
-  { "key": "high_score_4", "group": "high_score", "name": "High Score IV", "description": "Reach 2500 points in one run", "type": "milestone", "icon": "trophy", "rarity": "rare", "threshold": 2500, "color": "#00ff88", "ap": 50 },
-  { "key": "high_score_5", "group": "high_score", "name": "High Score V", "description": "Reach 5000 points in one run", "type": "milestone", "icon": "trophy", "rarity": "epic", "threshold": 5000, "color": "#cc44ff", "ap": 100 },
-  { "key": "high_score_6", "group": "high_score", "name": "High Score VI", "description": "Reach 10000 points in one run", "type": "milestone", "icon": "trophy", "rarity": "legendary", "threshold": 10000, "color": "#ffe600", "ap": 250 },
   { "key": "first_blood", "group": "single", "name": "First Blood", "description": "Play your first game", "type": "single_run", "icon": "droplets", "rarity": "common", "color": "#ffffff", "ap": 10 },
   { "key": "minuteman", "group": "single", "name": "Minuteman", "description": "Survive 60s in one run", "type": "single_run", "icon": "zap", "rarity": "uncommon", "color": "#00eeff", "ap": 25 },
   { "key": "untouchable", "group": "single", "name": "Untouchable", "description": "Survive 30s with 0 near misses", "type": "single_run", "icon": "shield-check", "rarity": "rare", "color": "#00ff88", "ap": 50 },
@@ -71,7 +65,7 @@ export const ACHIEVEMENTS = [
   { "key": "tiny_but_mighty", "group": "single", "name": "Tiny but Mighty", "description": "Collect 3 shrink bonuses in one run", "type": "single_run", "icon": "minimize-2", "rarity": "rare", "color": "#00ff88", "ap": 50 },
   { "key": "jack_of_all_trades", "group": "single", "name": "Jack of All Trades", "description": "Collect all 4 bonus types in one run", "type": "single_run", "icon": "layers", "rarity": "epic", "color": "#cc44ff", "ap": 100 },
   { "key": "near_death", "group": "single", "name": "Near-Death Experience", "description": "Die with 1000+ score pending", "type": "single_run", "icon": "skull-2", "rarity": "rare", "secret": true, "color": "#00ff88", "ap": 50 },
-    {'key': 'early_departure', 'group': 'single', 'name': 'Early Departure', 'description': 'Die within 10 seconds', 'type': 'single_run', 'icon': 'door-open', 'rarity': 'common', 'secret': true, 'color': "#ffffff", 'ap': 10 },
+  { 'key': 'early_departure', 'group': 'single', 'name': 'Early Departure', 'description': 'Die within 10 seconds', 'type': 'single_run', 'icon': 'door-open', 'rarity': 'common', 'secret': true, 'color': "#ffffff", 'ap': 10 },
   { "key": "battery_powered", "group": "single", "name": "Battery Powered", "description": "Use 10 abilities in one run", "type": "single_run", "icon": "zap", "rarity": "uncommon", "color": "#00eeff", "ap": 25 },
   { "key": "overcharged", "group": "single", "name": "Overcharged", "description": "Stay at 100% battery for 30s", "type": "single_run", "icon": "battery-charging", "rarity": "rare", "color": "#ffe600", "ap": 50 },
   { "key": "skill_issue", "group": "single", "name": "Skill Issue", "description": "Use all 3 abilities in 5 seconds", "type": "single_run", "icon": "swords", "rarity": "epic", "color": "#cc44ff", "ap": 100 }
@@ -192,21 +186,12 @@ export function checkMidRunAchievements(state, runStats, unlockedSet) {
   if (state.difficulty === 'hard' && state.elapsed >= 30000) candidates.push('hard_debut');
   if (state.elapsed >= 45000 && bonusesCollected === 0) candidates.push('pacifist');
 
-  // High Score milestones mid-run
-  const score = Math.floor(state.score);
-  if (score >= 100) candidates.push('high_score_1');
-  if (score >= 500) candidates.push('high_score_2');
-  if (score >= 1000) candidates.push('high_score_3');
-  if (score >= 2500) candidates.push('high_score_4');
-  if (score >= 5000) candidates.push('high_score_5');
-  if (score >= 10000) candidates.push('high_score_6');
-
   if (maxSingleCombo >= 500) candidates.push('combo_king');
 
   // Matrix: 10 near misses in 5 seconds of IN-GAME time
   if (nearMisses > _nearMissTimes.length) {
     for (let i = 0; i < nearMisses - _nearMissTimes.length; i++) {
-        _nearMissTimes.push(state.elapsed);
+      _nearMissTimes.push(state.elapsed);
     }
   }
   const recentNearMisses = _nearMissTimes.filter(t => state.elapsed - t <= 5000).length;
@@ -250,7 +235,6 @@ function _statForGroup(group, stats, runStats = null) {
   if (group === 'ghost') return stats.totalNearMisses ?? 0;
   if (group === 'hard_boiled') return stats.hardRunsCount ?? 0;
   if (group === 'wealthy') return stats.totalScore ?? 0;
-  if (group === 'high_score') return runStats ? runStats.score : 0;
   return 0;
 }
 
@@ -288,18 +272,18 @@ export function renderAchievementsOverlay(unlockedSet, stats, seenSet = new Set(
     let desc = ach.description;
 
     if (!unlocked && ach.secret) {
-        icon = 'help-circle';
-        name = '???';
-        desc = 'Secret achievement';
+      icon = 'help-circle';
+      name = '???';
+      desc = 'Secret achievement';
     }
 
     let progressHtml = '';
     if (ach.type === 'milestone') {
-        const current = stats ? _statForGroup(ach.group, stats) : 0;
-        const percent = Math.min(100, (current / ach.threshold) * 100);
-        const curStr = _formatStat(ach.group, current);
-        const thrStr = _formatStat(ach.group, ach.threshold);
-        progressHtml = `
+      const current = stats ? _statForGroup(ach.group, stats) : 0;
+      const percent = Math.min(100, (current / ach.threshold) * 100);
+      const curStr = _formatStat(ach.group, current);
+      const thrStr = _formatStat(ach.group, ach.threshold);
+      progressHtml = `
             <div class="ach-progress-container">
                 <div class="ach-progress-bar" style="width: ${percent}%; background-color: ${ach.color}"></div>
             </div>

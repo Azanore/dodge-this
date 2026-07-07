@@ -427,7 +427,6 @@ function expectedMilestoneKeys(totalRuns, totalElapsedMs, totalBonuses, totalNea
   [25, 100, 300, 750, 2000, 5000, 10000].forEach((t, i) => { if (totalNearMisses >= t) keys.push(`ghost_${i + 1}`); });
   [5, 15, 30, 50, 100, 250].forEach((t, i) => { if (hardRunsCount >= t) keys.push(`hard_boiled_${i + 1}`); });
   [1000, 5000, 25000, 100000, 500000, 1000000, 5000000, 10000000].forEach((t, i) => { if (totalScore >= t) keys.push(`wealthy_${i + 1}`); });
-  [100, 500, 1000, 2500, 5000, 10000].forEach((t, i) => { if (currentScore >= t) keys.push(`high_score_${i + 1}`); });
   return new Set(keys);
 }
 

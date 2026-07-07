@@ -204,7 +204,6 @@ export async function evaluateAchievements(state) {
       else if (ach.group === 'ghost') val = stats.totalNearMisses;
       else if (ach.group === 'hard_boiled') val = stats.hardRunsCount;
       else if (ach.group === 'wealthy') val = stats.totalScore;
-      else if (ach.group === 'high_score') val = Math.round(state.score);
 
       if (val >= ach.threshold) earned.push(ach.key);
     }
