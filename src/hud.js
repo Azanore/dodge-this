@@ -134,8 +134,7 @@ function drawSkillSlot(ctx, state, x, y, key, label, cost) {
 function drawBattery(ctx, state, x, y) {
   const cfg = gameConfig.battery;
   const ratio = state.battery / cfg.max;
-  const isOvercharged = state.battery >= cfg.max;
-  const color = isOvercharged ? '#ffe600' : '#00eeff';
+  const color = state.battery >= cfg.max ? '#ffe600' : '#00eeff';
 
   // Widen bar to match 3 slots (3×82 + 2×8 gap = 262)
   const w = 262, h = 16;
@@ -149,12 +148,6 @@ function drawBattery(ctx, state, x, y) {
   ctx.textBaseline = 'bottom';
   ctx.shadowColor = 'transparent';
   ctx.fillText(`KINETIC ENERGY  ${Math.floor(state.battery)}%`, x, y - 10);
-  if (isOvercharged) {
-    ctx.font = 'bold 12px monospace';
-    ctx.fillStyle = '#ffe600';
-    ctx.textAlign = 'right';
-    ctx.fillText('OVERCHARGED!', x + w, y - 10);
-  }
 
   // Meter background
   ctx.fillStyle = 'rgba(0,0,0,0.8)';
@@ -311,6 +304,15 @@ export function renderHUD(ctx, state, delta) {
   ctx.shadowBlur = 0;
   ctx.textAlign = 'center';
   ctx.fillText(`${(state.elapsed / 1000).toFixed(1)}s`, cx, 66);
+
+  // Overcharge indicator — shown top-center when battery is full, where the player already looks
+  if (state.battery >= gameConfig.battery.max) {
+    ctx.font = 'bold 11px monospace';
+    ctx.fillStyle = '#ffe600';
+    ctx.shadowBlur = 0;
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ OVERCHARGE  +SCORE', cx, 82);
+  }
 
   // Bonus pills — right of center, stacking downward, top-aligned with score
   const pillX = cx + PILL_OFFSET_X;
