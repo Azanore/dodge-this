@@ -94,16 +94,17 @@ export function gameUpdate(delta, state, accumulators, onAchievement) {
   let multiplierBonus = 0;
   if (state.battery >= batCfg.max) multiplierBonus = batCfg.overchargeMultiplierBonus;
 
-  state.score += baseTick * (1 + multiplierBonus / state.comboMultiplier); // always ticks, balanced for overcharge
+  // Base score ticks every frame — guaranteed, never at risk
+  state.score += baseTick;
 
-  if (state.comboMultiplier + multiplierBonus > 1.0) {
-    // Only the bonus delta accumulates as pending
-    state.pendingScore += baseTick * (state.comboMultiplier + multiplierBonus - 1);
+  // Everything above x1 (combo + overcharge) is pending — at risk, banked as lump sum
+  const bonusMultiplier = state.comboMultiplier + multiplierBonus;
+  if (bonusMultiplier > 1.0) {
+    state.pendingScore += baseTick * (bonusMultiplier - 1);
   } else if (state.pendingScore > 0) {
     const banked = state.pendingScore;
     state.score += banked;
     state.pendingScore = 0;
-    // Float at last known zone position, or player position if zone gone
     const floatX = state.scoreZone?.x ?? state.player.x;
     const floatY = state.scoreZone?.y ?? state.player.y;
     triggerScoreFloat(banked, floatX, floatY);

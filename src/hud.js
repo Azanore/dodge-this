@@ -305,15 +305,6 @@ export function renderHUD(ctx, state, delta) {
   ctx.textAlign = 'center';
   ctx.fillText(`${(state.elapsed / 1000).toFixed(1)}s`, cx, 66);
 
-  // Overcharge indicator — shown top-center when battery is full, where the player already looks
-  if (state.battery >= gameConfig.battery.max) {
-    ctx.font = 'bold 11px monospace';
-    ctx.fillStyle = '#ffe600';
-    ctx.shadowBlur = 0;
-    ctx.textAlign = 'center';
-    ctx.fillText('⚡ OVERCHARGE  +SCORE', cx, 82);
-  }
-
   // Bonus pills — right of center, stacking downward, top-aligned with score
   const pillX = cx + PILL_OFFSET_X;
   let pillY = 14;
