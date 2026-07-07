@@ -60,6 +60,7 @@ function update(delta) {
       const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
       localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([...new Set([...cached, ...keys])]));
       state._unlockedAchievements = new Set([...state._unlockedAchievements, ...keys]);
+      syncAchBadge();
     }
   });
   if (result === 'dead') {
@@ -83,6 +84,7 @@ function update(delta) {
       if (newKeys.length) {
         const cached = JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]');
         localStorage.setItem(ACH_CACHE_KEY, JSON.stringify([...new Set([...cached, ...newKeys])]));
+        syncAchBadge();
       }
       // Invalidate stats cache — run was just inserted, cache is stale
       localStorage.removeItem(STATS_CACHE_KEY);
@@ -173,6 +175,20 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
   });
 });
 
+
+// Updates the achievements button badge — shows unseen unlock count, hides if none
+function syncAchBadge() {
+  const badge = document.getElementById('ach-badge');
+  const unlocked = new Set(JSON.parse(localStorage.getItem(ACH_CACHE_KEY) ?? '[]'));
+  const seen = new Set(JSON.parse(localStorage.getItem(SEEN_ACH_KEY) ?? '[]'));
+  const count = [...unlocked].filter(k => !seen.has(k)).length;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
 
 // Returns true if any modal overlay is currently open
 function isAnyModalOpen() {
@@ -441,7 +457,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
     usernameBtn.style.display = 'inline';
     signoutSep.style.display = 'inline';
     signoutBtn.style.display = 'inline';
-    refreshUnlockedCache();
+    refreshUnlockedCache().then(syncAchBadge);
     // Fetch profiles.username outside the callback to avoid Supabase client re-entrancy
     fetchDisplayName(session.user);
   } else {
@@ -583,6 +599,7 @@ document.getElementById('achievements-btn').addEventListener('click', async () =
 
     // Mark all currently unlocked as seen after viewing the panel
     localStorage.setItem(SEEN_ACH_KEY, JSON.stringify([...new Set([...seen, ...keys])]));
+    syncAchBadge();
   } catch (_) {
     // cache render stays — no error shown
   }

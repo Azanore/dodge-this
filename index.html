@@ -221,6 +221,25 @@
       100% { box-shadow: 0 0 5px rgba(0,238,255,0.1); }
     }
 
+    #ach-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #ff4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 6px rgba(255,68,68,0.6);
+      pointer-events: none;
+    }
+
     .ach-new-badge {
         position: absolute;
         top: -8px;
@@ -316,7 +335,7 @@
       <div class="overlay-label" style="margin-bottom:16px">or press Space</div>
       <button id="leaderboard-btn" class="overlay-btn overlay-secondary-btn">Leaderboard</button>
       <button id="stats-btn" class="overlay-btn overlay-secondary-btn" style="visibility:hidden">Stats</button>
-      <button id="achievements-btn" class="overlay-btn overlay-secondary-btn" style="visibility:hidden">Achievements</button>
+      <button id="achievements-btn" class="overlay-btn overlay-secondary-btn" style="visibility:hidden;position:relative">Achievements<span id="ach-badge" style="display:none"></span></button>
       <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
         <button id="auth-btn" class="auth-link">Sign in with Google</button>
         <button id="username-btn" class="auth-link" style="display:none"></button>
