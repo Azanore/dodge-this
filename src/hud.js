@@ -70,7 +70,7 @@ function drawSkillSlot(ctx, state, x, y, key, label, cost) {
 
   const w = 82, h = 48;
 
-  // Charge progress toward this ability's cost (0→1, capped at 1)
+  // Charge progress toward this ability's cost — used for border color only
   const chargeRatio = Math.min(1, battery / cost);
 
   // Colors: ready = cyan, charging = dimmed cyan, cooldown = blue
@@ -97,14 +97,6 @@ function drawSkillSlot(ctx, state, x, y, key, label, cost) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 5);
   ctx.fill();
-
-  // Charge fill bar — thin strip at bottom, shows progress toward unlock
-  if (!ready && chargeRatio > 0) {
-    ctx.fillStyle = 'rgba(0,200,220,0.25)';
-    ctx.beginPath();
-    ctx.roundRect(x, y + h - 4, w * chargeRatio, 4, 2);
-    ctx.fill();
-  }
 
   // Cooldown overlay — darkens slot, sweeps away as CD expires
   if (onCooldown && ready) {
@@ -329,8 +321,8 @@ export function renderHUD(ctx, state, delta) {
     pillY += PILL_H + PILL_GAP;
   }
 
-  // Battery & Skills — bottom center; bar is 262px wide so anchor at cx - 131
-  drawBattery(ctx, state, cx - 131, ctx.canvas.height - 85);
+  // Battery & Skills — 18px bottom margin: slots(48) + slotGap(22) + bar(16) + label(~10) + margin(18) = 114 → anchor at height - 104
+  drawBattery(ctx, state, cx - 131, ctx.canvas.height - 104);
 
   ctx.restore();
 }
