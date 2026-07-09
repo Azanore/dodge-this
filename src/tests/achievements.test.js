@@ -2,9 +2,9 @@
 // Related: achievements.js, stats.js, main.js
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fc from 'fast-check';
-import { ACHIEVEMENTS, renderAchievementsOverlay, queueToasts, clearToastQueue } from './achievements.js';
+import { ACHIEVEMENTS, renderAchievementsOverlay, queueToasts, clearToastQueue } from '../ui/achievements.js';
 
-vi.mock('./supabase.js', () => ({
+vi.mock('../services/supabase.js', () => ({
   supabase: {
     auth: { getUser: vi.fn() },
     from: vi.fn()
@@ -187,8 +187,8 @@ describe('unit tests', () => {
 
 // ─── Stats Integration Tests (supabase-dependent) ─────────────────────────────
 
-import { supabase } from './supabase.js';
-import { fetchUnlockedAchievements, evaluateAchievements } from './stats.js';
+import { supabase } from '../services/supabase.js';
+import { fetchUnlockedAchievements, evaluateAchievements } from '../services/stats.js';
 
 describe('stats integration', () => {
   beforeEach(() => {

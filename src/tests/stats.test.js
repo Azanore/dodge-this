@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as fc from 'fast-check';
 
-vi.mock('./supabase.js', () => {
+vi.mock('../services/supabase.js', () => {
   const supabase = {
     auth: { getUser: vi.fn() },
     from: vi.fn()
@@ -13,8 +13,8 @@ vi.mock('./supabase.js', () => {
   return { supabase };
 });
 
-import { supabase } from './supabase.js';
-import { ACHIEVEMENTS } from './achievements.js';
+import { supabase } from '../services/supabase.js';
+import { ACHIEVEMENTS } from '../ui/achievements.js';
 import {
   resetRunStats,
   onNearMiss,
@@ -24,7 +24,7 @@ import {
   insertRun,
   fetchAllTimeStats,
   evaluateAchievements
-} from './stats.js';
+} from '../services/stats.js';
 
 // Expose internal counter values for testing via re-import trick — we read them
 // indirectly by calling the functions and checking side effects through insertRun payload.
@@ -108,7 +108,7 @@ describe('property tests', () => {
           resetRunStats();
           for (const m of multipliers) onComboUpdate(m);
           // maxCombo is tracked internally but no longer in the insert payload — verify via getRunStats
-          const { maxCombo } = (await import('./stats.js')).getRunStats();
+          const { maxCombo } = (await import('../services/stats.js')).getRunStats();
           expect(maxCombo).toBeCloseTo(Math.max(...multipliers), 5);
         }
       ),

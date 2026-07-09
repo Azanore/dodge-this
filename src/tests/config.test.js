@@ -4,7 +4,7 @@
 
 import { describe, it } from 'vitest';
 import * as fc from 'fast-check';
-import { validateConfig, DEFAULTS } from './config.js';
+import { validateConfig, DEFAULTS } from '../core/config.js';
 
 // Top-level scalar keys that validateConfig actually checks
 const TOP_KEYS = ['gracePeriod', 'playerHitboxRadius', 'outerZoneScale'];

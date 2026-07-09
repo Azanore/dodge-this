@@ -2,9 +2,9 @@
 // Related: gameUpdate.js, GameState.js, game.config.js, zones.js
 // Does not handle rendering or scoring — pure state mutation only.
 
-import { innerZone } from './zones.js';
-import { playZoneAppear } from './audio.js'; // AUDIO
-import { onKUEarned } from './stats.js';
+import { innerZone } from '../entities/zones.js';
+import { playZoneAppear } from '../services/audio.js'; // AUDIO
+import { onKUEarned } from '../services/stats.js';
 
 // Picks a random spawn position inside the inner zone, padded by zone radius
 function randomZoneSpawn() {

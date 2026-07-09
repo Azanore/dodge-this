@@ -4,8 +4,8 @@
 
 import { describe, it, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { spawnObstacle, updateObstacles, clearAll } from './obstacles.js';
-import { innerZone, outerZone, recomputeZones } from './zones.js';
+import { spawnObstacle, updateObstacles, clearAll } from '../entities/obstacles.js';
+import { innerZone, outerZone, recomputeZones } from '../entities/zones.js';
 
 function makeState() {
   return {

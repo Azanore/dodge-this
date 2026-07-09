@@ -2,9 +2,9 @@
 // Related: zones.js (innerZone, outerZone), player.js (getHitbox), bonuses.js (BONUS_COLORS), hud.js (renderHUD)
 // Does not contain game logic — pure visual output from state.
 
-import { innerZone, outerZone } from './zones.js';
+import { innerZone, outerZone } from '../entities/zones.js';
 import { renderHUD } from './hud.js';
-import { playNearMiss } from './audio.js'; // AUDIO
+import { playNearMiss } from '../services/audio.js'; // AUDIO
 
 // Star field — generated once at init, rendered every frame
 const STAR_COUNT = 120;

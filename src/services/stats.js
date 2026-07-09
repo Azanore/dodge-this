@@ -3,7 +3,7 @@
 // Does not mutate GameState — counters are ephemeral module-level variables.
 
 import { supabase } from './supabase.js';
-import { ACHIEVEMENTS, getFiredMidRunKeys } from './achievements.js';
+import { ACHIEVEMENTS, getFiredMidRunKeys } from '../ui/achievements.js';
 
 let nearMisses = 0;
 let bonusesCollected = 0;

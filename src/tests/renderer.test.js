@@ -4,7 +4,7 @@
 
 import { describe, it, beforeEach, vi, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { triggerNearMiss, nearMissText, BONUS_COLORS } from './renderer.js';
+import { triggerNearMiss, nearMissText, BONUS_COLORS } from '../ui/renderer.js';
 
 describe('renderer near-miss text state', () => {
   beforeEach(() => {

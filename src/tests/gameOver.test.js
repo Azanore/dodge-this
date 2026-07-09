@@ -4,7 +4,7 @@
 
 import { describe, it, beforeEach, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { showGameOver, cleanup } from './gameOver.js';
+import { showGameOver, cleanup } from '../ui/gameOver.js';
 
 // Minimal DOM setup required by gameOver.js
 function setupDOM() {

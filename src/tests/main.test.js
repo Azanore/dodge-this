@@ -3,7 +3,7 @@
 // Tests the update guard logic, start screen state transitions, and pause behavior.
 import { describe, it, beforeEach, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { resetState } from './GameState.js';
+import { resetState } from '../core/GameState.js';
 
 // Simulates the update guard from main.js — returns true if update was skipped
 function updateGuard(state) {

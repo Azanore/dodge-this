@@ -3,56 +3,56 @@
 // Covers the fixed double-count bug and all pending/overcharge edge cases.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { gameUpdate } from './gameUpdate.js';
+import { gameUpdate } from '../core/gameUpdate.js';
 
 // --- Mocks ---
 // gameUpdate imports several modules with side effects — mock them all
-vi.mock('./player.js', () => ({ update: vi.fn() }));
-vi.mock('./obstacles.js', () => ({
+vi.mock('../entities/player.js', () => ({ update: vi.fn() }));
+vi.mock('../entities/obstacles.js', () => ({
   spawnObstacle: vi.fn(),
   updateObstacles: vi.fn(),
   clearAll: vi.fn()
 }));
-vi.mock('./bonuses.js', () => ({
+vi.mock('../entities/bonuses.js', () => ({
   trySpawnBonus: vi.fn(),
   updateEffects: vi.fn(),
   collectBonus: vi.fn()
 }));
-vi.mock('./collision.js', () => ({
+vi.mock('../core/collision.js', () => ({
   checkPlayerObstacles: vi.fn(),
   checkPlayerBonusPickups: vi.fn(),
   checkNearMisses: vi.fn()
 }));
-vi.mock('./renderer.js', () => ({
+vi.mock('../ui/renderer.js', () => ({
   triggerNearMiss: vi.fn(),
   triggerScoreFloat: vi.fn()
 }));
-vi.mock('./stats.js', () => ({
+vi.mock('../services/stats.js', () => ({
   onNearMiss: vi.fn(),
   onComboBank: vi.fn(),
   getRunStats: vi.fn(() => ({})),
   onAbilityUsed: vi.fn(),
   onKUEarned: vi.fn()
 }));
-vi.mock('./achievements.js', () => ({ checkMidRunAchievements: vi.fn(() => []) }));
-vi.mock('./difficulty.js', () => ({
+vi.mock('../ui/achievements.js', () => ({ checkMidRunAchievements: vi.fn(() => []) }));
+vi.mock('../core/difficulty.js', () => ({
   getCurrentSpeedMultiplier: vi.fn(() => 1),
   getCurrentSpawnInterval: vi.fn(() => 99999) // never spawn in tests
 }));
-vi.mock('./combo.js', () => ({ updateScoreZone: vi.fn() }));
-vi.mock('./hud.js', () => ({ triggerScoreBump: vi.fn() }));
-vi.mock('./audio.js', () => ({
+vi.mock('../systems/combo.js', () => ({ updateScoreZone: vi.fn() }));
+vi.mock('../ui/hud.js', () => ({ triggerScoreBump: vi.fn() }));
+vi.mock('../services/audio.js', () => ({
   playDeath: vi.fn(),
   playMultiplierMax: vi.fn(),
   playPickup: vi.fn()
 }));
-vi.mock('./zones.js', () => ({
+vi.mock('../entities/zones.js', () => ({
   innerZone: { x: 0, y: 0, width: 1600, height: 900 }
 }));
 
-import { triggerScoreFloat } from './renderer.js';
-import { onComboBank } from './stats.js';
-import { triggerScoreBump } from './hud.js';
+import { triggerScoreFloat } from '../ui/renderer.js';
+import { onComboBank } from '../services/stats.js';
+import { triggerScoreBump } from '../ui/hud.js';
 
 // --- Helpers ---
 

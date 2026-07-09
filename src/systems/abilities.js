@@ -2,7 +2,7 @@
 // Related: gameUpdate.js, GameState.js, renderer.js, collision.js, obstacles.js
 // Modular registry — adding a new ability requires adding an entry here.
 
-import { innerZone } from './zones.js';
+import { innerZone } from '../entities/zones.js';
 
 export const ABILITIES = {
   cloak: {

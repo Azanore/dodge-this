@@ -15,7 +15,7 @@ const PILL_GAP = 6;
 const PILL_RADIUS = 4;
 const PILL_OFFSET_X = 90;  // distance right of center
 
-import { playScoreBank } from './audio.js'; // AUDIO
+import { playScoreBank } from '../services/audio.js'; // AUDIO
 import { BONUS_COLORS } from './renderer.js';
 
 // Score bump animation — longer, bolder, color flash on bank

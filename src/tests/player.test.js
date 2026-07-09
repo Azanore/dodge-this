@@ -2,9 +2,9 @@
 // Related: player.js, zones.js, GameState.js
 import { describe, it, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { recomputeZones, innerZone } from './zones.js';
-import { update } from './player.js';
-import { resetState } from './GameState.js';
+import { recomputeZones, innerZone } from '../entities/zones.js';
+import { update } from '../entities/player.js';
+import { resetState } from '../core/GameState.js';
 
 // Ensure zones are computed before tests run
 recomputeZones();

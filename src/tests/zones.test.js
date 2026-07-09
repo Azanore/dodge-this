@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { recomputeZones, innerZone, outerZone, clampToInner, CANVAS_W, CANVAS_H } from '../src/zones.js';
+import { recomputeZones, innerZone, outerZone, clampToInner, CANVAS_W, CANVAS_H } from '../entities/zones.js';
 
 // Reads back zone values after calling recomputeZones()
 function getZones() {

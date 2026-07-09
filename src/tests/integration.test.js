@@ -6,12 +6,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Supabase uses a CDN https: import that Node's ESM loader rejects — mock it out.
 // The integration tests don't exercise auth or DB paths, so a minimal stub is sufficient.
-vi.mock('./supabase.js', () => ({
+vi.mock('../services/supabase.js', () => ({
   supabase: { auth: { getUser: vi.fn() }, from: vi.fn(), rpc: vi.fn() }
 }));
-import { resetState } from './GameState.js';
-import { gameUpdate, BONUS_SPAWN_INTERVAL } from './gameUpdate.js';
-import { recomputeZones, innerZone } from './zones.js';
+import { resetState } from '../core/GameState.js';
+import { gameUpdate, BONUS_SPAWN_INTERVAL } from '../core/gameUpdate.js';
+import { recomputeZones, innerZone } from '../entities/zones.js';
 
 recomputeZones();
 

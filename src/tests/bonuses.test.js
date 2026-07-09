@@ -5,13 +5,13 @@
 import { describe, it, beforeEach, vi } from 'vitest';
 import * as fc from 'fast-check';
 
-vi.mock('./supabase.js', () => ({
+vi.mock('../services/supabase.js', () => ({
   supabase: { auth: { getUser: vi.fn() }, from: vi.fn() }
 }));
 
-import { collectBonus, updateEffects, trySpawnBonus } from './bonuses.js';
-import { checkPlayerBonusPickups } from './collision.js';
-import { recomputeZones } from './zones.js';
+import { collectBonus, updateEffects, trySpawnBonus } from '../entities/bonuses.js';
+import { checkPlayerBonusPickups } from '../core/collision.js';
+import { recomputeZones } from '../entities/zones.js';
 
 function makeState(overrides = {}) {
   return {

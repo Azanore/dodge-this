@@ -4,7 +4,7 @@
 
 import { describe, it } from 'vitest';
 import * as fc from 'fast-check';
-import { getCurrentSpeedMultiplier, getCurrentSpawnInterval, getPreset } from './difficulty.js';
+import { getCurrentSpeedMultiplier, getCurrentSpawnInterval, getPreset } from '../core/difficulty.js';
 
 // Arbitrary: elapsed time from 0 to 10 minutes in ms
 const arbElapsed = fc.integer({ min: 0, max: 600000 });

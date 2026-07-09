@@ -4,10 +4,10 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fc from 'fast-check';
-import { updateScoreZone } from './combo.js';
-import { innerZone } from './zones.js';
+import { updateScoreZone } from '../systems/combo.js';
+import { innerZone } from '../entities/zones.js';
 
-vi.mock('./stats.js', () => ({
+vi.mock('../services/stats.js', () => ({
   onKUEarned: vi.fn()
 }));
 

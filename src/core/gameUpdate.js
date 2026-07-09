@@ -2,19 +2,19 @@
 // Related: main.js (wires this), GameState.js, player.js, obstacles.js, bonuses.js, collision.js, difficulty.js
 // Does not start/stop the loop or render anything.
 
-import { update as updatePlayer } from './player.js';
-import { spawnObstacle, updateObstacles, clearAll } from './obstacles.js';
-import { trySpawnBonus, updateEffects, collectBonus } from './bonuses.js';
+import { update as updatePlayer } from '../entities/player.js';
+import { spawnObstacle, updateObstacles, clearAll } from '../entities/obstacles.js';
+import { trySpawnBonus, updateEffects, collectBonus } from '../entities/bonuses.js';
 import { checkPlayerObstacles, checkPlayerBonusPickups, checkNearMisses } from './collision.js';
-import { triggerNearMiss, triggerScoreFloat } from './renderer.js';
-import { onNearMiss, onComboBank, getRunStats, onAbilityUsed, onKUEarned } from './stats.js';
-import { checkMidRunAchievements } from './achievements.js';
+import { triggerNearMiss, triggerScoreFloat } from '../ui/renderer.js';
+import { onNearMiss, onComboBank, getRunStats, onAbilityUsed, onKUEarned } from '../services/stats.js';
+import { checkMidRunAchievements } from '../ui/achievements.js';
 import { getCurrentSpeedMultiplier, getCurrentSpawnInterval } from './difficulty.js';
-import { updateScoreZone } from './combo.js';
-import { triggerScoreBump } from './hud.js';
-import { ABILITIES } from './abilities.js';
+import { updateScoreZone } from '../systems/combo.js';
+import { triggerScoreBump } from '../ui/hud.js';
+import { ABILITIES } from '../systems/abilities.js';
 
-import { playDeath, playMultiplierMax, playPickup } from './audio.js'; // AUDIO
+import { playDeath, playMultiplierMax, playPickup } from '../services/audio.js'; // AUDIO
 
 // ms between bonus spawn attempts
 export const BONUS_SPAWN_INTERVAL = 8000;

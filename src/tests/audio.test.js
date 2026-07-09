@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as audio from './audio.js';
+import * as audio from '../services/audio.js';
 
 // Mock Web Audio API
 class MockAudioContext {

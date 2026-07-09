@@ -2,7 +2,7 @@
 // Related: player.js, obstacles.js, bonuses.js, GameState.js
 // Does not handle rendering or state transitions beyond setting status/removing pickups.
 
-import { onKUEarned } from './stats.js';
+import { onKUEarned } from '../services/stats.js';
 
 // Returns true iff the Euclidean distance between circle centers is less than the sum of their radii
 export function circlesOverlap(a, b) {

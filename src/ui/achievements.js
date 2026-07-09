@@ -2,7 +2,7 @@
 // Related: stats.js (post-run evaluation), main.js (wiring), gameUpdate.js (mid-run hooks)
 // Does not handle DB operations — evaluation and fetch live in stats.js.
 
-import { playAchievement } from './audio.js';
+import { playAchievement } from '../services/audio.js';
 
 export const ACHIEVEMENTS = [
   { "key": "veteran_1", "group": "veteran", "name": "Veteran I", "description": "Play 1 games", "type": "milestone", "icon": "gamepad-2", "rarity": "common", "threshold": 1, "color": "#ffffff", "ap": 10 },

@@ -4,9 +4,9 @@
 
 import { innerZone } from './zones.js';
 import { clearAll } from './obstacles.js';
-import { triggerBonusFlash, BONUS_COLORS } from './renderer.js';
-import { playPickup } from './audio.js'; // AUDIO
-import { onBonusCollected } from './stats.js';
+import { triggerBonusFlash, BONUS_COLORS } from '../ui/renderer.js';
+import { playPickup } from '../services/audio.js'; // AUDIO
+import { onBonusCollected } from '../services/stats.js';
 
 // Fixed hitbox radius for all bonus pickups
 const PICKUP_RADIUS = 12;

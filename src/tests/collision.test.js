@@ -4,9 +4,9 @@
 
 import { describe, it, beforeEach, afterEach, vi } from 'vitest';
 import * as fc from 'fast-check';
-import { circlesOverlap, checkNearMisses } from './collision.js';
+import { circlesOverlap, checkNearMisses } from '../core/collision.js';
 
-vi.mock('./stats.js', () => ({
+vi.mock('../services/stats.js', () => ({
   onKUEarned: vi.fn()
 }));
 

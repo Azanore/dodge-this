@@ -2,18 +2,18 @@
 // Imports: all src modules, game.config.js (global)
 // Does NOT handle rendering or game logic directly.
 
-import { validateConfig } from './config.js';
-import { resetState } from './GameState.js';
-import { createGameLoop } from './GameLoop.js';
-import { recomputeZones } from './zones.js';
-import { update as updatePlayer } from './player.js';
-import { gameUpdate, executeAbility } from './gameUpdate.js';
-import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker, triggerAbilityFlash } from './renderer.js';
-import { showGameOver, getPB, cleanup as cleanupGameOver } from './gameOver.js';
-import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, fetchAPLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './stats.js';
-import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './achievements.js';
-import { supabase } from './supabase.js';
-import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, resumeAudioContext, playGameStart, sfxEnabled, musicEnabled, sfxVolume, musicVolume, setSfx, setMusic, setSfxVolume, setMusicVolume } from './audio.js'; // AUDIO
+import { validateConfig } from './core/config.js';
+import { resetState } from './core/GameState.js';
+import { createGameLoop } from './core/GameLoop.js';
+import { recomputeZones } from './entities/zones.js';
+import { update as updatePlayer } from './entities/player.js';
+import { gameUpdate, executeAbility } from './core/gameUpdate.js';
+import { render, initRenderer, isShaking, triggerShake, glowCircle, drawBall, drawBullet, drawShard, drawTracker, triggerAbilityFlash } from './ui/renderer.js';
+import { showGameOver, getPB, cleanup as cleanupGameOver } from './ui/gameOver.js';
+import { resetRunStats, getRunStats, fetchAllTimeStats, fetchLeaderboard, fetchAPLeaderboard, evaluateAchievements, fetchUnlockedAchievements, updateUsername } from './services/stats.js';
+import { renderAchievementsOverlay, queueToasts, clearToastQueue, resetMidRunTracking } from './ui/achievements.js';
+import { supabase } from './services/supabase.js';
+import { initAudio, startMusic, stopMusic, pauseMusic, resumeMusic, resumeAudioContext, playGameStart, sfxEnabled, musicEnabled, sfxVolume, musicVolume, setSfx, setMusic, setSfxVolume, setMusicVolume } from './services/audio.js'; // AUDIO
 
 validateConfig(gameConfig);
 

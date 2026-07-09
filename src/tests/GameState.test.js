@@ -1,6 +1,6 @@
 // Unit tests for resetState() completeness.
 // Related: GameState.js, game.config.js
-import { resetState } from './GameState.js';
+import { resetState } from '../core/GameState.js';
 
 describe('resetState', () => {
   it('includes slowmoMultiplier: 1', () => {
