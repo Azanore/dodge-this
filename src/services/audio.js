@@ -252,9 +252,6 @@ export function playNearMiss() {
   lastNearMissAt = now;
 }
 
-// Deprecated: Cooldown is now internalized. Kept for backward compatibility until call sites are updated.
-export function tickNearMissCooldown() {}
-
 export function playZoneAppear() { play('zoneAppear'); }
 export function playAchievement() { play('achievement'); }
 
